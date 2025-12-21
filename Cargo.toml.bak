@@ -1,0 +1,53 @@
+[package]
+name = "termgfx"
+version = "0.1.0"
+edition = "2021"
+authors = ["Youssef Bouhjira <youssef.bouhjira@gmail.com>"]
+description = "Beautiful terminal graphics for CLI applications - styled boxes, charts, images, and interactive prompts"
+license = "MIT"
+repository = "https://github.com/ybouhjira/termgfx"
+homepage = "https://github.com/ybouhjira/termgfx"
+documentation = "https://docs.rs/termgfx"
+readme = "README.md"
+keywords = ["cli", "terminal", "tui", "graphics", "charts"]
+categories = ["command-line-interface", "visualization"]
+
+[dependencies]
+# CLI parsing
+clap = { version = "4.5", features = ["derive", "color"] }
+
+# TUI framework
+ratatui = "0.29"
+crossterm = "0.28"
+
+# Image support
+ratatui-image = "3.0"
+image = "0.25"
+
+# Colors and styling
+owo-colors = "4.1"
+unicode-width = "0.2"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+[dev-dependencies]
+# Testing
+assert_cmd = "2.0"
+predicates = "3.1"
+tempfile = "3.14"
+insta = "1.41"
+
+[[bin]]
+name = "termgfx"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
