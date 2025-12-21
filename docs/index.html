@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>termgfx - Beautiful Terminal Graphics for CLI Applications</title>
+    <meta name="description" content="termgfx is a powerful Rust CLI tool for creating styled boxes, charts, images, and interactive prompts in your terminal.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --accent-green: #3fb950;
+            --accent-cyan: #58a6ff;
+            --accent-purple: #a371f7;
+            --accent-orange: #f0883e;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+            --code-bg: #0d1117;
+            --gradient-1: linear-gradient(135deg, #3fb950, #58a6ff);
+            --gradient-2: linear-gradient(135deg, #58a6ff, #a371f7);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .nav-github {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .nav-github:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-cyan);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            background:
+                radial-gradient(ellipse at 50% 0%, rgba(63, 185, 80, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(88, 166, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 20% 80%, rgba(163, 113, 247, 0.05) 0%, transparent 40%);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero-badge .version {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.25rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 4rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(63, 185, 80, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-cyan);
+        }
+
+        /* Terminal Demo */
+        .terminal {
+            width: 100%;
+            max-width: 700px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #f85149; }
+        .terminal-dot.yellow { background: #f0883e; }
+        .terminal-dot.green { background: #3fb950; }
+
+        .terminal-title {
+            flex: 1;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .terminal-body {
+            padding: 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            min-height: 280px;
+        }
+
+        .terminal-line {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+
+        .terminal-prompt {
+            color: var(--accent-green);
+            margin-right: 0.5rem;
+        }
+
+        .terminal-command {
+            color: var(--text-primary);
+        }
+
+        .terminal-output {
+            color: var(--text-secondary);
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 18px;
+            background: var(--accent-green);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .box-success {
+            color: var(--accent-green);
+        }
+
+        .box-info {
+            color: var(--accent-cyan);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 4rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        /* Installation Section */
+        .installation {
+            padding: 6rem 2rem;
+        }
+
+        .install-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .install-tab {
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .install-tab:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .install-tab.active {
+            background: var(--accent-green);
+            color: var(--bg-primary);
+            border-color: var(--accent-green);
+        }
+
+        .install-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .install-panel {
+            display: none;
+        }
+
+        .install-panel.active {
+            display: block;
+        }
+
+        .code-block {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-lang {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .copy-btn.copied {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: var(--bg-primary);
+        }
+
+        .code-body {
+            padding: 1.25rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .code-body code {
+            color: var(--text-primary);
+        }
+
+        .code-comment {
+            color: var(--text-muted);
+        }
+
+        .code-string {
+            color: var(--accent-green);
+        }
+
+        .code-keyword {
+            color: var(--accent-purple);
+        }
+
+        /* Examples Section */
+        .examples {
+            padding: 6rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .example-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .example-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .example-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .example-body {
+            padding: 1.5rem;
+        }
+
+        .example-output {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        /* Comparison Section */
+        .comparison {
+            padding: 6rem 2rem;
+        }
+
+        .comparison-table {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .comparison-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .comparison-table td {
+            color: var(--text-secondary);
+        }
+
+        .check {
+            color: var(--accent-green);
+            font-size: 1.2rem;
+        }
+
+        .cross {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .comparison-table td:first-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-text a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 1.5rem 3rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .terminal {
+                margin: 0 -0.5rem;
+                border-radius: 8px;
+            }
+
+            .terminal-body {
+                padding: 1rem;
+                font-size: 0.75rem;
+                min-height: 240px;
+            }
+
+            .features-grid,
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .install-tabs {
+                flex-wrap: wrap;
+            }
+
+            .comparison-table {
+                overflow-x: auto;
+            }
+
+            .comparison-table table {
+                min-width: 600px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* Sparkline preview */
+        .sparkline-preview {
+            color: var(--accent-cyan);
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        /* Progress bar preview */
+        .progress-preview {
+            width: 100%;
+            height: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-1);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span>termgfx</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#comparison">Comparison</a></li>
+            </ul>
+            <a href="https://github.com/ybouhjira/termgfx" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                <span>GitHub</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span>Written in Rust</span>
+            <span class="version">v0.1.0</span>
+        </div>
+        <h1>termgfx</h1>
+        <p class="hero-subtitle">Beautiful terminal graphics for CLI applications - styled boxes, charts, images, and interactive prompts</p>
+        <div class="hero-cta">
+            <a href="#installation" class="btn btn-primary">
+                <span>Get Started</span>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8.22 2.97a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.06-1.06l2.97-2.97H3.75a.75.75 0 010-1.5h7.44L8.22 4.03a.75.75 0 010-1.06z"/>
+                </svg>
+            </a>
+            <a href="https://github.com/ybouhjira/termgfx" class="btn btn-secondary" target="_blank">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                <span>View on GitHub</span>
+            </a>
+        </div>
+
+        <!-- Terminal Demo -->
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+                <div class="terminal-title">termgfx demo</div>
+            </div>
+            <div class="terminal-body">
+                <div id="terminal-content"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Features</h2>
+            <p class="section-subtitle">Everything you need to create beautiful terminal interfaces</p>
+            <div class="features-grid">
+                <div class="feature-card animate-in delay-1">
+                    <div class="feature-icon">📦</div>
+                    <h3>Styled Boxes</h3>
+                    <p>Create beautiful bordered boxes with customizable styles, colors, and emojis. Perfect for status messages and alerts.</p>
+                    <span class="feature-tag">info / success / warning / danger</span>
+                </div>
+                <div class="feature-card animate-in delay-2">
+                    <div class="feature-icon">📊</div>
+                    <h3>Charts</h3>
+                    <p>Render line charts, bar charts, and pie charts directly in your terminal with ASCII graphics.</p>
+                    <span class="feature-tag">line / bar / pie / sparkline</span>
+                </div>
+                <div class="feature-card animate-in delay-3">
+                    <div class="feature-icon">🖼️</div>
+                    <h3>Images</h3>
+                    <p>Display images in the terminal with multiple protocol support including Kitty, Sixel, and halfblock.</p>
+                    <span class="feature-tag">kitty / sixel / halfblock</span>
+                </div>
+                <div class="feature-card animate-in delay-1">
+                    <div class="feature-icon">💬</div>
+                    <h3>Interactive Prompts</h3>
+                    <p>Build interactive CLI experiences with text input, selection menus, and confirmation dialogs.</p>
+                    <span class="feature-tag">input / select / confirm</span>
+                </div>
+                <div class="feature-card animate-in delay-2">
+                    <div class="feature-icon">⏳</div>
+                    <h3>Spinners & Progress</h3>
+                    <p>Show loading states with animated spinners and progress bars in multiple styles.</p>
+                    <span class="feature-tag">dots / circle / bounce / moon</span>
+                </div>
+                <div class="feature-card animate-in delay-3">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Gradients & Colors</h3>
+                    <p>Apply beautiful color gradients to banners and text with built-in color themes.</p>
+                    <span class="feature-tag">cyan-purple / green-blue / custom</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="installation" class="installation">
+        <div class="container">
+            <h2 class="section-title">Installation</h2>
+            <p class="section-subtitle">Get started with termgfx in seconds</p>
+            <div class="install-tabs">
+                <button class="install-tab active" data-tab="cargo">Cargo</button>
+                <button class="install-tab" data-tab="brew">Homebrew</button>
+                <button class="install-tab" data-tab="binary">Binary</button>
+            </div>
+            <div class="install-content">
+                <div class="install-panel active" data-panel="cargo">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" data-copy="cargo install termgfx">
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                    <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <div class="code-body">
+                            <code><span class="code-comment"># Install from crates.io</span>
+cargo install termgfx
+
+<span class="code-comment"># Or build from source</span>
+git clone https://github.com/ybouhjira/termgfx
+cd termgfx && cargo install --path .</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="install-panel" data-panel="brew">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" data-copy="brew install ybouhjira/tap/termgfx">
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                    <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <div class="code-body">
+                            <code><span class="code-comment"># Add the tap</span>
+brew tap ybouhjira/tap
+
+<span class="code-comment"># Install termgfx</span>
+brew install termgfx</code>
+                        </div>
+                    </div>
+                </div>
+                <div class="install-panel" data-panel="binary">
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-lang">bash</span>
+                            <button class="copy-btn" data-copy="curl -L https://github.com/ybouhjira/termgfx/releases/latest/download/termgfx-$(uname -s)-$(uname -m) -o termgfx && chmod +x termgfx && sudo mv termgfx /usr/local/bin/">
+                                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                    <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                                </svg>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <div class="code-body">
+                            <code><span class="code-comment"># Download latest release (macOS/Linux)</span>
+curl -L https://github.com/ybouhjira/termgfx/releases/latest/download/termgfx-$(uname -s)-$(uname -m) -o termgfx
+chmod +x termgfx
+sudo mv termgfx /usr/local/bin/</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Examples Section -->
+    <section id="examples" class="examples">
+        <div class="container">
+            <h2 class="section-title">Examples</h2>
+            <p class="section-subtitle">See termgfx in action</p>
+            <div class="examples-grid">
+                <div class="example-card">
+                    <div class="example-header">
+                        <span class="example-title">📦 Styled Boxes</span>
+                        <button class="copy-btn" data-copy="termgfx box 'Hello World' --style success">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="example-body">
+                        <code>termgfx box "Hello World" --style success</code>
+                        <div class="example-output box-success">╭──────────────────╮
+│  ✓ Hello World   │
+╰──────────────────╯</div>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-header">
+                        <span class="example-title">📈 Line Chart</span>
+                        <button class="copy-btn" data-copy="termgfx chart line --data '10,25,15,40,35,60' --title 'Sales'">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="example-body">
+                        <code>termgfx chart line --data "10,25,15,40,35,60" --title "Sales"</code>
+                        <div class="example-output">        Sales
+60│          ╭─
+40│     ╭──╮│
+25│  ╭─╯   ╰╯
+10│╭─╯
+  └──────────────</div>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-header">
+                        <span class="example-title">📊 Bar Chart</span>
+                        <button class="copy-btn" data-copy="termgfx chart bar --data 'Mon:25,Tue:40,Wed:30,Thu:55,Fri:45'">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="example-body">
+                        <code>termgfx chart bar --data "Mon:25,Tue:40,Wed:30,Thu:55,Fri:45"</code>
+                        <div class="example-output">Mon ████████░░░░░░░░  25
+Tue █████████████░░░  40
+Wed ██████████░░░░░░  30
+Thu ████████████████  55
+Fri ██████████████░░  45</div>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-header">
+                        <span class="example-title">📉 Sparkline</span>
+                        <button class="copy-btn" data-copy="termgfx sparkline '1,4,2,5,3,7,2,6,4,8'">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="example-body">
+                        <code>termgfx sparkline "1,4,2,5,3,7,2,6,4,8"</code>
+                        <div class="example-output"><span class="sparkline-preview">▁▄▂▅▃▇▂▆▄█</span></div>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-header">
+                        <span class="example-title">⏳ Progress Bar</span>
+                        <button class="copy-btn" data-copy="termgfx progress 75 --style gradient">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="example-body">
+                        <code>termgfx progress 75 --style gradient</code>
+                        <div class="progress-preview">
+                            <div class="progress-bar" style="width: 75%"></div>
+                        </div>
+                        <div class="example-output" style="margin-top: 0.5rem; color: var(--text-muted);">Downloading... 75% ████████████░░░░</div>
+                    </div>
+                </div>
+                <div class="example-card">
+                    <div class="example-header">
+                        <span class="example-title">💬 Interactive Select</span>
+                        <button class="copy-btn" data-copy="termgfx select 'Pick a color' red green blue yellow">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z"/>
+                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z"/>
+                            </svg>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <div class="example-body">
+                        <code>termgfx select "Pick a color" red green blue yellow</code>
+                        <div class="example-output box-info">? Pick a color
+  ○ red
+  ● green  ← selected
+  ○ blue
+  ○ yellow</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section id="comparison" class="comparison">
+        <div class="container">
+            <h2 class="section-title">Why termgfx?</h2>
+            <p class="section-subtitle">Compare termgfx with other CLI tools</p>
+            <div class="comparison-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>termgfx</th>
+                            <th>gum</th>
+                            <th>rich-cli</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Styled Boxes</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Charts (Line/Bar/Pie)</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Terminal Images</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Interactive Prompts</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Sparklines</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Single Binary</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">✗</span></td>
+                        </tr>
+                        <tr>
+                            <td>Written in Rust</td>
+                            <td><span class="check">✓</span></td>
+                            <td><span class="cross">Go</span></td>
+                            <td><span class="cross">Python</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/ybouhjira/termgfx" target="_blank">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                    </svg>
+                    GitHub
+                </a>
+                <a href="https://crates.io/crates/termgfx" target="_blank">
+                    <span>📦</span>
+                    crates.io
+                </a>
+                <a href="https://docs.rs/termgfx" target="_blank">
+                    <span>📚</span>
+                    Documentation
+                </a>
+            </div>
+            <p class="footer-text">
+                Made with ❤️ by <a href="https://github.com/ybouhjira" target="_blank">Youssef Bouhjira</a> · MIT License
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Terminal Demo Animation
+        const demos = [
+            {
+                command: 'termgfx box "Hello World" --style success',
+                output: `<span class="box-success">╭──────────────────╮
+│  ✓ Hello World   │
+╰──────────────────╯</span>`
+            },
+            {
+                command: 'termgfx chart bar --data "A:40,B:60,C:35"',
+                output: `A ████████████░░░░  40
+B ████████████████  60
+C ██████████░░░░░░  35`
+            },
+            {
+                command: 'termgfx sparkline "2,4,1,5,3,7,6,8"',
+                output: `<span class="sparkline-preview">▂▄▁▅▃▇▆█</span>`
+            },
+            {
+                command: 'termgfx box "Warning!" --style warning -e "⚠️"',
+                output: `<span style="color: #f0883e">╭────────────────╮
+│  ⚠️ Warning!   │
+╰────────────────╯</span>`
+            },
+            {
+                command: 'termgfx progress 85 --style gradient',
+                output: `<span style="color: #3fb950">████████████████</span><span style="color: #484f58">░░░</span> 85%`
+            }
+        ];
+
+        let currentDemo = 0;
+        let charIndex = 0;
+        let isTyping = true;
+        let showingOutput = false;
+        const terminalContent = document.getElementById('terminal-content');
+
+        function typeCommand() {
+            const demo = demos[currentDemo];
+
+            if (isTyping) {
+                if (charIndex <= demo.command.length) {
+                    const typed = demo.command.substring(0, charIndex);
+                    terminalContent.innerHTML = `
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">${typed}</span>
+                            <span class="terminal-cursor"></span>
+                        </div>
+                    `;
+                    charIndex++;
+                    setTimeout(typeCommand, 50 + Math.random() * 30);
+                } else {
+                    isTyping = false;
+                    showingOutput = true;
+                    setTimeout(showOutput, 400);
+                }
+            }
+        }
+
+        function showOutput() {
+            const demo = demos[currentDemo];
+            terminalContent.innerHTML = `
+                <div class="terminal-line">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">${demo.command}</span>
+                </div>
+                <div class="terminal-output">${demo.output}</div>
+                <div class="terminal-line" style="margin-top: 1rem">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-cursor"></span>
+                </div>
+            `;
+
+            setTimeout(() => {
+                currentDemo = (currentDemo + 1) % demos.length;
+                charIndex = 0;
+                isTyping = true;
+                showingOutput = false;
+                typeCommand();
+            }, 3000);
+        }
+
+        // Start animation
+        setTimeout(typeCommand, 1000);
+
+        // Installation tabs
+        const tabs = document.querySelectorAll('.install-tab');
+        const panels = document.querySelectorAll('.install-panel');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = tab.dataset.tab;
+
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.querySelector(`[data-panel="${target}"]`).classList.add('active');
+            });
+        });
+
+        // Copy buttons
+        const copyBtns = document.querySelectorAll('.copy-btn');
+
+        copyBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const text = btn.dataset.copy;
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = btn.innerHTML;
+                    btn.classList.add('copied');
+                    btn.innerHTML = `
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"/>
+                        </svg>
+                        <span>Copied!</span>
+                    `;
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        btn.innerHTML = originalText;
+                    }, 2000);
+                });
+            });
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animate progress bar on scroll
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        progressBar.style.width = '75%';
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            observer.observe(progressBar.parentElement);
+        }
+    </script>
+</body>
+</html>
