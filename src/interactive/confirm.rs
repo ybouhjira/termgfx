@@ -7,6 +7,7 @@ use crossterm::{
 };
 use std::io::{self, Write};
 
+/// Render a yes/no confirmation prompt
 pub fn render(prompt: &str, default: &str, style: &str) {
     let default_bool = match default.to_lowercase().as_str() {
         "yes" | "y" | "true" => true,
@@ -14,10 +15,17 @@ pub fn render(prompt: &str, default: &str, style: &str) {
         _ => true,
     };
 
-    match show_confirm_prompt(prompt, default_bool, style) {
+    let result = show_confirm_prompt(prompt, default_bool, style);
+
+    match result {
         Ok(answer) => {
-            println!("{}", if answer { "true" } else { "false" });
-            std::process::exit(if answer { 0 } else { 1 });
+            if answer {
+                println!("true");
+                std::process::exit(0);
+            } else {
+                println!("false");
+                std::process::exit(1);
+            }
         }
         Err(e) => {
             eprintln!("Error: {}", e);
@@ -28,20 +36,28 @@ pub fn render(prompt: &str, default: &str, style: &str) {
 
 fn show_confirm_prompt(prompt: &str, default: bool, style: &str) -> io::Result<bool> {
     terminal::enable_raw_mode()?;
+
     let mut stdout = io::stdout();
 
-    let (prompt_color, _bracket_color) = match style.to_lowercase().as_str() {
+    let (prompt_color, bracket_color) = match style.to_lowercase().as_str() {
         "danger" => (Color::Red, Color::DarkRed),
         _ => (Color::Cyan, Color::DarkCyan),
     };
 
-    let emoji = if style.to_lowercase() == "danger" { "⚠️  " } else { "" };
+    let emoji = if style.to_lowercase() == "danger" {
+        "⚠️  "
+    } else {
+        ""
+    };
+
     let options = if default { "[Y/n]" } else { "[y/N]" };
 
     execute!(
         stdout,
         SetForegroundColor(prompt_color),
-        Print(format!("{}{} {}: ", emoji, prompt, options)),
+        Print(format!("{}{} ", emoji, prompt)),
+        SetForegroundColor(bracket_color),
+        Print(format!("{}: ", options)),
         ResetColor,
         cursor::Show,
     )?;
@@ -54,7 +70,7 @@ fn show_confirm_prompt(prompt: &str, default: bool, style: &str) -> io::Result<b
                     KeyCode::Char('y') | KeyCode::Char('Y') => break Some(true),
                     KeyCode::Char('n') | KeyCode::Char('N') => break Some(false),
                     KeyCode::Enter => break Some(default),
-                    KeyCode::Esc => {
+                    KeyCode::Esc | KeyCode::Char('c') => {
                         execute!(stdout, Print("\n"))?;
                         terminal::disable_raw_mode()?;
                         std::process::exit(130);
@@ -66,14 +82,20 @@ fn show_confirm_prompt(prompt: &str, default: bool, style: &str) -> io::Result<b
     };
 
     let answer_bool = answer.unwrap_or(default);
+    let answer_text = if answer_bool { "y" } else { "n" };
     execute!(
         stdout,
-        SetForegroundColor(if answer_bool { Color::Green } else { Color::Red }),
-        Print(if answer_bool { "y" } else { "n" }),
+        SetForegroundColor(if answer_bool {
+            Color::Green
+        } else {
+            Color::Red
+        }),
+        Print(answer_text),
         ResetColor,
         Print("\n"),
     )?;
     stdout.flush()?;
+
     terminal::disable_raw_mode()?;
 
     Ok(answer_bool)
