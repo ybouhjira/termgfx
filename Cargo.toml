@@ -23,6 +23,7 @@ crossterm = "0.28"
 # Image support
 ratatui-image = "3.0"
 image = "0.25"
+ureq = "2.9"
 
 # Colors and styling
 owo-colors = "4.1"

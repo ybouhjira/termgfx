@@ -88,7 +88,7 @@ fn parse_protocol(s: &str) -> anyhow::Result<Protocol> {
 }
 
 fn render_kitty(img: &DynamicImage, term_width: usize, _term_height: usize) -> anyhow::Result<()> {
-    let max_width_px = (term_width - 2) * 8;
+    let max_width_px = ((term_width - 2) * 8) as u32;
     let (img_width, img_height) = img.dimensions();
     let scaled_img = if img_width > max_width_px {
         let scale = max_width_px as f32 / img_width as f32;
@@ -111,7 +111,7 @@ fn render_sixel(_img: &DynamicImage, _term_width: usize, _term_height: usize) ->
 }
 
 fn render_iterm2(img: &DynamicImage, term_width: usize, _term_height: usize) -> anyhow::Result<()> {
-    let max_width_px = (term_width - 2) * 10;
+    let max_width_px = ((term_width - 2) * 10) as u32;
     let (img_width, img_height) = img.dimensions();
     let scaled_img = if img_width > max_width_px {
         let scale = max_width_px as f32 / img_width as f32;
