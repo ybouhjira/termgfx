@@ -44,9 +44,12 @@ enum Commands {
     Spinner {
         /// Loading message
         message: String,
-        /// Spinner style: dots, circle, bounce, moon
+        /// Spinner style: dots, line, arc, bouncing, clock, circle, bounce, moon
         #[arg(short, long, default_value = "dots")]
         style: String,
+        /// Duration in seconds (auto-stop after N seconds)
+        #[arg(short, long)]
+        duration: Option<u64>,
     },
     /// Display a progress bar
     Progress {
@@ -150,8 +153,8 @@ fn main() {
         Commands::Banner { title, gradient } => {
             output::banner::render(&title, gradient.as_deref());
         }
-        Commands::Spinner { message, style } => {
-            output::spinner::render(&message, &style);
+        Commands::Spinner { message, style, duration } => {
+            output::spinner::render(&message, &style, duration);
         }
         Commands::Progress { percent, style } => {
             output::progress::render(percent, &style);

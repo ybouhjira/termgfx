@@ -5,7 +5,7 @@ use crossterm::{
 };
 use std::io::{stdout, Write};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
@@ -25,7 +25,8 @@ fn get_spinner_frames(style: &str) -> Vec<&'static str> {
 }
 
 /// Render an animated loading spinner
-pub fn render(message: &str, style: &str) {
+/// If duration is Some(n), the spinner auto-stops after n seconds
+pub fn render(message: &str, style: &str, duration: Option<u64>) {
     let frames = get_spinner_frames(style);
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
@@ -41,8 +42,17 @@ pub fn render(message: &str, style: &str) {
     stdout.execute(Hide).unwrap();
 
     let mut frame_idx = 0;
+    let start_time = Instant::now();
+    let timeout = duration.map(Duration::from_secs);
 
     while running.load(Ordering::SeqCst) {
+        // Check if duration exceeded
+        if let Some(max_duration) = timeout {
+            if start_time.elapsed() >= max_duration {
+                break;
+            }
+        }
+
         // Move to beginning of line and clear it
         stdout.execute(MoveToColumn(0)).unwrap();
         stdout.execute(Clear(ClearType::CurrentLine)).unwrap();
