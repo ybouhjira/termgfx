@@ -89,23 +89,18 @@ fn render_modern(percent: u8) {
     let empty = width - filled;
     let mut bar = String::new();
 
-    // Green → bright green → cyan → bright cyan gradient
+    // Smooth RGB gradient: green (#3fb950) → cyan (#58a6ff)
+    // Start: (63, 185, 80)  End: (88, 166, 255)
     for i in 0..filled {
-        let progress = (i as f32 / width as f32) * 100.0;
-        let char = if progress < 25.0 {
-            '█'.green().to_string()
-        } else if progress < 50.0 {
-            '█'.bright_green().to_string()
-        } else if progress < 75.0 {
-            '█'.cyan().to_string()
-        } else {
-            '█'.bright_cyan().to_string()
-        };
-        bar.push_str(&char);
+        let t = i as f32 / width as f32;
+        let r = (63.0 + t * (88.0 - 63.0)) as u8;
+        let g = (185.0 + t * (166.0 - 185.0)) as u8;
+        let b = (80.0 + t * (255.0 - 80.0)) as u8;
+        bar.push_str(&format!("\x1b[38;2;{};{};{}m█\x1b[0m", r, g, b));
     }
     for _ in 0..empty {
-        bar.push_str(&"░".bright_black().to_string());
+        bar.push_str("\x1b[38;2;72;79;88m░\x1b[0m");
     }
-    let percent_str = format!("{}%", percent);
-    println!("{} {}", bar, percent_str.bright_cyan().bold());
+    let percent_str = format!("\x1b[1m\x1b[38;2;88;166;255m{}%\x1b[0m", percent);
+    println!("{} {}", bar, percent_str);
 }
