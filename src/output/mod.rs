@@ -2,3 +2,8 @@ pub mod styled_box;
 pub mod banner;
 pub mod spinner;
 pub mod progress;
+pub mod tree;
+pub mod diff;
+pub mod table;
+pub mod record;
+pub mod typewriter;
