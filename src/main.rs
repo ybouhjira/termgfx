@@ -4,6 +4,7 @@ mod output;
 mod charts;
 mod image;
 mod interactive;
+mod script;
 
 #[derive(Parser)]
 #[command(name = "termgfx")]
@@ -113,6 +114,67 @@ enum Commands {
         /// Comma-separated values
         data: String,
     },
+    /// Show file differences side-by-side or unified
+    Diff {
+        /// First file path
+        file1: String,
+        /// Second file path
+        file2: String,
+        /// Use unified diff format
+        #[arg(long)]
+        unified: bool,
+        /// Context lines for unified format
+        #[arg(long)]
+        context: Option<usize>,
+    },
+    /// Display a formatted table from data
+    Table {
+        /// CSV headers (comma-separated)
+        #[arg(long)]
+        headers: Option<String>,
+        /// Row data (pipe-separated rows, comma-separated columns)
+        #[arg(long)]
+        rows: Option<String>,
+        /// CSV file path
+        #[arg(short, long)]
+        file: Option<String>,
+        /// Border style: single, double, rounded, none
+        #[arg(long, default_value = "single")]
+        border: String,
+        /// Column alignment: left, center, right
+        #[arg(long, default_value = "left")]
+        alignment: String,
+    },
+    /// Display a tree structure
+    Tree {
+        /// Tree data (e.g., "root>child1,child2>grandchild")
+        data: Option<String>,
+        /// JSON file path
+        #[arg(short, long)]
+        path: Option<String>,
+    },
+    /// Record, play, or export terminal sessions
+    Record {
+        #[command(subcommand)]
+        record_command: RecordCommands,
+    },
+    /// Typewriter effect animation
+    Typewriter {
+        /// Message to animate
+        message: String,
+        /// Speed in milliseconds per character
+        #[arg(short, long, default_value = "50")]
+        speed: u64,
+    },
+    /// Run animation sequences from script files
+    Script {
+        /// Script file path
+        #[arg(short, long)]
+        file: Option<String>,
+        /// Inline script commands (semicolon-separated)
+        #[arg(short, long)]
+        inline: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -137,6 +199,33 @@ enum ChartCommands {
         /// Data in format "Label:Value,Label:Value"
         #[arg(short, long)]
         data: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum RecordCommands {
+    /// Start recording terminal session
+    Start {
+        /// Output file path
+        output: String,
+    },
+    /// Play terminal recording
+    Play {
+        /// Recording file path
+        input: String,
+        /// Playback speed multiplier
+        #[arg(short, long, default_value = "1.0")]
+        speed: f64,
+    },
+    /// Export recording to other formats
+    Export {
+        /// Input recording file
+        input: String,
+        /// Output format: gif, json
+        #[arg(short, long)]
+        format: String,
+        /// Output file path
+        output: String,
     },
 }
 
@@ -186,6 +275,40 @@ fn main() {
         }
         Commands::Sparkline { data } => {
             charts::sparkline::render(&data);
+        }
+        Commands::Diff { file1, file2, unified, context } => {
+            output::diff::render(&file1, &file2, unified, context);
+        }
+        Commands::Table { headers, rows, file, border, alignment } => {
+            output::table::render(
+                headers.as_deref(),
+                rows.as_deref(),
+                file.as_deref(),
+                &border,
+                &alignment,
+            );
+        }
+        Commands::Tree { data, path } => {
+            output::tree::render(data.as_deref(), path.as_deref());
+        }
+        Commands::Record { record_command } => {
+            match record_command {
+                RecordCommands::Start { output } => {
+                    output::record::start(&output);
+                }
+                RecordCommands::Play { input, speed } => {
+                    output::record::play(&input, speed);
+                }
+                RecordCommands::Export { input, format, output } => {
+                    output::record::export(&input, &format, &output);
+                }
+            }
+        }
+        Commands::Typewriter { message, speed } => {
+            output::typewriter::render(&message, speed);
+        }
+        Commands::Script { file, inline } => {
+            script::run(file.as_deref(), inline.as_deref());
         }
     }
 }
