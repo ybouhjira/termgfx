@@ -53,9 +53,15 @@ enum Commands {
     Progress {
         /// Progress percentage (0-100)
         percent: u8,
-        /// Style: gradient, animated, blocks
+        /// Style: gradient, modern, animated, blocks, classic, thin
         #[arg(short, long, default_value = "gradient")]
         style: String,
+        /// Start color for gradient (hex: #3fb950 or name: red, green, blue, cyan, magenta, yellow)
+        #[arg(long)]
+        from: Option<String>,
+        /// End color for gradient (hex: #58a6ff or name: red, green, blue, cyan, magenta, yellow)
+        #[arg(long)]
+        to: Option<String>,
     },
     /// Display a chart
     Chart {
@@ -242,8 +248,8 @@ fn main() {
         Commands::Spinner { message, style } => {
             output::spinner::render(&message, &style);
         }
-        Commands::Progress { percent, style } => {
-            output::progress::render(percent, &style);
+        Commands::Progress { percent, style, from, to } => {
+            output::progress::render(percent, &style, from.as_deref(), to.as_deref());
         }
         Commands::Chart { chart_type } => {
             match chart_type {

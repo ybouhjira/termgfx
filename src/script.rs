@@ -151,11 +151,11 @@ fn execute_command(cmd: &ScriptCommand) {
                     if i > 0 {
                         print!("\x1B[1A\x1B[2K"); // Move up and clear line
                     }
-                    output::progress::render(current, &style);
+                    output::progress::render(current, &style, None, None);
                     thread::sleep(step_duration);
                 }
             } else {
-                output::progress::render(percent, &style);
+                output::progress::render(percent, &style, None, None);
             }
         }
 
