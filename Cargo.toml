@@ -12,36 +12,50 @@ readme = "README.md"
 keywords = ["cli", "terminal", "tui", "graphics", "charts"]
 categories = ["command-line-interface", "visualization"]
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[features]
+default = ["cli"]
+cli = ["clap", "crossterm", "ratatui", "ratatui-image", "image", "ureq", "ctrlc", "termion", "libc"]
+wasm = ["wasm-bindgen", "console_error_panic_hook", "web-sys"]
+
 [dependencies]
-# CLI parsing
-clap = { version = "4.5", features = ["derive", "color"] }
+# CLI parsing (optional - CLI only)
+clap = { version = "4.5", features = ["derive", "color"], optional = true }
 
-# TUI framework
-ratatui = "0.29"
-crossterm = "0.28"
+# TUI framework (optional - CLI only)
+ratatui = { version = "0.29", optional = true }
+crossterm = { version = "0.28", optional = true }
 
-# Image support
-ratatui-image = "3.0"
-image = "0.25"
-ureq = "2.9"
+# Image support (optional - CLI only)
+ratatui-image = { version = "3.0", optional = true }
+image = { version = "0.25", optional = true }
+ureq = { version = "2.9", optional = true }
 
-# Colors and styling
+# Colors and styling (always included)
 owo-colors = "4.1"
 unicode-width = "0.2"
 
-# Serialization
+# Serialization (always included)
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Error handling
+# Error handling (always included)
 thiserror = "2.0"
 anyhow = "1.0"
 
-# Signal handling
-ctrlc = "3.4"
+# Signal handling (optional - CLI only)
+ctrlc = { version = "3.4", optional = true }
 similar = "2.7.0"
-termion = "4.0.6"
-libc = "0.2.178"
+termion = { version = "4.0.6", optional = true }
+libc = { version = "0.2.178", optional = true }
+
+# WASM support (optional)
+wasm-bindgen = { version = "0.2", optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
+web-sys = { version = "0.3", features = ["console"], optional = true }
 
 [dev-dependencies]
 # Testing
@@ -53,8 +67,12 @@ insta = "1.41"
 [[bin]]
 name = "termgfx"
 path = "src/main.rs"
+required-features = ["cli"]
 
 [profile.release]
 lto = true
 codegen-units = 1
 strip = true
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false

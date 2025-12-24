@@ -1,0 +1,32 @@
+{
+  "name": "termgfx",
+  "type": "module",
+  "collaborators": [
+    "Youssef Bouhjira <youssef.bouhjira@gmail.com>"
+  ],
+  "description": "Beautiful terminal graphics for CLI applications - styled boxes, charts, images, and interactive prompts",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ybouhjira/termgfx"
+  },
+  "files": [
+    "termgfx_bg.wasm",
+    "termgfx.js",
+    "termgfx.d.ts"
+  ],
+  "main": "termgfx.js",
+  "homepage": "https://github.com/ybouhjira/termgfx",
+  "types": "termgfx.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ],
+  "keywords": [
+    "cli",
+    "terminal",
+    "tui",
+    "graphics",
+    "charts"
+  ]
+}
