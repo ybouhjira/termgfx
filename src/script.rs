@@ -1,4 +1,5 @@
 use std::fs;
+use std::io::{stdout, IsTerminal};
 use std::thread;
 use std::time::Duration;
 use crate::output;
@@ -141,18 +142,23 @@ fn execute_command(cmd: &ScriptCommand) {
             let duration = get_option(&cmd.options, "duration");
 
             if let Some(dur_str) = duration {
-                // Animated progress
-                let _duration = parse_duration(&dur_str);
-                let steps = 20;
-                let step_duration = Duration::from_millis(100);
+                // Animated progress - only if TTY
+                if stdout().is_terminal() {
+                    let _duration = parse_duration(&dur_str);
+                    let steps = 20;
+                    let step_duration = Duration::from_millis(100);
 
-                for i in 0..=steps {
-                    let current = (i * percent as u32 / steps) as u8;
-                    if i > 0 {
-                        print!("\x1B[1A\x1B[2K"); // Move up and clear line
+                    for i in 0..=steps {
+                        let current = (i * percent as u32 / steps) as u8;
+                        if i > 0 {
+                            print!("\x1B[1A\x1B[2K"); // Move up and clear line
+                        }
+                        output::progress::render(current, &style, None, None);
+                        thread::sleep(step_duration);
                     }
-                    output::progress::render(current, &style, None, None);
-                    thread::sleep(step_duration);
+                } else {
+                    // Not a TTY, just show final result
+                    output::progress::render(percent, &style, None, None);
                 }
             } else {
                 output::progress::render(percent, &style, None, None);

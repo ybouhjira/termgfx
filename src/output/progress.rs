@@ -1,4 +1,7 @@
 use owo_colors::OwoColorize;
+use std::io::{self, IsTerminal, Write};
+use std::thread;
+use std::time::Duration;
 
 pub fn render(percent: u8, style: &str, from: Option<&str>, to: Option<&str>) {
     let percent = percent.min(100);
@@ -137,6 +140,81 @@ fn render_animated(percent: u8) {
     for _ in 0..empty { bar.push(' '); }
     let percent_str = format!("{}%", percent);
     println!("{} {}", bar, percent_str.bright_cyan().bold());
+}
+
+pub fn render_animated_progress(target: u8, style: &str, from: Option<&str>, to: Option<&str>, duration_ms: u64) {
+    let target = target.min(100);
+
+    // If not a TTY (piped/captured), just show final result
+    if !io::stdout().is_terminal() {
+        render(target, style, from, to);
+        return;
+    }
+
+    let steps = 30;
+    let step_delay = Duration::from_millis(duration_ms / steps as u64);
+
+    for i in 0..=steps {
+        let current = (i * target as u32 / steps) as u8;
+
+        // Build the progress bar string
+        let bar = if from.is_some() || to.is_some() {
+            let start = from.map(parse_color).unwrap_or((63, 185, 80));
+            let end = to.map(parse_color).unwrap_or((88, 166, 255));
+            build_custom_gradient_bar(current, start, end)
+        } else {
+            match style {
+                "modern" => build_modern_bar(current),
+                _ => build_modern_bar(current),
+            }
+        };
+
+        // Use \r to return to start of line for in-place updates
+        print!("\r{}", bar);
+        io::stdout().flush().unwrap();
+        thread::sleep(step_delay);
+    }
+    println!(); // Final newline when done
+}
+
+fn build_custom_gradient_bar(percent: u8, start: (u8, u8, u8), end: (u8, u8, u8)) -> String {
+    let width = 30;
+    let filled = (width * percent as usize) / 100;
+    let empty = width - filled;
+    let mut bar = String::new();
+
+    for i in 0..filled {
+        let t = i as f32 / width as f32;
+        let r = (start.0 as f32 + t * (end.0 as f32 - start.0 as f32)) as u8;
+        let g = (start.1 as f32 + t * (end.1 as f32 - start.1 as f32)) as u8;
+        let b = (start.2 as f32 + t * (end.2 as f32 - start.2 as f32)) as u8;
+        bar.push_str(&format!("\x1b[38;2;{};{};{}m█\x1b[0m", r, g, b));
+    }
+    for _ in 0..empty {
+        bar.push_str("\x1b[38;2;72;79;88m░\x1b[0m");
+    }
+    let percent_str = format!("\x1b[1m\x1b[38;2;{};{};{}m{:>3}%\x1b[0m", end.0, end.1, end.2, percent);
+    format!("{} {}", bar, percent_str)
+}
+
+fn build_modern_bar(percent: u8) -> String {
+    let width = 30;
+    let filled = (width * percent as usize) / 100;
+    let empty = width - filled;
+    let mut bar = String::new();
+
+    for i in 0..filled {
+        let t = i as f32 / width as f32;
+        let r = (63.0 + t * (88.0 - 63.0)) as u8;
+        let g = (185.0 + t * (166.0 - 185.0)) as u8;
+        let b = (80.0 + t * (255.0 - 80.0)) as u8;
+        bar.push_str(&format!("\x1b[38;2;{};{};{}m█\x1b[0m", r, g, b));
+    }
+    for _ in 0..empty {
+        bar.push_str("\x1b[38;2;72;79;88m░\x1b[0m");
+    }
+    let percent_str = format!("\x1b[1m\x1b[38;2;88;166;255m{:>3}%\x1b[0m", percent);
+    format!("{} {}", bar, percent_str)
 }
 
 fn render_modern(percent: u8) {

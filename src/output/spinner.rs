@@ -3,7 +3,7 @@ use crossterm::{
     terminal::{Clear, ClearType},
     ExecutableCommand,
 };
-use std::io::{stdout, Write};
+use std::io::{stdout, IsTerminal, Write};
 use std::thread;
 use std::time::Duration;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -27,6 +27,13 @@ fn get_spinner_frames(style: &str) -> Vec<&'static str> {
 /// Render an animated loading spinner
 pub fn render(message: &str, style: &str) {
     let frames = get_spinner_frames(style);
+
+    // If not a TTY (piped/captured), just print static message and return
+    if !stdout().is_terminal() {
+        println!("{} {}", frames[0], message);
+        return;
+    }
+
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
 

@@ -62,6 +62,12 @@ enum Commands {
         /// End color for gradient (hex: #58a6ff or name: red, green, blue, cyan, magenta, yellow)
         #[arg(long)]
         to: Option<String>,
+        /// Animate from 0 to percent
+        #[arg(short, long)]
+        animate: bool,
+        /// Animation duration in ms (default: 1000)
+        #[arg(long, default_value = "1000")]
+        duration: u64,
     },
     /// Display a chart
     Chart {
@@ -248,8 +254,12 @@ fn main() {
         Commands::Spinner { message, style } => {
             output::spinner::render(&message, &style);
         }
-        Commands::Progress { percent, style, from, to } => {
-            output::progress::render(percent, &style, from.as_deref(), to.as_deref());
+        Commands::Progress { percent, style, from, to, animate, duration } => {
+            if animate {
+                output::progress::render_animated_progress(percent, &style, from.as_deref(), to.as_deref(), duration);
+            } else {
+                output::progress::render(percent, &style, from.as_deref(), to.as_deref());
+            }
         }
         Commands::Chart { chart_type } => {
             match chart_type {
