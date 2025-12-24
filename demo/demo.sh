@@ -22,34 +22,28 @@ echo ""
 sleep 0.3
 
 echo "Installing dependencies..."
-for i in $(seq 0 5 100); do
-    tput cuu1 2>/dev/null || printf "\033[1A"
-    tput el 2>/dev/null || printf "\033[K"
-    printf "Installing dependencies... "
-    $TERMGFX progress $i --style gradient
-    sleep 0.05
-done
 echo ""
+for i in $(seq 0 10 100); do
+    printf "\033[1A\033[K"
+    $TERMGFX progress $i --style gradient
+    sleep 0.08
+done
 
 echo "Compiling project..."
-for i in $(seq 0 4 100); do
-    tput cuu1 2>/dev/null || printf "\033[1A"
-    tput el 2>/dev/null || printf "\033[K"
-    printf "Compiling project... "
-    $TERMGFX progress $i --style blocks
-    sleep 0.04
-done
 echo ""
+for i in $(seq 0 10 100); do
+    printf "\033[1A\033[K"
+    $TERMGFX progress $i --style blocks
+    sleep 0.06
+done
 
 echo "Deploying to production..."
-for i in $(seq 0 3 100); do
-    tput cuu1 2>/dev/null || printf "\033[1A"
-    tput el 2>/dev/null || printf "\033[K"
-    printf "Deploying to production... "
-    $TERMGFX progress $i --style animated
-    sleep 0.03
-done
 echo ""
+for i in $(seq 0 10 100); do
+    printf "\033[1A\033[K"
+    $TERMGFX progress $i --style animated
+    sleep 0.05
+done
 
 $TERMGFX box "Deployment complete!" --style success
 sleep 1
@@ -63,30 +57,29 @@ echo ""
 sleep 0.3
 
 echo "CPU Usage:"
-data=""
-for i in $(seq 1 20); do
+$TERMGFX sparkline "50"
+data="50"
+for i in $(seq 1 15); do
     val=$((RANDOM % 60 + 20))
-    [ -z "$data" ] && data="$val" || data="$data,$val"
-    tput cuu1 2>/dev/null || printf "\033[1A"
-    tput el 2>/dev/null || printf "\033[K"
-    echo -n "CPU Usage: "
+    data="$data,$val"
+    printf "\033[1A\033[K"
+    echo -n "CPU: "
     $TERMGFX sparkline "$data"
-    sleep 0.1
+    sleep 0.15
 done
-echo ""
 
-echo "Memory:"
-data=""
-for i in $(seq 1 20); do
-    val=$((RANDOM % 40 + 40))
-    [ -z "$data" ] && data="$val" || data="$data,$val"
-    tput cuu1 2>/dev/null || printf "\033[1A"
-    tput el 2>/dev/null || printf "\033[K"
-    echo -n "Memory: "
-    $TERMGFX sparkline "$data"
-    sleep 0.1
-done
 echo ""
+echo "Memory:"
+$TERMGFX sparkline "60"
+data="60"
+for i in $(seq 1 15); do
+    val=$((RANDOM % 40 + 40))
+    data="$data,$val"
+    printf "\033[1A\033[K"
+    echo -n "Mem: "
+    $TERMGFX sparkline "$data"
+    sleep 0.15
+done
 sleep 1
 clear
 
@@ -198,13 +191,12 @@ clear
 $TERMGFX banner "Complete"
 sleep 0.3
 
-for i in 25 50 75 100; do
-    tput cuu1 2>/dev/null || printf "\033[1A"
-    tput el 2>/dev/null || printf "\033[K"
-    $TERMGFX progress $i --style gradient
-    sleep 0.2
-done
 echo ""
+for i in 0 25 50 75 100; do
+    printf "\033[1A\033[K"
+    $TERMGFX progress $i --style gradient
+    sleep 0.15
+done
 
 $TERMGFX box "All features demonstrated!" --style success --border double
 echo ""
