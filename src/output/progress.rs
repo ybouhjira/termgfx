@@ -89,13 +89,17 @@ fn render_modern(percent: u8) {
     let empty = width - filled;
     let mut bar = String::new();
 
-    // Green to cyan to blue gradient
+    // Green → bright green → cyan → bright cyan gradient
     for i in 0..filled {
-        let progress = i as f32 / width as f32;
-        let char = if progress < 0.5 {
+        let progress = (i as f32 / width as f32) * 100.0;
+        let char = if progress < 25.0 {
             '█'.green().to_string()
-        } else {
+        } else if progress < 50.0 {
+            '█'.bright_green().to_string()
+        } else if progress < 75.0 {
             '█'.cyan().to_string()
+        } else {
+            '█'.bright_cyan().to_string()
         };
         bar.push_str(&char);
     }
