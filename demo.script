@@ -1,0 +1,51 @@
+# termgfx Full Feature Demo
+# Run with: termgfx script --file demo.script
+
+# Clear screen and show title
+banner "termgfx"
+
+wait 1s
+
+box "Welcome to termgfx - Beautiful Terminal Graphics" style:info border:double
+
+wait 500ms
+
+typewriter "Let me show you what termgfx can do..." speed:25
+
+wait 1s
+
+# Styled boxes showcase
+box "INFO: This is an info box" style:info
+wait 300ms
+box "SUCCESS: Task completed successfully!" style:success
+wait 300ms
+box "WARNING: Please review before continuing" style:warning
+wait 300ms
+box "DANGER: Critical error detected" style:danger
+wait 300ms
+
+typewriter "Now let's see some progress bars..." speed:30
+wait 500ms
+
+# Animated progress
+progress 0-100 style:gradient duration:2s
+
+wait 500ms
+
+typewriter "How about some data visualization?" speed:30
+wait 500ms
+
+# Sparkline
+sparkline 5,10,15,25,20,35,30,45,40,55,50,65,70,60,75,80,85,90,95,100
+
+wait 1s
+
+typewriter "That's termgfx! Fast, beautiful, and easy to use." speed:25
+
+wait 500ms
+
+box "Thanks for watching!" style:success emoji:sparkles border:rounded
+
+wait 1s
+
+banner "Goodbye"
