@@ -5,6 +5,7 @@ pub fn render(percent: u8, style: &str) {
     match style {
         "blocks" => render_blocks(percent),
         "gradient" => render_gradient(percent),
+        "modern" => render_modern(percent),
         "classic" => render_classic(percent),
         "thin" => render_thin(percent),
         "animated" => render_animated(percent),
@@ -78,6 +79,29 @@ fn render_animated(percent: u8) {
         bar.push_str(&char.cyan().to_string());
     }
     for _ in 0..empty { bar.push(' '); }
+    let percent_str = format!("{}%", percent);
+    println!("{} {}", bar, percent_str.bright_cyan().bold());
+}
+
+fn render_modern(percent: u8) {
+    let width = 30;
+    let filled = (width * percent as usize) / 100;
+    let empty = width - filled;
+    let mut bar = String::new();
+
+    // Green to cyan to blue gradient
+    for i in 0..filled {
+        let progress = i as f32 / width as f32;
+        let char = if progress < 0.5 {
+            '█'.green().to_string()
+        } else {
+            '█'.cyan().to_string()
+        };
+        bar.push_str(&char);
+    }
+    for _ in 0..empty {
+        bar.push_str(&"░".bright_black().to_string());
+    }
     let percent_str = format!("{}%", percent);
     println!("{} {}", bar, percent_str.bright_cyan().bold());
 }

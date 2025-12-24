@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>termgfx - Web Demo</title>
+    <style>
+        :root {
+            --bg-dark: #1a1b26;
+            --bg-term: #0d0d0d;
+            --text-primary: #c0caf5;
+            --text-dim: #565f89;
+            --accent-blue: #7aa2f7;
+            --accent-green: #9ece6a;
+            --accent-yellow: #e0af68;
+            --accent-red: #f7768e;
+            --accent-purple: #bb9af7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .card-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(122, 162, 247, 0.2);
+            color: var(--accent-blue);
+            border-radius: 4px;
+        }
+
+        .terminal {
+            background: var(--bg-term);
+            padding: 1.25rem;
+            min-height: 200px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-family: inherit;
+            overflow-x: auto;
+        }
+
+        .controls {
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font-family: inherit;
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: rgba(122, 162, 247, 0.2);
+            border-color: var(--accent-blue);
+        }
+
+        button.active {
+            background: var(--accent-blue);
+            color: var(--bg-dark);
+        }
+
+        input, select {
+            font-family: inherit;
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-dim);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-blue);
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Terminal color classes */
+        .terminal .red { color: #f7768e; }
+        .terminal .green { color: #9ece6a; }
+        .terminal .yellow { color: #e0af68; }
+        .terminal .blue { color: #7aa2f7; }
+        .terminal .magenta { color: #bb9af7; }
+        .terminal .cyan { color: #7dcfff; }
+        .terminal .bright-white { color: #ffffff; }
+        .terminal .bright-blue { color: #89b4fa; }
+        .terminal .dim { opacity: 0.5; }
+        .terminal .bold { font-weight: bold; }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>termgfx</h1>
+            <p class="subtitle">Terminal graphics in your browser via WebAssembly</p>
+        </header>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading WebAssembly module...</p>
+        </div>
+
+        <div id="demos" class="demo-grid" style="display: none;">
+            <!-- Boxes Demo -->
+            <div class="demo-card">
+                <div class="card-header">
+                    <span class="card-title">Styled Boxes</span>
+                    <span class="card-badge">render_box</span>
+                </div>
+                <div id="box-output" class="terminal"></div>
+                <div class="controls">
+                    <button onclick="showBox('info')">Info</button>
+                    <button onclick="showBox('success')">Success</button>
+                    <button onclick="showBox('warning')">Warning</button>
+                    <button onclick="showBox('danger')">Danger</button>
+                </div>
+            </div>
+
+            <!-- Banner Demo -->
+            <div class="demo-card">
+                <div class="card-header">
+                    <span class="card-title">ASCII Banner</span>
+                    <span class="card-badge">render_banner</span>
+                </div>
+                <div id="banner-output" class="terminal" style="font-size: 0.6rem;"></div>
+                <div class="controls">
+                    <input type="text" id="banner-text" value="HELLO" maxlength="10" placeholder="Text...">
+                    <button onclick="showBanner()">Generate</button>
+                </div>
+            </div>
+
+            <!-- Progress Demo -->
+            <div class="demo-card">
+                <div class="card-header">
+                    <span class="card-title">Progress Bars</span>
+                    <span class="card-badge">render_progress</span>
+                </div>
+                <div id="progress-output" class="terminal"></div>
+                <div class="controls">
+                    <input type="range" id="progress-value" min="0" max="100" value="65" oninput="showProgress()">
+                    <select id="progress-style" onchange="showProgress()">
+                        <option value="default">Default</option>
+                        <option value="gradient">Gradient</option>
+                        <option value="blocks">Blocks</option>
+                        <option value="dots">Dots</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Sparkline Demo -->
+            <div class="demo-card">
+                <div class="card-header">
+                    <span class="card-title">Sparklines</span>
+                    <span class="card-badge">render_sparkline</span>
+                </div>
+                <div id="sparkline-output" class="terminal"></div>
+                <div class="controls">
+                    <button onclick="randomSparkline()">Random Data</button>
+                    <button onclick="animateSparkline()">Animate</button>
+                </div>
+            </div>
+
+            <!-- Table Demo -->
+            <div class="demo-card full-width">
+                <div class="card-header">
+                    <span class="card-title">Data Tables</span>
+                    <span class="card-badge">render_table</span>
+                </div>
+                <div id="table-output" class="terminal"></div>
+                <div class="controls">
+                    <select id="table-border" onchange="showTable()">
+                        <option value="single">Single</option>
+                        <option value="rounded">Rounded</option>
+                        <option value="double">Double</option>
+                        <option value="heavy">Heavy</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tree Demo -->
+            <div class="demo-card">
+                <div class="card-header">
+                    <span class="card-title">Tree Structure</span>
+                    <span class="card-badge">render_tree</span>
+                </div>
+                <div id="tree-output" class="terminal"></div>
+                <div class="controls">
+                    <button onclick="showTree('project')">Project</button>
+                    <button onclick="showTree('config')">Config</button>
+                </div>
+            </div>
+
+            <!-- Typewriter Demo -->
+            <div class="demo-card">
+                <div class="card-header">
+                    <span class="card-title">Typewriter Effect</span>
+                    <span class="card-badge">typewriter_frames</span>
+                </div>
+                <div id="typewriter-output" class="terminal"></div>
+                <div class="controls">
+                    <input type="text" id="typewriter-text" value="Hello, World!" placeholder="Message...">
+                    <button onclick="runTypewriter()">Play</button>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with Rust + WebAssembly | <a href="https://github.com/ybouhjira/termgfx">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import init, {
+            render_box,
+            render_banner,
+            render_progress,
+            render_sparkline,
+            render_table,
+            render_tree,
+            typewriter_frames
+        } from '../../pkg/termgfx.js';
+
+        // Make functions globally available
+        window.termgfx = {
+            render_box,
+            render_banner,
+            render_progress,
+            render_sparkline,
+            render_table,
+            render_tree,
+            typewriter_frames
+        };
+
+        await init();
+
+        // Hide loading, show demos
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('demos').style.display = 'grid';
+
+        // Initialize demos
+        showBox('info');
+        showBanner();
+        showProgress();
+        randomSparkline();
+        showTable();
+        showTree('project');
+        document.getElementById('typewriter-output').textContent = '> Click "Play" to see the effect';
+    </script>
+
+    <script>
+        function showBox(style) {
+            const messages = {
+                info: 'This is an informational message',
+                success: 'Operation completed successfully!',
+                warning: 'Please review before continuing',
+                danger: 'Critical error detected!'
+            };
+            document.getElementById('box-output').innerHTML =
+                window.termgfx.render_box(messages[style], style, 'rounded');
+        }
+
+        function showBanner() {
+            const text = document.getElementById('banner-text').value || 'HELLO';
+            document.getElementById('banner-output').innerHTML =
+                window.termgfx.render_banner(text.toUpperCase());
+        }
+
+        function showProgress() {
+            const value = document.getElementById('progress-value').value;
+            const style = document.getElementById('progress-style').value;
+            document.getElementById('progress-output').innerHTML =
+                window.termgfx.render_progress(parseInt(value), style);
+        }
+
+        function randomSparkline() {
+            const data = Array.from({length: 20}, () => Math.floor(Math.random() * 100)).join(',');
+            document.getElementById('sparkline-output').innerHTML =
+                window.termgfx.render_sparkline(data);
+        }
+
+        let sparklineInterval;
+        function animateSparkline() {
+            if (sparklineInterval) {
+                clearInterval(sparklineInterval);
+                sparklineInterval = null;
+                return;
+            }
+            let values = Array.from({length: 20}, () => Math.floor(Math.random() * 100));
+            sparklineInterval = setInterval(() => {
+                values.shift();
+                values.push(Math.floor(Math.random() * 100));
+                document.getElementById('sparkline-output').innerHTML =
+                    window.termgfx.render_sparkline(values.join(','));
+            }, 200);
+        }
+
+        function showTable() {
+            const border = document.getElementById('table-border').value;
+            const headers = 'Feature,Status,Version';
+            const rows = 'Boxes,Ready,1.0|Banners,Ready,1.0|Progress,Ready,1.0|Tables,Ready,1.0|Trees,Ready,1.0';
+            document.getElementById('table-output').innerHTML =
+                window.termgfx.render_table(headers, rows, border);
+        }
+
+        const treeData = {
+            project: JSON.stringify({
+                src: {
+                    "main.rs": "entry",
+                    output: {
+                        "box.rs": "module",
+                        "banner.rs": "module",
+                        "table.rs": "module"
+                    }
+                },
+                "Cargo.toml": "config",
+                "README.md": "docs"
+            }),
+            config: JSON.stringify({
+                settings: {
+                    theme: "dark",
+                    font: "mono"
+                },
+                features: ["wasm", "cli", "colors"],
+                version: "1.0.0"
+            })
+        };
+
+        function showTree(preset) {
+            document.getElementById('tree-output').innerHTML =
+                window.termgfx.render_tree(treeData[preset]);
+        }
+
+        let typewriterTimeout;
+        function runTypewriter() {
+            if (typewriterTimeout) {
+                clearTimeout(typewriterTimeout);
+            }
+            const text = document.getElementById('typewriter-text').value || 'Hello, World!';
+            const frames = window.termgfx.typewriter_frames(text);
+            const output = document.getElementById('typewriter-output');
+            let i = 0;
+
+            function showFrame() {
+                if (i < frames.length) {
+                    output.innerHTML = '<span class="green">&gt;</span> ' + frames[i];
+                    i++;
+                    typewriterTimeout = setTimeout(showFrame, 50);
+                }
+            }
+            showFrame();
+        }
+    </script>
+</body>
+</html>
