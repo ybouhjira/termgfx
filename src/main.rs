@@ -4,6 +4,7 @@ mod output;
 mod charts;
 mod image;
 mod interactive;
+mod script;
 
 #[derive(Parser)]
 #[command(name = "termgfx")]
@@ -165,6 +166,15 @@ enum Commands {
         #[arg(short, long, default_value = "50")]
         speed: u64,
     },
+    /// Run animation sequences from script files
+    Script {
+        /// Script file path
+        #[arg(short, long)]
+        file: Option<String>,
+        /// Inline script commands (semicolon-separated)
+        #[arg(short, long)]
+        inline: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -296,6 +306,9 @@ fn main() {
         }
         Commands::Typewriter { message, speed } => {
             output::typewriter::render(&message, speed);
+        }
+        Commands::Script { file, inline } => {
+            script::run(file.as_deref(), inline.as_deref());
         }
     }
 }
