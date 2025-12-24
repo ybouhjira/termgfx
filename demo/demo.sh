@@ -1,192 +1,212 @@
 #!/bin/bash
-# $TERMGFX Full Feature Demo
-# Showcases ALL implemented commands
+# termgfx Animated Demo - Full animations!
 
-# Use cargo run or installed binary
 TERMGFX="cargo run --quiet --"
 
 clear
 
-# Colors for section headers
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-section() {
-    echo ""
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "${CYAN}  $1${NC}"
-    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo ""
-    sleep 0.5
-}
-
 # ============================================================================
-# BANNER
+# INTRO
 # ============================================================================
-$TERMGFX banner "$TERMGFX"
-sleep 1
-
-$TERMGFX typewriter "Welcome to the $TERMGFX feature showcase!" --speed 20
-sleep 1
-
-# ============================================================================
-# STYLED BOXES
-# ============================================================================
-section "STYLED BOXES"
-
-$TERMGFX box "Default info box with rounded border" --style info --border rounded
-sleep 0.3
-
-$TERMGFX box "Success! Operation completed" --style success --border single --emoji "✓"
-sleep 0.3
-
-$TERMGFX box "Warning: Check your configuration" --style warning --border double
-sleep 0.3
-
-$TERMGFX box "Error: Something went wrong" --style danger --border thick
-sleep 0.3
-
-$TERMGFX box "Gradient style box" --style gradient --border rounded
-sleep 1
-
-# ============================================================================
-# PROGRESS BARS
-# ============================================================================
-section "PROGRESS BARS"
-
-echo "Gradient style:"
-$TERMGFX progress 75 --style gradient
+$TERMGFX banner "termgfx"
 sleep 0.5
-
-echo "Blocks style:"
-$TERMGFX progress 60 --style blocks
-sleep 0.5
-
-echo "Animated style:"
-$TERMGFX progress 90 --style animated
+$TERMGFX typewriter "The ultimate terminal graphics toolkit" --speed 20
 sleep 1
+clear
 
 # ============================================================================
-# SPARKLINES
+# ANIMATED PROGRESS BARS
 # ============================================================================
-section "SPARKLINES"
-
-echo "Stock price trend:"
-$TERMGFX sparkline "10,15,12,18,25,22,30,28,35,40,38,45,50,48,55"
-sleep 0.5
-
-echo "Server load:"
-$TERMGFX sparkline "5,8,12,25,45,80,95,70,40,20,15,10,8,5,3"
-sleep 1
-
-# ============================================================================
-# TABLES
-# ============================================================================
-section "TABLES"
-
-echo "Project Status Table:"
-$TERMGFX table --headers "Feature,Status,Issue" --rows "Diff,Done,#32|Table,Done,#30|Tree,Done,#31|Record,Done,#38|Script,Done,#39" --border rounded
-sleep 1
-
+$TERMGFX box "ANIMATED PROGRESS BARS" --style info --border double
 echo ""
-echo "Team Members (double border):"
-$TERMGFX table --headers "Name,Role,Status" --rows "Alice,Developer,Active|Bob,Designer,Active|Carol,PM,Away" --border double --alignment center
+sleep 0.3
+
+echo "Installing dependencies..."
+for i in $(seq 0 5 100); do
+    tput cuu1 2>/dev/null || printf "\033[1A"
+    tput el 2>/dev/null || printf "\033[K"
+    printf "Installing dependencies... "
+    $TERMGFX progress $i --style gradient
+    sleep 0.05
+done
+echo ""
+
+echo "Compiling project..."
+for i in $(seq 0 4 100); do
+    tput cuu1 2>/dev/null || printf "\033[1A"
+    tput el 2>/dev/null || printf "\033[K"
+    printf "Compiling project... "
+    $TERMGFX progress $i --style blocks
+    sleep 0.04
+done
+echo ""
+
+echo "Deploying to production..."
+for i in $(seq 0 3 100); do
+    tput cuu1 2>/dev/null || printf "\033[1A"
+    tput el 2>/dev/null || printf "\033[K"
+    printf "Deploying to production... "
+    $TERMGFX progress $i --style animated
+    sleep 0.03
+done
+echo ""
+
+$TERMGFX box "Deployment complete!" --style success
 sleep 1
+clear
 
 # ============================================================================
-# TREE
+# LIVE SPARKLINES
 # ============================================================================
-section "TREE VISUALIZATION"
+$TERMGFX box "LIVE DATA MONITORING" --style info --border double
+echo ""
+sleep 0.3
 
-echo "Project structure:"
-echo '{"$TERMGFX":{"src":{"main.rs":"entry","output":{"banner.rs":"module","box.rs":"module","table.rs":"module"},"charts":{"line.rs":"module","bar.rs":"module"}},"Cargo.toml":"config"}}' | $TERMGFX tree
+echo "CPU Usage:"
+data=""
+for i in $(seq 1 20); do
+    val=$((RANDOM % 60 + 20))
+    [ -z "$data" ] && data="$val" || data="$data,$val"
+    tput cuu1 2>/dev/null || printf "\033[1A"
+    tput el 2>/dev/null || printf "\033[K"
+    echo -n "CPU Usage: "
+    $TERMGFX sparkline "$data"
+    sleep 0.1
+done
+echo ""
+
+echo "Memory:"
+data=""
+for i in $(seq 1 20); do
+    val=$((RANDOM % 40 + 40))
+    [ -z "$data" ] && data="$val" || data="$data,$val"
+    tput cuu1 2>/dev/null || printf "\033[1A"
+    tput el 2>/dev/null || printf "\033[K"
+    echo -n "Memory: "
+    $TERMGFX sparkline "$data"
+    sleep 0.1
+done
+echo ""
 sleep 1
+clear
 
 # ============================================================================
-# DIFF
+# BOXES CASCADE
 # ============================================================================
-section "DIFF COMPARISON"
+$TERMGFX box "STYLED BOXES" --style info --border double
+echo ""
+sleep 0.3
 
-# Create temp files for diff demo
-echo -e "name = \"$TERMGFX\"\nversion = \"0.1.0\"\nedition = \"2021\"\n\n[dependencies]\nclap = \"4.0\"" > /tmp/old_cargo.toml
-echo -e "name = \"$TERMGFX\"\nversion = \"0.2.0\"\nedition = \"2021\"\n\n[dependencies]\nclap = \"4.5\"\nserde = \"1.0\"" > /tmp/new_cargo.toml
+$TERMGFX typewriter "Info..." --speed 30
+$TERMGFX box "This is an informational message" --style info
+sleep 0.3
 
-echo "Side-by-side diff (Cargo.toml changes):"
-$TERMGFX diff /tmp/old_cargo.toml /tmp/new_cargo.toml
+$TERMGFX typewriter "Success..." --speed 30
+$TERMGFX box "Operation completed successfully!" --style success
+sleep 0.3
+
+$TERMGFX typewriter "Warning..." --speed 30
+$TERMGFX box "Please review before continuing" --style warning
+sleep 0.3
+
+$TERMGFX typewriter "Danger..." --speed 30
+$TERMGFX box "Critical error detected!" --style danger
 sleep 1
-
-# Cleanup
-rm /tmp/old_cargo.toml /tmp/new_cargo.toml
+clear
 
 # ============================================================================
-# TYPEWRITER
+# TABLE + TREE
 # ============================================================================
-section "TYPEWRITER EFFECT"
+$TERMGFX box "DATA VISUALIZATION" --style info --border double
+echo ""
 
-$TERMGFX typewriter "This text appears one character at a time..." --speed 30
+$TERMGFX typewriter "Building status table..." --speed 25
+sleep 0.3
+$TERMGFX table --headers "Command,Status,Type" --rows "box,Ready,Output|banner,Ready,Output|progress,Ready,Output|table,Ready,Output|tree,Ready,Output|diff,Ready,Output|script,Ready,Automation" --border rounded
+echo ""
 sleep 0.5
-$TERMGFX typewriter "Fast mode!" --speed 10
-sleep 0.5
-$TERMGFX typewriter "S l o w   m o d e . . ." --speed 80
-sleep 1
 
-# ============================================================================
-# SCRIPT (Animation Sequences)
-# ============================================================================
-section "SCRIPT - ANIMATION SEQUENCES"
-
-$TERMGFX script --inline "box \"Scripts can chain multiple commands\" style:info
-wait 300ms
-box \"They run in sequence\" style:success
-wait 300ms
-box \"With timing control\" style:warning"
+$TERMGFX typewriter "Scanning project..." --speed 25
+sleep 0.3
+echo '{"src":{"main.rs":"entry","output":{"box.rs":"done","banner.rs":"done","table.rs":"done"},"charts":{"line.rs":"done","pie.rs":"done"}},"Cargo.toml":"config"}' | $TERMGFX tree
 sleep 1
+clear
 
 # ============================================================================
 # CHARTS
 # ============================================================================
-section "CHARTS"
+$TERMGFX box "CHARTS" --style info --border double
+echo ""
 
-echo "Line Chart - Monthly Revenue:"
-$TERMGFX chart line --data "10,25,18,35,42,38,55,62,58,70,85,90" --title "Revenue 2024"
+$TERMGFX typewriter "Revenue growth..." --speed 25
+$TERMGFX chart line --data "10,25,18,35,42,55,62,70,85,90" --title "2024 Revenue"
 sleep 1
 
 echo ""
-echo "Bar Chart - Sales by Region:"
-$TERMGFX chart bar --data "North:45,South:32,East:58,West:41"
+$TERMGFX typewriter "Sales by quarter..." --speed 25
+$TERMGFX chart bar --data "Q1:35,Q2:48,Q3:62,Q4:85"
 sleep 1
 
 echo ""
-echo "Pie Chart - Market Share:"
-$TERMGFX chart pie --data "Chrome:65,Firefox:15,Safari:12,Edge:8"
+$TERMGFX typewriter "Market share..." --speed 25
+$TERMGFX chart pie --data "Us:55,Competitor:30,Other:15"
 sleep 1
+clear
+
+# ============================================================================
+# DIFF
+# ============================================================================
+$TERMGFX box "DIFF COMPARISON" --style info --border double
+echo ""
+
+echo "v1.0" > /tmp/v1.txt
+echo "Initial release" >> /tmp/v1.txt
+echo "v2.0" > /tmp/v2.txt
+echo "Initial release" >> /tmp/v2.txt
+echo "New features" >> /tmp/v2.txt
+echo "Bug fixes" >> /tmp/v2.txt
+
+$TERMGFX typewriter "Comparing versions..." --speed 25
+sleep 0.3
+$TERMGFX diff /tmp/v1.txt /tmp/v2.txt
+rm /tmp/v1.txt /tmp/v2.txt
+sleep 1
+clear
+
+# ============================================================================
+# SCRIPT ANIMATION
+# ============================================================================
+$TERMGFX box "SCRIPT SEQUENCES" --style info --border double
+echo ""
+
+$TERMGFX typewriter "Running animation script..." --speed 25
+sleep 0.3
+
+$TERMGFX script --inline "box \"Step 1: Initialize\" style:info
+wait 400ms
+box \"Step 2: Process data\" style:warning
+wait 400ms
+box \"Step 3: Complete!\" style:success
+wait 300ms
+typewriter \"Animation finished!\" speed:20"
+sleep 1
+clear
 
 # ============================================================================
 # FINALE
 # ============================================================================
-section "RECORD COMMAND"
+$TERMGFX banner "Complete"
+sleep 0.3
 
-echo "The record command captures terminal sessions:"
+for i in 25 50 75 100; do
+    tput cuu1 2>/dev/null || printf "\033[1A"
+    tput el 2>/dev/null || printf "\033[K"
+    $TERMGFX progress $i --style gradient
+    sleep 0.2
+done
 echo ""
-$TERMGFX box "$TERMGFX record start session.rec   # Start recording" --style info --border single
-$TERMGFX box "$TERMGFX record play session.rec    # Playback" --style info --border single
-$TERMGFX box "$TERMGFX record export session.rec --format gif out.gif" --style info --border single
-sleep 1
 
-# ============================================================================
-# FINALE
-# ============================================================================
+$TERMGFX box "All features demonstrated!" --style success --border double
 echo ""
-echo ""
-$TERMGFX banner "Done"
-sleep 0.5
-
-$TERMGFX box "All 17 commands demonstrated!" style:success border:double emoji:rocket
-
-echo ""
-echo "Commands: box, banner, spinner, progress, sparkline, chart (line/bar/pie),"
-echo "          image, input, select, choose, confirm, diff, table, tree,"
-echo "          record, typewriter, script"
-echo ""
-$TERMGFX typewriter "Thanks for watching! Star us on GitHub: github.com/ybouhjira/$TERMGFX" --speed 15
+$TERMGFX typewriter "github.com/ybouhjira/termgfx" --speed 15
 echo ""
