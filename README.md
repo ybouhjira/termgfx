@@ -1,18 +1,15 @@
 <p align="center">
-  <pre>
-████████╗███████╗██████╗ ███╗   ███╗ ██████╗ ███████╗██╗  ██╗
-╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██╔════╝ ██╔════╝╚██╗██╔╝
-   ██║   █████╗  ██████╔╝██╔████╔██║██║  ███╗█████╗   ╚███╔╝
-   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║   ██║██╔══╝   ██╔██╗
-   ██║   ███████╗██║  ██║██║ ╚═╝ ██║╚██████╔╝██║     ██╔╝ ██╗
-   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝
-  </pre>
-  <h3>🎨 Beautiful Terminal Graphics for CLI Applications</h3>
-  <p>Styled boxes, charts, images, spinners, and interactive prompts - all in one blazing fast Rust CLI</p>
+  <img src="docs/gifs/extras.gif" alt="TermGFX Demo" width="600">
+</p>
+
+<h1 align="center">🎨 TermGFX</h1>
+
+<p align="center">
+  <strong>Beautiful Terminal Graphics for CLI Applications</strong><br>
+  <em>Styled boxes, charts, images, spinners, and interactive prompts - all in one blazing fast Rust CLI</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/ybouhjira/termgfx/actions"><img src="https://github.com/ybouhjira/termgfx/workflows/CI/badge.svg" alt="CI Status"></a>
   <a href="https://crates.io/crates/termgfx"><img src="https://img.shields.io/crates/v/termgfx.svg" alt="Crates.io"></a>
   <a href="https://github.com/ybouhjira/termgfx"><img src="https://img.shields.io/badge/rust-1.70%2B-orange.svg" alt="Rust Version"></a>
   <a href="https://github.com/ybouhjira/termgfx/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
@@ -21,17 +18,62 @@
 
 ---
 
-## ✨ Features at a Glance
+## 🎬 See It In Action
 
-| Feature | Description |
-|---------|-------------|
-| 📦 **Styled Boxes** | Beautiful message boxes with borders and gradients |
-| 🎨 **Banners** | ASCII art titles with gradient colors |
-| ⏳ **Spinners** | Animated loading indicators |
-| 📊 **Progress Bars** | Visual progress with multiple styles |
-| 📈 **Charts** | Line, bar, pie charts and sparklines |
-| 🖼️ **Images** | Display images in terminal (Kitty, Sixel, halfblock) |
-| 💬 **Interactive Prompts** | Input, select, multi-select, confirm dialogs |
+<table>
+<tr>
+<td width="50%">
+
+### 📦 Styled Boxes
+<img src="docs/gifs/box.gif" alt="Box Demo" width="100%">
+
+```bash
+termgfx box "Success!" --style success
+termgfx box "Warning!" --style warning
+termgfx box "Error!" --style danger
+```
+
+</td>
+<td width="50%">
+
+### 📊 Charts & Graphs
+<img src="docs/gifs/charts.gif" alt="Charts Demo" width="100%">
+
+```bash
+termgfx chart bar --data "A:85,B:70,C:92"
+termgfx chart line --data "1,3,5,7" --animate
+termgfx chart pie --data "X:45,Y:35,Z:20"
+```
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### ⏳ Progress & Spinners
+<img src="docs/gifs/progress.gif" alt="Progress Demo" width="100%">
+
+```bash
+termgfx progress 75 --style gradient
+termgfx spinner "Loading..." --style dots
+```
+
+</td>
+<td width="50%">
+
+### ✨ More Features
+<img src="docs/gifs/extras.gif" alt="Extras Demo" width="100%">
+
+```bash
+termgfx sparkline "1,4,2,8,5,7"
+termgfx gauge 75 --label "CPU"
+termgfx table --headers "A,B" --rows "1,2"
+termgfx banner "HELLO" --gradient cyan-purple
+```
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -47,408 +89,189 @@ cargo install termgfx
 git clone https://github.com/ybouhjira/termgfx
 cd termgfx && cargo install --path .
 
-# Homebrew (coming soon)
+# macOS (Homebrew)
+brew tap ybouhjira/tap
 brew install termgfx
 ```
 
-### Your First Commands
+### Try It Now
 
 ```bash
-# Display a styled box
-termgfx box "Hello, World!" --style success --border rounded
-
-# Show a gradient banner
-termgfx banner "TERMGFX" --gradient cyan-purple
-
-# Quick progress bar
-termgfx progress 75 --style blocks
-
-# Interactive selection
-termgfx select "Choose your OS:" "Linux" "macOS" "Windows"
+# Quick demos of each command
+termgfx box "test" --demo
+termgfx chart bar --data "a:1" --demo
+termgfx progress 0 --demo
+termgfx gauge 0 --demo
 ```
+
+---
+
+## ✨ Features
+
+| Category | Commands | Highlights |
+|----------|----------|------------|
+| **📦 Output** | `box`, `banner`, `notification` | Styled boxes, ASCII banners, desktop alerts |
+| **📊 Charts** | `chart bar/line/pie`, `sparkline`, `gauge`, `heatmap` | Animated charts, gradients |
+| **📋 Data** | `table`, `tree`, `diff`, `timeline` | Tables, trees, file diffs |
+| **💬 Prompts** | `input`, `select`, `confirm` | Interactive CLI prompts |
+| **⏳ Animation** | `spinner`, `progress`, `animate` | Multiple styles, animations |
+| **🖼️ Media** | `image` | Kitty, Sixel, halfblock protocols |
+| **🎛️ Tools** | `dashboard`, `record`, `script` | Multi-panel dashboards |
+
+---
+
+## 🔥 Why TermGFX?
+
+| Feature | TermGFX | Gum | Rich |
+|---------|:-------:|:---:|:----:|
+| **Charts** | ✅ bar, line, pie, sparkline | ❌ | ⚠️ limited |
+| **Gauges** | ✅ | ❌ | ❌ |
+| **Heatmaps** | ✅ | ❌ | ❌ |
+| **Timelines** | ✅ | ❌ | ❌ |
+| **Animations** | ✅ built-in | ⚠️ some | ⚠️ some |
+| **Single binary** | ✅ 4.5MB | ✅ 13MB | ❌ Python |
+| **CLI-first** | ✅ | ✅ | ❌ library |
 
 ---
 
 ## 📖 Command Reference
 
-### 📦 Box - Styled Message Boxes
-
-Display messages in beautiful bordered boxes with colors and emojis.
+### Boxes & Banners
 
 ```bash
-termgfx box <MESSAGE> [OPTIONS]
+# Styled message boxes
+termgfx box "Build passed!" --style success --border rounded
+termgfx box "Warning: low memory" --style warning
+termgfx box "Error occurred!" --style danger
+
+# ASCII art banners with gradients
+termgfx banner "HELLO" --gradient cyan-purple
+termgfx banner "DEPLOY" --gradient red-orange
 ```
 
-| Option | Description | Values | Default |
-|--------|-------------|--------|---------|
-| `-s, --style` | Color style | `info`, `success`, `warning`, `danger`, `gradient` | `info` |
-| `-b, --border` | Border style | `single`, `double`, `rounded`, `thick` | `rounded` |
-| `-e, --emoji` | Add emoji | Any emoji | none |
-
-**Examples:**
+### Charts
 
 ```bash
-# Success message
-termgfx box "Build completed!" --style success --emoji "✅"
+# Bar chart
+termgfx chart bar --data "Python:85,Go:70,Rust:95,Java:60"
 
-# Warning with double border
-termgfx box "Disk space low" --style warning --border double
+# Line chart with animation
+termgfx chart line --data "10,25,18,35,28,42" --title "Sales" --animate
 
-# Danger alert
-termgfx box "Critical error occurred!" --style danger --border thick
+# Pie chart with animation
+termgfx chart pie --data "Desktop:45,Mobile:35,Tablet:20" --animate
+
+# Sparkline (inline mini-chart)
+termgfx sparkline "1,4,2,8,5,7,3,9,6"
+
+# Gauge (radial indicator)
+termgfx gauge 75 --label "CPU Usage" --style semicircle
+
+# Heatmap
+termgfx heatmap --data "1,2,3;4,5,6;7,8,9" --colors viridis
 ```
 
-**Output:**
-```
-╭──────────────────────────╮
-│ ✅ Build completed!      │
-╰──────────────────────────╯
-```
-
----
-
-### 🎨 Banner - ASCII Art Titles
-
-Create eye-catching ASCII banners with gradient colors.
+### Tables & Data
 
 ```bash
-termgfx banner <TITLE> [OPTIONS]
+# Table from data
+termgfx table --headers "Name,Age,City" --rows "Alice,30,NYC|Bob,25,LA"
+
+# Tree structure
+termgfx tree "project>src,docs>main.rs,lib.rs"
+
+# Timeline
+termgfx timeline --events "Q1:Design,Q2:Build,Q3:Test,Q4:Launch"
 ```
 
-| Option | Description | Values | Default |
-|--------|-------------|--------|---------|
-| `-g, --gradient` | Color gradient | `blue-purple`, `cyan-pink`, `green-yellow`, `red-orange` | none |
-
-**Examples:**
+### Interactive Prompts
 
 ```bash
-# Simple banner
-termgfx banner "HELLO"
-
-# With gradient
-termgfx banner "TERMGFX" --gradient blue-purple
-```
-
-**Output:**
-```
-████████╗███████╗██████╗ ███╗   ███╗ ██████╗ ███████╗██╗  ██╗
-╚══██╔══╝██╔════╝██╔══██╗████╗ ████║██╔════╝ ██╔════╝╚██╗██╔╝
-   ██║   █████╗  ██████╔╝██╔████╔██║██║  ███╗█████╗   ╚███╔╝
-   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║   ██║██╔══╝   ██╔██╗
-   ██║   ███████╗██║  ██║██║ ╚═╝ ██║╚██████╔╝██║     ██╔╝ ██╗
-   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝  ╚═╝
-```
-
----
-
-### ⏳ Spinner - Loading Indicators
-
-Show animated spinners while tasks are running.
-
-```bash
-termgfx spinner <MESSAGE> [OPTIONS]
-```
-
-| Option | Description | Values | Default |
-|--------|-------------|--------|---------|
-| `-s, --style` | Animation style | `dots`, `circle`, `bounce`, `moon` | `dots` |
-
-**Examples:**
-
-```bash
-# Default dots spinner
-termgfx spinner "Loading..."
-
-# Moon phases
-termgfx spinner "Processing..." --style moon
-
-# Bouncing ball
-termgfx spinner "Please wait..." --style bounce
-```
-
-**Output:**
-```
-⠋ Loading...
-```
-
----
-
-### 📊 Progress - Progress Bars
-
-Display beautiful progress indicators.
-
-```bash
-termgfx progress <PERCENT> [OPTIONS]
-```
-
-| Option | Description | Values | Default |
-|--------|-------------|--------|---------|
-| `-s, --style` | Visual style | `gradient`, `animated`, `blocks` | `gradient` |
-
-**Examples:**
-
-```bash
-# Gradient progress
-termgfx progress 65 --style gradient
-
-# Block style
-termgfx progress 80 --style blocks
-
-# Animated
-termgfx progress 50 --style animated
-```
-
-**Output:**
-```
-Progress: [████████████████░░░░░░░░] 65%
-```
-
----
-
-### 📈 Charts - Data Visualization
-
-Create terminal charts for quick data visualization.
-
-#### Line Chart
-
-```bash
-termgfx chart line --data "1,3,2,5,4,6" --title "Sales Trend"
-```
-
-**Output:**
-```
-Sales Trend
-    │
-  6 ┤                    ╭─
-  5 ┤          ╭─╮      ╭╯
-  4 ┤         ╭╯ ╰╮    ╭╯
-  3 ┤   ╭─╮  ╭╯   ╰╮  ╭╯
-  2 ┤  ╭╯ ╰──╯     ╰──╯
-  1 ┼──╯
-    └────────────────────
-```
-
-#### Bar Chart
-
-```bash
-termgfx chart bar --data "Jan:10,Feb:25,Mar:18,Apr:30"
-```
-
-**Output:**
-```
-Jan ████████░░░░░░░░░░░░ 10
-Feb ████████████████████ 25
-Mar ██████████████░░░░░░ 18
-Apr ████████████████████████ 30
-```
-
-#### Pie Chart
-
-```bash
-termgfx chart pie --data "Desktop:45,Mobile:35,Tablet:20"
-```
-
-**Output:**
-```
-    ╭──────────╮
-   ╱  Desktop  ╲    Desktop: 45% ████████████████
-  │    45%     │    Mobile:  35% ████████████
-   ╲  Mobile   ╱    Tablet:  20% ███████
-    ╰──────────╯
-```
-
-#### Sparkline
-
-```bash
-termgfx sparkline --data "1,3,2,5,4,7,6,8"
-```
-
-**Output:**
-```
-▁▃▂▅▄▇▆█
-```
-
----
-
-### 🖼️ Image - Terminal Images
-
-Display images directly in your terminal.
-
-```bash
-termgfx image <PATH> [OPTIONS]
-```
-
-| Option | Description | Values | Default |
-|--------|-------------|--------|---------|
-| `-p, --protocol` | Rendering protocol | `auto`, `kitty`, `sixel`, `halfblock` | `auto` |
-
-**Examples:**
-
-```bash
-# Auto-detect best protocol
-termgfx image ./photo.png
-
-# Force Kitty protocol
-termgfx image ./logo.jpg --protocol kitty
-
-# Use halfblock for compatibility
-termgfx image ./chart.png --protocol halfblock
-```
-
----
-
-### 💬 Interactive Prompts
-
-Build interactive CLI experiences with user prompts.
-
-#### Text Input
-
-```bash
-termgfx input <PROMPT> [OPTIONS]
-```
-
-| Option | Description |
-|--------|-------------|
-| `-P, --placeholder` | Placeholder text |
-| `--password` | Hide input (password mode) |
-
-**Examples:**
-
-```bash
-# Simple input
+# Text input
 termgfx input "Enter your name:"
 
-# With placeholder
-termgfx input "Email:" --placeholder "user@example.com"
+# Single select
+termgfx select "Choose OS:" "Linux" "macOS" "Windows"
 
-# Password input
-termgfx input "Password:" --password
+# Multi-select
+termgfx select "Features:" "Auth" "API" "Cache" --multi
+
+# Confirmation
+termgfx confirm "Deploy to production?"
 ```
 
-#### Select (Single Choice)
+### Progress & Animation
 
 ```bash
-termgfx select <PROMPT> <OPTIONS...>
+# Progress bars (multiple styles)
+termgfx progress 75 --style gradient
+termgfx progress 50 --style blocks
+termgfx progress 65 --style classic
+
+# Spinners
+termgfx spinner "Loading..." --style dots --duration 5
+
+# Typewriter effect
+termgfx animate --effect-type typewriter --text "Hello World!" --duration 2
 ```
 
-**Examples:**
+### Images
 
 ```bash
-termgfx select "Choose framework:" "React" "Vue" "Svelte" "Angular"
-```
+# Display image (auto-detects best protocol)
+termgfx image ./photo.png
 
-**Output:**
-```
-? Choose framework:
-  ❯ React
-    Vue
-    Svelte
-    Angular
-```
-
-#### Choose (Multi-select)
-
-```bash
-termgfx choose <PROMPT> <OPTIONS...> [--multi]
-```
-
-**Examples:**
-
-```bash
-termgfx choose "Select features:" "Auth" "API" "Database" "Cache" --multi
-```
-
-**Output:**
-```
-? Select features:
-  ◉ Auth
-  ◯ API
-  ◉ Database
-  ◯ Cache
-```
-
-#### Confirm (Yes/No)
-
-```bash
-termgfx confirm <PROMPT> [OPTIONS]
-```
-
-| Option | Description | Values | Default |
-|--------|-------------|--------|---------|
-| `-d, --default` | Default answer | `yes`, `no` | `yes` |
-| `-S, --style` | Visual style | `normal`, `danger` | `normal` |
-
-**Examples:**
-
-```bash
-# Simple confirmation
-termgfx confirm "Continue?"
-
-# Dangerous action
-termgfx confirm "Delete all files?" --default no --style danger
+# Force specific protocol
+termgfx image ./logo.jpg --protocol kitty
+termgfx image ./chart.png --protocol sixel
+termgfx image ./icon.png --protocol halfblock
 ```
 
 ---
 
-## 🔥 Why TermGFX over Gum?
+## 🛠️ Shell Script Examples
 
-| Feature | TermGFX | Gum |
-|---------|---------|-----|
-| ⚡ **Speed** | Blazing fast (Rust) | Fast (Go) |
-| 📈 **Charts** | Line, Bar, Pie, Sparkline | ❌ No charts |
-| 🖼️ **Images** | Kitty, Sixel, Halfblock | ❌ No images |
-| 🎨 **Gradients** | Full gradient support | Limited |
-| 📦 **Single Binary** | Yes, ~2MB | Yes, ~5MB |
-| 🔧 **Customization** | Extensive options | Good options |
-| 📊 **Data Viz** | Built-in | Requires external tools |
-
----
-
-## 🛠️ Use Cases
-
-### Shell Scripts
+### Deployment Script
 
 ```bash
 #!/bin/bash
 
-# Show styled header
 termgfx banner "DEPLOY" --gradient blue-purple
 
-# Confirm before proceeding
-if termgfx confirm "Deploy to production?" --style danger; then
-    termgfx spinner "Deploying..." &
-    SPINNER_PID=$!
+if termgfx confirm "Deploy to production?" --default no; then
+    termgfx spinner "Deploying..." --duration 3 &
     # ... deployment commands ...
-    kill $SPINNER_PID 2>/dev/null
-    termgfx box "Deployment complete!" --style success --emoji "🚀"
+    wait
+    termgfx box "Deployed successfully!" --style success
+else
+    termgfx box "Deployment cancelled" --style warning
 fi
 ```
 
-### Progress in Scripts
+### Build Script with Progress
 
 ```bash
 #!/bin/bash
-for i in {0..100..10}; do
-    termgfx progress $i --style blocks
-    sleep 0.5
-    printf "\033[1A"  # Move cursor up
+
+termgfx box "Starting build..." --style info
+
+for step in "Compile" "Test" "Package"; do
+    termgfx spinner "$step..." --duration 2
 done
-termgfx box "Download complete!" --style success
+
+termgfx box "Build complete!" --style success --emoji "🎉"
 ```
 
-### Interactive Menus
+### Interactive Menu
 
 ```bash
 #!/bin/bash
-CHOICE=$(termgfx select "What would you like to do?" \
-    "Run tests" \
-    "Build project" \
-    "Deploy" \
-    "Exit")
 
-case "$CHOICE" in
+ACTION=$(termgfx select "What to do?" "Run tests" "Build" "Deploy" "Exit")
+
+case "$ACTION" in
     "Run tests") npm test ;;
-    "Build project") npm run build ;;
+    "Build") npm run build ;;
     "Deploy") ./deploy.sh ;;
 esac
 ```
@@ -458,46 +281,32 @@ esac
 ## 🏗️ Building from Source
 
 ```bash
-# Clone the repository
 git clone https://github.com/ybouhjira/termgfx
 cd termgfx
-
-# Build release binary
 cargo build --release
-
-# The binary will be at ./target/release/termgfx
+./target/release/termgfx --help
 ```
 
-### Requirements
-
-- Rust 1.70 or later
-- A terminal with ANSI color support
+**Requirements:** Rust 1.70+
 
 ---
 
-## 📚 Documentation
+## 📚 More Resources
 
-- [Full API Reference](https://docs.rs/termgfx)
-- [Contributing Guide](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+- 📖 [Full Documentation](https://docs.rs/termgfx)
+- 🎬 [Demo Script](scripts/v0.3.0-demo.sh) - Interactive feature showcase
+- 📊 [Competitor Comparison](docs/COMPETITORS.md) - vs Gum, Rich, Plotext
+- 🔧 [UX Analysis](docs/UX-ANALYSIS.md) - Design decisions
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
 ```bash
-# Fork and clone
 git clone https://github.com/YOUR_USERNAME/termgfx
 cd termgfx
-
-# Create feature branch
 git checkout -b feature/amazing-feature
-
-# Make changes and test
 cargo test
-
 # Submit PR
 ```
 
@@ -505,16 +314,10 @@ cargo test
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE)
 
 ---
 
-## 🙏 Credits
-
-Built with:
-- [Ratatui](https://github.com/ratatui-org/ratatui) - Terminal UI framework
-- [Clap](https://github.com/clap-rs/clap) - CLI argument parsing
-- [Crossterm](https://github.com/crossterm-rs/crossterm) - Terminal manipulation
-
----
-
+<p align="center">
+  Made with ❤️ in Rust
+</p>
