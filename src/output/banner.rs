@@ -89,11 +89,12 @@ fn apply_gradient(text: &str, gradient: GradientColors, position: f32) -> String
 }
 
 pub fn render(title: &str, gradient: Option<&str>) {
-    render_animated(title, gradient, false);
+    render_animated(title, gradient, false, 500);
 }
 
 /// Render banner with optional animation
-pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool) {
+/// animation_time_ms: total animation duration in milliseconds (delay is calculated per line)
+pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool, animation_time_ms: u64) {
     let borders = BorderChars::double();
     let term_width = get_terminal_width();
     let gradient_colors = gradient.map(GradientColors::from_str).unwrap_or(GradientColors::Default);
@@ -107,7 +108,13 @@ pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool) {
     let banner_width = if term_width > min_content_width { term_width.min(100) } else { min_content_width };
     let inner_width = banner_width.saturating_sub(2);
 
-    let delay = if animate { Duration::from_millis(100) } else { Duration::ZERO };
+    // Calculate total lines: top border + empty + title + optional subtitle + empty + bottom border
+    let total_lines = if subtitle.is_some() { 6 } else { 5 };
+    let delay = if animate && total_lines > 0 {
+        Duration::from_millis(animation_time_ms / total_lines as u64)
+    } else {
+        Duration::ZERO
+    };
     let mut stdout = stdout();
 
     let top_border = format!("{}{}{}", borders.top_left, borders.horizontal.repeat(inner_width), borders.top_right);

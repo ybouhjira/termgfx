@@ -136,6 +136,7 @@ pub struct TableOptions {
     pub row_striping: bool,
     pub max_width: Option<usize>,
     pub animate: bool,
+    pub animation_time_ms: u64,
 }
 
 impl Default for TableOptions {
@@ -147,6 +148,7 @@ impl Default for TableOptions {
             row_striping: true,
             max_width: None,
             animate: false,
+            animation_time_ms: 500,
         }
     }
 }
@@ -158,10 +160,11 @@ pub fn render(
     border: &str,
     alignment: &str,
 ) {
-    render_animated(headers_str, rows_str, file, border, alignment, false);
+    render_animated(headers_str, rows_str, file, border, alignment, false, 500);
 }
 
 /// Render table with optional animation
+/// animation_time_ms: total animation duration in milliseconds (delay is calculated per row)
 pub fn render_animated(
     headers_str: Option<&str>,
     rows_str: Option<&str>,
@@ -169,6 +172,7 @@ pub fn render_animated(
     border: &str,
     alignment: &str,
     animate: bool,
+    animation_time_ms: u64,
 ) {
     let border_style = BorderStyle::from_str(border);
     let align = Alignment::from_str(alignment);
@@ -176,6 +180,7 @@ pub fn render_animated(
         border: border_style,
         alignment: align,
         animate,
+        animation_time_ms,
         ..Default::default()
     };
 
@@ -341,7 +346,12 @@ fn render_table(headers: &[String], rows: &[Vec<String>], options: &TableOptions
     // Header separator
     print_border_line(&col_widths, &border_chars, BorderLineType::Middle);
 
-    let delay = if options.animate { Duration::from_millis(50) } else { Duration::ZERO };
+    // Calculate delay per row: total_time / number_of_rows
+    let delay = if options.animate && !rows.is_empty() {
+        Duration::from_millis(options.animation_time_ms / rows.len() as u64)
+    } else {
+        Duration::ZERO
+    };
     let mut stdout = io::stdout();
 
     // Rows

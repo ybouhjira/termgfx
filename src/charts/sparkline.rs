@@ -6,11 +6,12 @@ use owo_colors::OwoColorize;
 const BLOCKS: [char; 8] = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
 
 pub fn render(data: &str) {
-    render_animated(data, false);
+    render_animated(data, false, 500);
 }
 
 /// Render sparkline with optional animation
-pub fn render_animated(data: &str, animate: bool) {
+/// animation_time_ms: total animation duration in milliseconds (delay is calculated per value)
+pub fn render_animated(data: &str, animate: bool, animation_time_ms: u64) {
     let values: Vec<f64> = data
         .split(',')
         .filter_map(|s| s.trim().parse::<f64>().ok())
@@ -32,7 +33,12 @@ pub fn render_animated(data: &str, animate: bool) {
     let range = max - min;
 
     let mut stdout = stdout();
-    let delay = if animate { Duration::from_millis(30) } else { Duration::ZERO };
+    // Calculate delay per value: total_time / number_of_values
+    let delay = if animate && !values.is_empty() {
+        Duration::from_millis(animation_time_ms / values.len() as u64)
+    } else {
+        Duration::ZERO
+    };
 
     for value in values {
         let normalized = if range == 0.0 {

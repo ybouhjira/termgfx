@@ -95,11 +95,12 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
 
 /// Render a tree from inline data format: "root>child1,child2>grandchild"
 fn render_inline_tree(data: &str) {
-    render_inline_tree_animated(data, false);
+    render_inline_tree_animated(data, false, 500);
 }
 
 /// Render a tree from inline data with optional animation
-fn render_inline_tree_animated(data: &str, animate: bool) {
+/// animation_time_ms: total animation duration in milliseconds (delay is calculated per node)
+fn render_inline_tree_animated(data: &str, animate: bool, animation_time_ms: u64) {
     let chars = TreeChars::unicode();
     let parts: Vec<&str> = data.split('>').collect();
 
@@ -107,7 +108,13 @@ fn render_inline_tree_animated(data: &str, animate: bool) {
         return;
     }
 
-    let delay = if animate { Duration::from_millis(50) } else { Duration::ZERO };
+    // Count total nodes: root + all children across all levels
+    let total_nodes: usize = 1 + parts.iter().skip(1).map(|p| p.split(',').count()).sum::<usize>();
+    let delay = if animate && total_nodes > 0 {
+        Duration::from_millis(animation_time_ms / total_nodes as u64)
+    } else {
+        Duration::ZERO
+    };
     let mut stdout = std::io::stdout();
 
     println!("{} {}", "📁".bright_cyan(), parts[0].bright_cyan().bold());
@@ -144,11 +151,12 @@ fn render_inline_tree_animated(data: &str, animate: bool) {
 
 /// Main render function - handles all tree types
 pub fn render(data: Option<&str>, path: Option<&str>) {
-    render_animated(data, path, false);
+    render_animated(data, path, false, 500);
 }
 
 /// Render tree with optional animation
-pub fn render_animated(data: Option<&str>, path: Option<&str>, animate: bool) {
+/// animation_time_ms: total animation duration in milliseconds (delay is calculated per node)
+pub fn render_animated(data: Option<&str>, path: Option<&str>, animate: bool, animation_time_ms: u64) {
     let chars = TreeChars::unicode();
 
     if let Some(_p) = path {
@@ -158,7 +166,7 @@ pub fn render_animated(data: Option<&str>, path: Option<&str>, animate: bool) {
         );
         std::process::exit(1);
     } else if let Some(d) = data {
-        render_inline_tree_animated(d, animate);
+        render_inline_tree_animated(d, animate, animation_time_ms);
     } else {
         use std::io::{self, Read};
         let mut buffer = String::new();

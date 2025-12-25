@@ -36,6 +36,9 @@ enum Commands {
         /// Animate the box drawing
         #[arg(short, long)]
         animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
     /// Display a styled banner
     Banner {
@@ -47,6 +50,9 @@ enum Commands {
         /// Animate the banner drawing
         #[arg(short, long)]
         animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
     /// Show a loading spinner
     Spinner {
@@ -138,6 +144,9 @@ enum Commands {
         /// Animate the sparkline building
         #[arg(short, long)]
         animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
     /// Show file differences side-by-side or unified
     Diff {
@@ -172,6 +181,9 @@ enum Commands {
         /// Animate rows appearing one by one
         #[arg(short, long)]
         animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
     /// Display a tree structure
     Tree {
@@ -183,6 +195,9 @@ enum Commands {
         /// Animate tree nodes expanding
         #[arg(short, long)]
         animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
     /// Record, play, or export terminal sessions
     Record {
@@ -409,11 +424,11 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Box { message, style, border, emoji, animate } => {
-            output::styled_box::render_animated(&message, &style, &border, emoji.as_deref(), animate);
+        Commands::Box { message, style, border, emoji, animate, animation_time } => {
+            output::styled_box::render_animated(&message, &style, &border, emoji.as_deref(), animate, animation_time);
         }
-        Commands::Banner { title, gradient, animate } => {
-            output::banner::render_animated(&title, gradient.as_deref(), animate);
+        Commands::Banner { title, gradient, animate, animation_time } => {
+            output::banner::render_animated(&title, gradient.as_deref(), animate, animation_time);
         }
         Commands::Spinner { message, style, duration } => {
             output::spinner::render(&message, &style, duration);
@@ -453,13 +468,13 @@ fn main() {
         Commands::Confirm { prompt, default, style } => {
             interactive::confirm::render(&prompt, &default, &style);
         }
-        Commands::Sparkline { data, animate } => {
-            charts::sparkline::render_animated(&data, animate);
+        Commands::Sparkline { data, animate, animation_time } => {
+            charts::sparkline::render_animated(&data, animate, animation_time);
         }
         Commands::Diff { file1, file2, unified, context } => {
             output::diff::render(&file1, &file2, unified, context);
         }
-        Commands::Table { headers, rows, file, border, alignment, animate } => {
+        Commands::Table { headers, rows, file, border, alignment, animate, animation_time } => {
             output::table::render_animated(
                 headers.as_deref(),
                 rows.as_deref(),
@@ -467,10 +482,11 @@ fn main() {
                 &border,
                 &alignment,
                 animate,
+                animation_time,
             );
         }
-        Commands::Tree { data, path, animate } => {
-            output::tree::render_animated(data.as_deref(), path.as_deref(), animate);
+        Commands::Tree { data, path, animate, animation_time } => {
+            output::tree::render_animated(data.as_deref(), path.as_deref(), animate, animation_time);
         }
         Commands::Record { record_command } => {
             match record_command {

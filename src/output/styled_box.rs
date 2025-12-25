@@ -89,11 +89,12 @@ fn get_default_emoji(style_name: &str) -> Option<&'static str> {
 
 /// Render a styled box with the given message
 pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
-    render_animated(message, style, border, emoji, false);
+    render_animated(message, style, border, emoji, false, 500);
 }
 
 /// Render a styled box with optional animation
-pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&str>, animate: bool) {
+/// animation_time_ms: total animation duration in milliseconds (delay is calculated per line)
+pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&str>, animate: bool, animation_time_ms: u64) {
     let borders = BorderChars::get(border);
     let color_style = get_style(style);
     let emoji_str = emoji.or_else(|| get_default_emoji(style));
@@ -117,7 +118,13 @@ pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&
         borders.top_right
     );
 
-    let delay = if animate { Duration::from_millis(80) } else { Duration::ZERO };
+    // Calculate delay per line: total_time / (lines + 2 borders)
+    let total_elements = lines.len() + 2; // content lines + top + bottom border
+    let delay = if animate && total_elements > 0 {
+        Duration::from_millis(animation_time_ms / total_elements as u64)
+    } else {
+        Duration::ZERO
+    };
     let mut stdout = stdout();
 
     // Print top border
