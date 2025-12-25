@@ -10,7 +10,7 @@ mod animation;
 #[derive(Parser)]
 #[command(name = "termgfx")]
 #[command(author = "Youssef Bouhjira")]
-#[command(version = "0.2.1")]
+#[command(version = "0.3.0")]
 #[command(about = "Beautiful terminal graphics - styled boxes, charts, images, and prompts")]
 #[command(propagate_version = true)]
 #[command(after_help = r#"
