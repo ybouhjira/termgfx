@@ -230,6 +230,109 @@ enum Commands {
         #[arg(short, long)]
         section: Option<String>,
     },
+    /// Display a horizontal timeline
+    Timeline {
+        /// Events: "Start,Middle,End" or "2024-01:Start,2024-06:Middle,2024-12:End"
+        #[arg(short, long)]
+        events: String,
+        /// Style: arrow, line, dots
+        #[arg(short, long, default_value = "arrow")]
+        style: String,
+        /// Color: red, green, blue, yellow, magenta, cyan, white
+        #[arg(long)]
+        color: Option<String>,
+        /// Animate the timeline
+        #[arg(short, long)]
+        animate: bool,
+        /// Render vertically
+        #[arg(long)]
+        vertical: bool,
+    },
+    /// Desktop + terminal alerts
+    Notification {
+        /// Notification message
+        message: String,
+        /// Notification title
+        #[arg(short, long)]
+        title: Option<String>,
+        /// Style: info, success, warning, error
+        #[arg(short, long, default_value = "info")]
+        style: String,
+        /// Play sound with desktop notification
+        #[arg(long)]
+        sound: bool,
+        /// Show only terminal notification
+        #[arg(long)]
+        terminal_only: bool,
+        /// Show only desktop notification
+        #[arg(long)]
+        desktop_only: bool,
+    },
+    /// Display a radial/dial gauge indicator
+    Gauge {
+        /// Value to display
+        value: f64,
+        /// Minimum value for the gauge range
+        #[arg(long, default_value = "0")]
+        min: f64,
+        /// Maximum value for the gauge range
+        #[arg(long, default_value = "100")]
+        max: f64,
+        /// Label to display with the gauge
+        #[arg(short, long)]
+        label: Option<String>,
+        /// Gauge style: semicircle, full, minimal
+        #[arg(short, long, default_value = "semicircle")]
+        style: String,
+        /// Color: red, green, blue, yellow, cyan, magenta, white, grey
+        #[arg(long)]
+        color: Option<String>,
+        /// Animate the gauge from 0 to value
+        #[arg(short, long)]
+        animate: bool,
+    },
+    /// Multi-panel TUI dashboard
+    Dashboard {
+        /// Layout: "2x2" or "3x1"
+        #[arg(short, long, default_value = "2x2")]
+        layout: String,
+        /// Dashboard title
+        #[arg(short, long)]
+        title: Option<String>,
+        /// Panels: "box:Hello,progress:75,sparkline:1,2,3,gauge:50"
+        #[arg(short, long)]
+        panels: Option<String>,
+        /// Config file path (JSON)
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Border style: single, double, rounded
+        #[arg(long, default_value = "single")]
+        border: String,
+    },
+    /// Display a 2D heatmap visualization
+    Heatmap {
+        /// 2D data: "1,2,3;4,5,6;7,8,9" (semicolon separates rows)
+        #[arg(short, long)]
+        data: Option<String>,
+        /// CSV file path
+        #[arg(short, long)]
+        file: Option<String>,
+        /// X-axis labels (comma-separated)
+        #[arg(long)]
+        x_labels: Option<String>,
+        /// Y-axis labels (comma-separated)
+        #[arg(long)]
+        y_labels: Option<String>,
+        /// Chart title
+        #[arg(short, long)]
+        title: Option<String>,
+        /// Color scheme: blue-red, green-red, viridis, magma
+        #[arg(long, default_value = "blue-red")]
+        colors: String,
+        /// Animate the heatmap rendering
+        #[arg(short, long)]
+        animate: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -385,6 +488,60 @@ fn main() {
         }
         Commands::Demo { section } => {
             animation::demo::run_demo(section.as_deref());
+        }
+        Commands::Timeline { events, style, color, animate, vertical } => {
+            let args = output::timeline::TimelineArgs {
+                events,
+                style,
+                color,
+                animate,
+                vertical,
+            };
+            if let Err(e) = output::timeline::render_timeline(&args) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Notification { message, title, style, sound, terminal_only, desktop_only } => {
+            output::notification::render(
+                &message,
+                title.as_deref(),
+                &style,
+                sound,
+                terminal_only,
+                desktop_only,
+            );
+        }
+        Commands::Gauge { value, min, max, label, style, color, animate } => {
+            output::gauge::render(
+                value,
+                min,
+                max,
+                label.as_deref(),
+                &style,
+                color.as_deref(),
+                animate,
+            );
+        }
+        Commands::Dashboard { layout, title, panels, config, border } => {
+            output::dashboard::render(
+                &layout,
+                title.as_deref(),
+                panels.as_deref(),
+                config.as_deref(),
+                &border,
+            );
+        }
+        Commands::Heatmap { data, file, x_labels, y_labels, title, colors, animate } => {
+            output::heatmap::render(
+                data.as_deref(),
+                file.as_deref(),
+                x_labels.as_deref(),
+                y_labels.as_deref(),
+                title.as_deref(),
+                &colors,
+                animate,
+            );
         }
     }
 }

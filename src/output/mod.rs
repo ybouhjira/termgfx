@@ -7,3 +7,8 @@ pub mod diff;
 pub mod table;
 pub mod record;
 pub mod typewriter;
+pub mod timeline;
+pub mod notification;
+pub mod gauge;
+pub mod heatmap;
+pub mod dashboard;
