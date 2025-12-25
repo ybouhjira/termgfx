@@ -341,7 +341,7 @@ fn render_table(headers: &[String], rows: &[Vec<String>], options: &TableOptions
     // Header separator
     print_border_line(&col_widths, &border_chars, BorderLineType::Middle);
 
-    let delay = if options.animate { Duration::from_millis(100) } else { Duration::ZERO };
+    let delay = if options.animate { Duration::from_millis(50) } else { Duration::ZERO };
     let mut stdout = io::stdout();
 
     // Rows

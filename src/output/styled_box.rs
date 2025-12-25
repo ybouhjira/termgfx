@@ -117,19 +117,14 @@ pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&
         borders.top_right
     );
 
-    let delay = if animate { Duration::from_millis(30) } else { Duration::ZERO };
+    let delay = if animate { Duration::from_millis(80) } else { Duration::ZERO };
     let mut stdout = stdout();
 
-    // Animate top border
+    // Print top border
+    println!("{}", top_border.style(color_style));
     if animate {
-        for ch in top_border.style(color_style).to_string().chars() {
-            print!("{}", ch);
-            stdout.flush().unwrap();
-            thread::sleep(delay);
-        }
-        println!();
-    } else {
-        println!("{}", top_border.style(color_style));
+        stdout.flush().unwrap();
+        thread::sleep(delay);
     }
 
     for (idx, line) in lines.iter().enumerate() {
@@ -153,15 +148,10 @@ pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&
             width = right_padding
         );
 
+        println!("{}", formatted_line.style(color_style));
         if animate {
-            for ch in formatted_line.style(color_style).to_string().chars() {
-                print!("{}", ch);
-                stdout.flush().unwrap();
-                thread::sleep(delay);
-            }
-            println!();
-        } else {
-            println!("{}", formatted_line.style(color_style));
+            stdout.flush().unwrap();
+            thread::sleep(delay);
         }
     }
 
@@ -172,15 +162,10 @@ pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&
         borders.bottom_right
     );
 
+    println!("{}", bottom_border.style(color_style));
     if animate {
-        for ch in bottom_border.style(color_style).to_string().chars() {
-            print!("{}", ch);
-            stdout.flush().unwrap();
-            thread::sleep(delay);
-        }
-        println!();
-    } else {
-        println!("{}", bottom_border.style(color_style));
+        stdout.flush().unwrap();
+        thread::sleep(delay);
     }
 }
 

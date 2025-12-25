@@ -107,7 +107,7 @@ pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool) {
     let banner_width = if term_width > min_content_width { term_width.min(100) } else { min_content_width };
     let inner_width = banner_width.saturating_sub(2);
 
-    let delay = if animate { Duration::from_millis(20) } else { Duration::ZERO };
+    let delay = if animate { Duration::from_millis(100) } else { Duration::ZERO };
     let mut stdout = stdout();
 
     let top_border = format!("{}{}{}", borders.top_left, borders.horizontal.repeat(inner_width), borders.top_right);
@@ -125,15 +125,10 @@ pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool) {
 }
 
 fn print_animated(text: &str, animate: bool, delay: Duration, stdout: &mut std::io::Stdout) {
+    println!("{}", text);
     if animate {
-        for ch in text.chars() {
-            print!("{}", ch);
-            stdout.flush().unwrap();
-            thread::sleep(delay);
-        }
-        println!();
-    } else {
-        println!("{}", text);
+        stdout.flush().unwrap();
+        thread::sleep(delay);
     }
 }
 

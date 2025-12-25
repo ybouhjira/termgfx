@@ -107,7 +107,7 @@ fn render_inline_tree_animated(data: &str, animate: bool) {
         return;
     }
 
-    let delay = if animate { Duration::from_millis(150) } else { Duration::ZERO };
+    let delay = if animate { Duration::from_millis(50) } else { Duration::ZERO };
     let mut stdout = std::io::stdout();
 
     println!("{} {}", "📁".bright_cyan(), parts[0].bright_cyan().bold());

@@ -32,7 +32,7 @@ pub fn render_animated(data: &str, animate: bool) {
     let range = max - min;
 
     let mut stdout = stdout();
-    let delay = if animate { Duration::from_millis(100) } else { Duration::ZERO };
+    let delay = if animate { Duration::from_millis(30) } else { Duration::ZERO };
 
     for value in values {
         let normalized = if range == 0.0 {
