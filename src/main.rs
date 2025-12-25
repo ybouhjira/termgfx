@@ -5,6 +5,7 @@ mod charts;
 mod image;
 mod interactive;
 mod script;
+mod animation;
 
 #[derive(Parser)]
 #[command(name = "termgfx")]
@@ -190,6 +191,45 @@ enum Commands {
         #[arg(short, long)]
         inline: Option<String>,
     },
+    /// Run animation effects
+    Animate {
+        /// Animation type: progress, typewriter, counter, chart-build, bars
+        #[arg(short = 't', long, default_value = "progress")]
+        effect_type: String,
+        /// Text content (for typewriter)
+        #[arg(long)]
+        text: Option<String>,
+        /// Data (for chart-build, bars)
+        #[arg(short, long)]
+        data: Option<String>,
+        /// Duration in seconds
+        #[arg(short = 'D', long, default_value = "2.0")]
+        duration: f64,
+        /// Speed (chars per second for typewriter)
+        #[arg(long, default_value = "30.0")]
+        speed: f64,
+        /// From value (for counter)
+        #[arg(long, default_value = "0")]
+        from: i64,
+        /// To value (for counter)
+        #[arg(long, default_value = "100")]
+        to: i64,
+        /// Style (for progress)
+        #[arg(short, long, default_value = "gradient")]
+        style: String,
+        /// Prefix (for counter)
+        #[arg(long)]
+        prefix: Option<String>,
+        /// Suffix (for counter)
+        #[arg(long)]
+        suffix: Option<String>,
+    },
+    /// Run interactive demo showcase
+    Demo {
+        /// Demo section: boxes, charts, progress, animation, all
+        #[arg(short, long)]
+        section: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -328,6 +368,23 @@ fn main() {
         }
         Commands::Script { file, inline } => {
             script::run(file.as_deref(), inline.as_deref());
+        }
+        Commands::Animate { effect_type, text, data, duration, speed, from, to, style, prefix, suffix } => {
+            animation::effects::run(
+                &effect_type,
+                text.as_deref(),
+                data.as_deref(),
+                duration,
+                speed,
+                from,
+                to,
+                &style,
+                prefix.as_deref(),
+                suffix.as_deref(),
+            );
+        }
+        Commands::Demo { section } => {
+            animation::demo::run_demo(section.as_deref());
         }
     }
 }
