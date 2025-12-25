@@ -113,7 +113,7 @@ termgfx gauge 0 --demo
 | **📦 Output** | `box`, `banner`, `notification` | Styled boxes, ASCII banners, desktop alerts |
 | **📊 Charts** | `chart bar/line/pie`, `sparkline`, `gauge`, `heatmap` | Animated charts, gradients |
 | **📋 Data** | `table`, `tree`, `diff`, `timeline` | Tables, trees, file diffs |
-| **💬 Prompts** | `input`, `select`, `confirm` | Interactive CLI prompts |
+| **💬 Prompts** | `input`, `select`, `confirm`, `file`, `filter`, `pager` | Interactive CLI prompts, file picker, fuzzy filter |
 | **⏳ Animation** | `spinner`, `progress`, `animate` | Multiple styles, animations |
 | **🖼️ Media** | `image` | Kitty, Sixel, halfblock protocols |
 | **🎛️ Tools** | `dashboard`, `record`, `script` | Multi-panel dashboards |
@@ -198,6 +198,16 @@ termgfx select "Features:" "Auth" "API" "Cache" --multi
 
 # Confirmation
 termgfx confirm "Deploy to production?"
+
+# File picker
+termgfx file --path /var --ext log,txt
+
+# Fuzzy filter (like fzf)
+ls | termgfx filter --prompt "Select:"
+cat list.txt | termgfx filter --multi
+
+# Pager (like less)
+cat README.md | termgfx pager --line-numbers
 ```
 
 ### Progress & Animation

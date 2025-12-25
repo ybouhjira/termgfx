@@ -1,6 +1,6 @@
 [package]
 name = "termgfx"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2021"
 authors = ["Youssef Bouhjira <youssef.bouhjira@gmail.com>"]
 description = "Beautiful terminal graphics for CLI applications - styled boxes, charts, images, and interactive prompts"
@@ -18,7 +18,7 @@ path = "src/lib.rs"
 
 [features]
 default = ["cli"]
-cli = ["clap", "crossterm", "ratatui", "ratatui-image", "image", "ureq", "ctrlc", "termion", "libc"]
+cli = ["clap", "crossterm", "ratatui", "ratatui-image", "image", "ureq", "ctrlc", "termion", "libc", "atty"]
 wasm = ["wasm-bindgen", "console_error_panic_hook", "web-sys"]
 
 [dependencies]
@@ -51,6 +51,7 @@ ctrlc = { version = "3.4", optional = true }
 similar = "2.7.0"
 termion = { version = "4.0.6", optional = true }
 libc = { version = "0.2.178", optional = true }
+atty = { version = "0.2", optional = true }
 
 # WASM support (optional)
 wasm-bindgen = { version = "0.2", optional = true }

@@ -10,7 +10,7 @@ mod animation;
 #[derive(Parser)]
 #[command(name = "termgfx")]
 #[command(author = "Youssef Bouhjira")]
-#[command(version = "0.3.0")]
+#[command(version = "0.4.0")]
 #[command(about = "Beautiful terminal graphics - styled boxes, charts, images, and prompts")]
 #[command(propagate_version = true)]
 #[command(after_help = r#"
@@ -28,7 +28,7 @@ QUICK REFERENCE:
   Output:   box, banner, notification
   Charts:   chart (bar/line/pie), sparkline, gauge, heatmap
   Data:     table, tree, diff, timeline
-  Input:    input, select, choose, confirm
+  Input:    input, select, confirm, file, filter, pager
   Animate:  spinner, progress, typewriter, animate
   Utils:    image, record, script, dashboard, demo
 
@@ -431,6 +431,33 @@ enum Commands {
         #[arg(long)]
         height: Option<usize>,
     },
+    /// Fuzzy filter items from stdin (like fzf/gum filter)
+    ///
+    /// Example: ls | termgfx filter --prompt "Select file:"
+    #[command(after_help = "Pipe items to filter: cat list.txt | termgfx filter")]
+    Filter {
+        /// Custom prompt text
+        #[arg(short, long)]
+        prompt: Option<String>,
+        /// Enable multi-select mode (space to toggle)
+        #[arg(short, long)]
+        multi: bool,
+        /// Maximum height of the list
+        #[arg(long)]
+        height: Option<usize>,
+    },
+    /// Scrollable pager for viewing content (like less)
+    ///
+    /// Example: cat file.txt | termgfx pager --line-numbers
+    #[command(after_help = "Keys: ↑/↓ scroll, PgUp/PgDn page, g/G top/bottom, q quit")]
+    Pager {
+        /// Show line numbers
+        #[arg(short, long)]
+        line_numbers: bool,
+        /// Title to display in header
+        #[arg(short, long)]
+        title: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -726,6 +753,12 @@ fn main() {
                     std::process::exit(1);
                 }
             }
+        }
+        Commands::Filter { prompt, multi, height } => {
+            interactive::filter::render(prompt, multi, height);
+        }
+        Commands::Pager { line_numbers, title } => {
+            interactive::pager::render(line_numbers, title);
         }
     }
 }
