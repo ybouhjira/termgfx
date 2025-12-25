@@ -247,14 +247,7 @@ enum Commands {
         #[command(subcommand)]
         record_command: RecordCommands,
     },
-    /// Typewriter effect animation
-    Typewriter {
-        /// Message to animate
-        message: String,
-        /// Speed in milliseconds per character
-        #[arg(short, long, default_value = "50")]
-        speed: u64,
-    },
+
     /// Run animation sequences from script files
     Script {
         /// Script file path
@@ -562,9 +555,7 @@ fn main() {
                 }
             }
         }
-        Commands::Typewriter { message, speed } => {
-            output::typewriter::render(&message, speed);
-        }
+
         Commands::Script { file, inline } => {
             script::run(file.as_deref(), inline.as_deref());
         }
