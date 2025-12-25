@@ -134,7 +134,23 @@ $TERMGFX tree "project>src,tests,docs>main.rs,lib.rs,README.md" --animate
 pause
 
 # ═══════════════════════════════════════════════════════════════════════════
-section "⏳ PROGRESS & ANIMATIONS"
+section "📝 DIFF COMPARISON"
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Create temp files for diff demo
+echo -e "Hello World\nThis is line 2\nOriginal line 3" > /tmp/demo_old.txt
+echo -e "Hello TermGFX\nThis is line 2\nModified line 3\nNew line 4" > /tmp/demo_new.txt
+
+echo "Side-by-side file comparison:"
+$TERMGFX diff /tmp/demo_old.txt /tmp/demo_new.txt
+
+# Cleanup
+rm -f /tmp/demo_old.txt /tmp/demo_new.txt
+
+pause
+
+# ═══════════════════════════════════════════════════════════════════════════
+section "⏳ PROGRESS & SPINNERS"
 # ═══════════════════════════════════════════════════════════════════════════
 
 echo "Progress bar styles:"
@@ -149,8 +165,24 @@ echo "Classic:"
 $TERMGFX progress 60 --style classic --animate
 echo ""
 
+echo "Spinner styles:"
+$TERMGFX spinner "Loading with dots..." --style dots --duration 2
+$TERMGFX spinner "Processing..." --style arc --duration 2
+$TERMGFX spinner "Please wait..." --style bounce --duration 2
+
+pause
+
+# ═══════════════════════════════════════════════════════════════════════════
+section "✨ ANIMATIONS"
+# ═══════════════════════════════════════════════════════════════════════════
+
 echo "Typewriter effect:"
 $TERMGFX animate --effect-type typewriter --text "Hello from TermGFX! Beautiful terminal graphics made easy." --duration 2
+echo ""
+
+echo "Counter animation:"
+$TERMGFX animate --effect-type counter --from 0 --to 100 --prefix "Progress: " --suffix "%" --duration 2
+echo ""
 
 pause
 
@@ -193,6 +225,30 @@ echo "Terminal + Desktop notifications:"
 $TERMGFX notification "Deployment completed!" --title "TermGFX" --style success --terminal-only
 sleep 0.5
 $TERMGFX notification "Build started..." --title "CI/CD" --style info --terminal-only
+
+pause
+
+# ═══════════════════════════════════════════════════════════════════════════
+section "🖼️ IMAGE DISPLAY"
+# ═══════════════════════════════════════════════════════════════════════════
+
+echo "TermGFX supports multiple image protocols:"
+echo ""
+echo "  • Kitty    - Best quality (Kitty, WezTerm)"
+echo "  • Sixel    - Wide support (xterm, mlterm)"
+echo "  • Halfblock - Universal fallback (any terminal)"
+echo ""
+echo "Usage:"
+echo "  termgfx image ./photo.png"
+echo "  termgfx image ./logo.jpg --protocol kitty"
+echo "  termgfx image https://example.com/image.png"
+echo ""
+
+# Try to display an image if one exists
+if [ -f "docs/gifs/box.gif" ]; then
+    echo "Displaying box.gif with halfblock protocol:"
+    $TERMGFX image docs/gifs/box.gif --protocol halfblock 2>/dev/null || echo "(Image display depends on terminal support)"
+fi
 
 pause
 
