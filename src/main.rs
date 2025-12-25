@@ -267,7 +267,7 @@ enum Commands {
     /// Run animation effects
     Animate {
         /// Animation type: progress, typewriter, counter, chart-build, bars
-        #[arg(short = 't', long, default_value = "progress")]
+        #[arg(short = 't', long)]
         effect_type: String,
         /// Text content (for typewriter)
         #[arg(long)]
