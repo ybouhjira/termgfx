@@ -151,13 +151,6 @@ enum Commands {
         prompt: String,
         /// Options to choose from
         options: Vec<String>,
-    },
-    /// Multi-select from options
-    Choose {
-        /// The prompt question
-        prompt: String,
-        /// Options to choose from
-        options: Vec<String>,
         /// Enable multi-select
         #[arg(long)]
         multi: bool,
@@ -513,11 +506,8 @@ fn main() {
         Commands::Input { prompt, placeholder, password } => {
             interactive::input::render(&prompt, placeholder.as_deref(), password);
         }
-        Commands::Select { prompt, options } => {
-            interactive::select::render(&prompt, &options);
-        }
-        Commands::Choose { prompt, options, multi } => {
-            interactive::choose::render(&prompt, &options, multi);
+        Commands::Select { prompt, options, multi } => {
+            interactive::select::render(&prompt, &options, multi);
         }
         Commands::Confirm { prompt, default, style } => {
             interactive::confirm::render(&prompt, &default, &style);
