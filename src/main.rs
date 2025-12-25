@@ -10,9 +10,30 @@ mod animation;
 #[derive(Parser)]
 #[command(name = "termgfx")]
 #[command(author = "Youssef Bouhjira")]
-#[command(version = "0.1.0")]
-#[command(about = "Beautiful terminal graphics - styled boxes, charts, images, and prompts", long_about = None)]
+#[command(version = "0.2.0")]
+#[command(about = "Beautiful terminal graphics - styled boxes, charts, images, and prompts")]
 #[command(propagate_version = true)]
+#[command(after_help = r#"
+EXAMPLES:
+  termgfx box "Hello World" --style success
+  termgfx banner "Welcome" --gradient cyan-purple
+  termgfx progress 75 --style gradient --animate
+  termgfx chart bar --data "Sales:100,Costs:60,Profit:40"
+  termgfx sparkline "1,4,2,8,5,7,3,9,6"
+  termgfx table --headers "Name,Age" --rows "Alice,30|Bob,25"
+  termgfx gauge 75 --label "CPU" --style semicircle
+  termgfx tree "root>src,docs>main.rs,lib.rs"
+
+QUICK REFERENCE:
+  Output:   box, banner, notification
+  Charts:   chart (bar/line/pie), sparkline, gauge, heatmap
+  Data:     table, tree, diff, timeline
+  Input:    input, select, choose, confirm
+  Animate:  spinner, progress, typewriter, animate
+  Utils:    image, record, script, dashboard, demo
+
+For command details: termgfx <command> --help
+"#)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -21,6 +42,9 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Display a styled box with message
+    ///
+    /// Example: termgfx box "Success!" --style success --border rounded
+    #[command(after_help = "Styles: info, success, warning, danger, gradient\nBorders: single, double, rounded, thick, ascii")]
     Box {
         /// The message to display
         message: String,
@@ -40,7 +64,10 @@ enum Commands {
         #[arg(long, default_value = "500")]
         animation_time: u64,
     },
-    /// Display a styled banner
+    /// Display a styled banner with gradient colors
+    ///
+    /// Example: termgfx banner "Welcome" --gradient cyan-purple
+    #[command(after_help = "Gradients: cyan-purple, red-orange, green-cyan, pink-yellow")]
     Banner {
         /// The title text
         title: String,
@@ -55,6 +82,9 @@ enum Commands {
         animation_time: u64,
     },
     /// Show a loading spinner
+    ///
+    /// Example: termgfx spinner "Loading..." --style dots --duration 3
+    #[command(after_help = "Styles: dots, line, arc, bouncing, clock, circle, bounce, moon")]
     Spinner {
         /// Loading message
         message: String,
@@ -66,6 +96,9 @@ enum Commands {
         duration: Option<u64>,
     },
     /// Display a progress bar
+    ///
+    /// Example: termgfx progress 75 --style gradient --animate
+    #[command(after_help = "Styles: gradient, modern, animated, blocks, classic, thin")]
     Progress {
         /// Progress percentage (0-100)
         percent: u8,
@@ -85,7 +118,10 @@ enum Commands {
         #[arg(long, default_value = "1000")]
         duration: u64,
     },
-    /// Display a chart
+    /// Display a chart (bar, line, or pie)
+    ///
+    /// Example: termgfx chart bar --data "Sales:100,Costs:60,Profit:40"
+    #[command(after_help = "Types: bar, line, pie")]
     Chart {
         #[command(subcommand)]
         chart_type: ChartCommands,
@@ -137,7 +173,9 @@ enum Commands {
         #[arg(short = 'S', long, default_value = "normal")]
         style: String,
     },
-    /// Display a sparkline
+    /// Display a sparkline mini-chart
+    ///
+    /// Example: termgfx sparkline "1,4,2,8,5,7,3,9,6" --animate
     Sparkline {
         /// Comma-separated values
         data: String,
@@ -162,6 +200,9 @@ enum Commands {
         context: Option<usize>,
     },
     /// Display a formatted table from data
+    ///
+    /// Example: termgfx table --headers "Name,Age,City" --rows "Alice,30,NYC|Bob,25,LA"
+    #[command(after_help = "Borders: single, double, rounded, none\nAlignment: left, center, right")]
     Table {
         /// CSV headers (comma-separated)
         #[arg(long)]
@@ -186,6 +227,8 @@ enum Commands {
         animation_time: u64,
     },
     /// Display a tree structure
+    ///
+    /// Example: termgfx tree "root>src,docs>main.rs,lib.rs"
     Tree {
         /// Tree data (e.g., "root>child1,child2>grandchild")
         data: Option<String>,
@@ -261,6 +304,9 @@ enum Commands {
         section: Option<String>,
     },
     /// Display a horizontal timeline
+    ///
+    /// Example: termgfx timeline --events "Start,Middle,End" --style arrow
+    #[command(after_help = "Styles: arrow, line, dots")]
     Timeline {
         /// Events: "Start,Middle,End" or "2024-01:Start,2024-06:Middle,2024-12:End"
         #[arg(short, long)]
@@ -299,6 +345,9 @@ enum Commands {
         desktop_only: bool,
     },
     /// Display a radial/dial gauge indicator
+    ///
+    /// Example: termgfx gauge 75 --label "CPU" --style semicircle --animate
+    #[command(after_help = "Styles: semicircle, full, minimal")]
     Gauge {
         /// Value to display
         value: f64,
@@ -340,6 +389,9 @@ enum Commands {
         border: String,
     },
     /// Display a 2D heatmap visualization
+    ///
+    /// Example: termgfx heatmap --data "1,2,3;4,5,6;7,8,9" --colors viridis
+    #[command(after_help = "Colors: blue-red, green-red, viridis, magma")]
     Heatmap {
         /// 2D data: "1,2,3;4,5,6;7,8,9" (semicolon separates rows)
         #[arg(short, long)]
