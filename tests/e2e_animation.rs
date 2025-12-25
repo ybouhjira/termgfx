@@ -104,6 +104,30 @@ fn test_demo_progress_section() {
         .success();
 }
 
+#[test]
+fn test_demo_animation_section() {
+    termgfx()
+        .args(["demo", "--section", "animation"])
+        .assert()
+        .success();
+}
+
+#[test]
+fn test_animate_with_style() {
+    termgfx()
+        .args(["animate", "-t", "progress", "--style", "blocks", "-D", "0.1"])
+        .assert()
+        .success();
+}
+
+#[test]
+fn test_animate_unknown_effect() {
+    termgfx()
+        .args(["animate", "-t", "unknown_effect", "-D", "0.1"])
+        .assert()
+        .success(); // Should handle gracefully
+}
+
 // ============================================================================
 // SPINNER DURATION TESTS
 // ============================================================================
