@@ -5,7 +5,7 @@ use owo_colors::OwoColorize;
 use crossterm::{cursor::{Hide, Show}, ExecutableCommand};
 
 use crate::output::{banner, styled_box, progress};
-use crate::charts::{sparkline, bar, pie};
+use crate::charts::{sparkline, bar, pie, pie::PieChart};
 use crate::animation::effects;
 
 fn wait(secs: f64) {
@@ -153,7 +153,8 @@ fn demo_charts() {
     print!("  ");
     typewriter_print("Market Share:", 20);
     println!();
-    pie::render("Chrome:65,Safari:19,Firefox:10,Other:6");
+    let pie_chart = PieChart::new("Chrome:65,Safari:19,Firefox:10,Other:6", false, 500);
+    pie_chart.render();
     wait(0.3);
 }
 

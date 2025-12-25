@@ -1,5 +1,15 @@
 use owo_colors::OwoColorize;
 use std::f64::consts::PI;
+use crossterm::{
+    cursor::{Hide, Show, MoveToColumn, MoveTo},
+    terminal::{Clear, ClearType},
+    ExecutableCommand,
+};
+use std::io::{stdout, IsTerminal, Write};
+use std::thread;
+use std::time::Duration;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 const COLORS: [u8; 8] = [
     196, // Red
@@ -14,45 +24,171 @@ const COLORS: [u8; 8] = [
 
 const BLOCKS: [&str; 8] = ["█", "▓", "▒", "░", "▄", "▀", "▐", "▌"];
 
-pub fn render(data: &str) {
-    let entries = parse_data(data);
-
-    if entries.is_empty() {
-        eprintln!("Error: No valid data provided");
-        return;
-    }
-
-    // Calculate total and percentages
-    let total: f64 = entries.iter().map(|(_, v)| v).sum();
-    if total <= 0.0 {
-        eprintln!("Error: Total value must be positive");
-        return;
-    }
-
-    let segments: Vec<(String, f64, f64)> = entries
-        .iter()
-        .map(|(label, value)| {
-            let percentage = (value / total) * 100.0;
-            (label.clone(), *value, percentage)
-        })
-        .collect();
-
-    // Render the pie chart
-    render_circle(&segments);
-
-    // Render legend
-    println!();
-    for (idx, (label, _, percentage)) in segments.iter().enumerate() {
-        let block = BLOCKS[idx % BLOCKS.len()];
-        let color = COLORS[idx % COLORS.len()];
-        println!(
-            "  {} {}: {:.1}%",
-            block.repeat(2).color(owo_colors::XtermColors::from(color)),
-            label,
-            percentage
-        );
-    }
+pub struct PieChart<'a> {
+    data: &'a str,
+    animate: bool,
+    animation_time_ms: u64,
 }
+
+impl<'a> PieChart<'a> {
+    pub fn new(data: &'a str, animate: bool, animation_time_ms: u64) -> Self {
+        Self {
+            data,
+            animate,
+            animation_time_ms,
+        }
+    }
+
+    pub fn render(&self) {
+        if self.animate {
+            self._render_animated();
+        } else {
+            self._render_static();
+        }
+    }
+
+    fn _render_static(&self) {
+        let entries = parse_data(self.data);
+
+        if entries.is_empty() {
+            eprintln!("Error: No valid data provided");
+            return;
+        }
+
+        // Calculate total and percentages
+        let total: f64 = entries.iter().map(|(_, v)| v).sum();
+        if total <= 0.0 {
+            eprintln!("Error: Total value must be positive");
+            return;
+        }
+
+        let segments: Vec<(String, f64, f64)> = entries
+            .iter()
+            .map(|(label, value)| {
+                let percentage = (value / total) * 100.0;
+                (label.clone(), *value, percentage)
+            })
+            .collect();
+
+        // Render the pie chart
+        render_circle(&segments);
+
+        // Render legend
+        println!();
+        for (idx, (label, _, percentage)) in segments.iter().enumerate() {
+            let block = BLOCKS[idx % BLOCKS.len()];
+            let color = COLORS[idx % COLORS.len()];
+            println!(
+                "  {} {}: {:.1}%",
+                block.repeat(2).color(owo_colors::XtermColors::from(color)),
+                label,
+                percentage
+            );
+        }
+    }
+
+    fn _render_animated(&self) {
+        let entries = parse_data(self.data);
+
+        if entries.is_empty() {
+            eprintln!("Error: No valid data provided");
+            return;
+        }
+
+        if !stdout().is_terminal() {
+            self._render_static();
+            return;
+        }
+
+        // Calculate total and percentages
+        let total: f64 = entries.iter().map(|(_, v)| v).sum();
+        if total <= 0.0 {
+            eprintln!("Error: Total value must be positive");
+            return;
+        }
+
+        let full_segments: Vec<(String, f64, f64)> = entries
+            .iter()
+            .map(|(label, value)| {
+                let percentage = (value / total) * 100.0;
+                (label.clone(), *value, percentage)
+            })
+            .collect();
+
+        let running = Arc::new(AtomicBool::new(true));
+        let r = running.clone();
+
+        let _ = ctrlc::set_handler(move || {
+            r.store(false, Ordering::SeqCst);
+        });
+
+        let mut stdout = stdout();
+        let _ = stdout.execute(Hide); // Hide cursor
+
+        let total_segments = full_segments.len();
+        let delay_per_segment = if total_segments > 0 {
+            Duration::from_millis(self.animation_time_ms / total_segments as u64)
+        } else {
+            Duration::from_millis(0)
+        };
+
+        let mut rendered_segments: Vec<(String, f64, f64)> = Vec::new();
+
+        // Determine height of the pie chart output + legend
+        // Circle height is fixed at 18 lines (0..18)
+        // Legend has 1 empty line + 1 line per segment
+        let total_output_lines = 18 + 1 + total_segments;
+
+        for (i, segment) in full_segments.into_iter().enumerate() {
+            if !running.load(Ordering::SeqCst) {
+                break;
+            }
+
+            rendered_segments.push(segment);
+
+            // Clear previous content
+            let _ = stdout.execute(MoveTo(0, 0)); // Move to top-left
+            for _ in 0..total_output_lines {
+                let _ = stdout.execute(Clear(ClearType::CurrentLine));
+                let _ = writeln!(stdout);
+            }
+            let _ = stdout.execute(MoveTo(0, 0)); // Move back to top-left
+
+            // Render current state
+            render_circle(&rendered_segments);
+
+            // Render legend for currently displayed segments
+            let _ = writeln!(stdout);
+            for (idx, (label, _, percentage)) in rendered_segments.iter().enumerate() {
+                let block = BLOCKS[idx % BLOCKS.len()];
+                let color = COLORS[idx % COLORS.len()];
+                let _ = writeln!(
+                    stdout,
+                    "  {} {}: {:.1}%",
+                    block.repeat(2).color(owo_colors::XtermColors::from(color)),
+                    label,
+                    percentage
+                );
+            }
+            let _ = stdout.flush();
+            thread::sleep(delay_per_segment);
+        }
+
+        // Ensure final state is visible if animation finishes or is interrupted
+        let _ = stdout.execute(Show);
+        let _ = stdout.execute(MoveTo(0, 0));
+        for _ in 0..total_output_lines {
+            let _ = stdout.execute(Clear(ClearType::CurrentLine));
+            let _ = writeln!(stdout);
+        }
+        let _ = stdout.execute(MoveTo(0, 0));
+        self._render_static();
+        let _ = stdout.flush();
+        let _ = stdout.execute(Show);
+    }
+
+
+    } // Close impl<'a> PieChart<'a>
 
 fn render_circle(segments: &[(String, f64, f64)]) {
     let radius = 9.0;

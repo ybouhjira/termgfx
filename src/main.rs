@@ -426,6 +426,12 @@ enum ChartCommands {
         /// Chart title
         #[arg(short, long)]
         title: Option<String>,
+        /// Animate line drawing point by point
+        #[arg(short, long)]
+        animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
     /// Bar chart
     Bar {
@@ -444,6 +450,12 @@ enum ChartCommands {
         /// Data in format "Label:Value,Label:Value"
         #[arg(short, long)]
         data: String,
+        /// Animate slices appearing one by one
+        #[arg(short, long)]
+        animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
     },
 }
 
@@ -526,8 +538,9 @@ fn main() {
         }
         Commands::Chart { chart_type } => {
             match chart_type {
-                ChartCommands::Line { data, title } => {
-                    charts::line::render(&data, title.as_deref());
+                ChartCommands::Line { data, title, animate, animation_time } => {
+                    let line_chart = charts::line::LineChart::new(&data, title.as_deref(), animate, animation_time);
+                    line_chart.render();
                 }
                 ChartCommands::Bar { data, animate, demo } => {
                     if demo {
@@ -539,8 +552,9 @@ fn main() {
                     }
                     charts::bar::render_animated(&data, animate);
                 }
-                ChartCommands::Pie { data } => {
-                    charts::pie::render(&data);
+                ChartCommands::Pie { data, animate, animation_time } => {
+                    let pie_chart = charts::pie::PieChart::new(&data, animate, animation_time);
+                    pie_chart.render();
                 }
             }
         }
