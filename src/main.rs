@@ -63,6 +63,9 @@ enum Commands {
         /// Total animation duration in ms (default: 500)
         #[arg(long, default_value = "500")]
         animation_time: u64,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
     /// Display a styled banner with gradient colors
     ///
@@ -80,8 +83,10 @@ enum Commands {
         /// Total animation duration in ms (default: 500)
         #[arg(long, default_value = "500")]
         animation_time: u64,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
-    /// Show a loading spinner
     ///
     /// Example: termgfx spinner "Loading..." --style dots --duration 3
     #[command(after_help = "Styles: dots, line, arc, bouncing, clock, circle, bounce, moon")]
@@ -114,11 +119,13 @@ enum Commands {
         /// Animate from 0 to percent
         #[arg(short, long)]
         animate: bool,
-        /// Animation duration in ms (default: 1000)
+        /// Total animation duration in ms (default: 1000)
         #[arg(long, default_value = "1000")]
         duration: u64,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
-    /// Display a chart (bar, line, or pie)
     ///
     /// Example: termgfx chart bar --data "Sales:100,Costs:60,Profit:40"
     #[command(after_help = "Types: bar, line, pie")]
@@ -178,8 +185,10 @@ enum Commands {
         /// Total animation duration in ms (default: 500)
         #[arg(long, default_value = "500")]
         animation_time: u64,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
-    /// Show file differences side-by-side or unified
     Diff {
         /// First file path
         file1: String,
@@ -218,8 +227,10 @@ enum Commands {
         /// Total animation duration in ms (default: 500)
         #[arg(long, default_value = "500")]
         animation_time: u64,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
-    /// Display a tree structure
     ///
     /// Example: termgfx tree "root>src,docs>main.rs,lib.rs"
     Tree {
@@ -355,8 +366,10 @@ enum Commands {
         /// Animate the gauge from 0 to value
         #[arg(short, long)]
         animate: bool,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
-    /// Multi-panel TUI dashboard
     Dashboard {
         /// Layout: "2x2" or "3x1"
         #[arg(short, long, default_value = "2x2")]
@@ -422,6 +435,9 @@ enum ChartCommands {
         /// Animate bars growing
         #[arg(short, long)]
         animate: bool,
+        /// Show a demo of this command
+        #[arg(long, help = "Show a demo of this command")]
+        demo: bool,
     },
     /// Pie chart (ASCII)
     Pie {
@@ -471,16 +487,37 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Box { message, style, border, emoji, animate, animation_time } => {
+        Commands::Box { message, style, border, emoji, animate, animation_time, demo } => {
+            if demo {
+                println!("Example: termgfx box \"Hello\" --style success");
+                println!();
+                // Run with demo values
+                output::styled_box::render_animated("Hello World!", "success", "rounded", None, true, 500);
+                return;
+            }
             output::styled_box::render_animated(&message, &style, &border, emoji.as_deref(), animate, animation_time);
         }
-        Commands::Banner { title, gradient, animate, animation_time } => {
+        Commands::Banner { title, gradient, animate, animation_time, demo } => {
+            if demo {
+                println!("Example: termgfx banner \"Welcome\" --gradient cyan-purple");
+                println!();
+                // Run with demo values
+                output::banner::render_animated("Welcome", Some("cyan-purple"), true, 500);
+                return;
+            }
             output::banner::render_animated(&title, gradient.as_deref(), animate, animation_time);
         }
         Commands::Spinner { message, style, duration } => {
             output::spinner::render(&message, &style, duration);
         }
-        Commands::Progress { percent, style, from, to, animate, duration } => {
+        Commands::Progress { percent, style, from, to, animate, duration, demo } => {
+            if demo {
+                println!("Example: termgfx progress 75 --style gradient --animate");
+                println!();
+                // Run with demo values
+                output::progress::render_animated_progress(75, "gradient", None, None, 1000);
+                return;
+            }
             if animate {
                 output::progress::render_animated_progress(percent, &style, from.as_deref(), to.as_deref(), duration);
             } else {
@@ -492,7 +529,14 @@ fn main() {
                 ChartCommands::Line { data, title } => {
                     charts::line::render(&data, title.as_deref());
                 }
-                ChartCommands::Bar { data, animate } => {
+                ChartCommands::Bar { data, animate, demo } => {
+                    if demo {
+                        println!("Example: termgfx chart bar --data \"Sales:100,Costs:60,Profit:40\"");
+                        println!();
+                        // Run with demo values
+                        charts::bar::render_animated("Sales:100,Costs:60,Profit:40", true);
+                        return;
+                    }
                     charts::bar::render_animated(&data, animate);
                 }
                 ChartCommands::Pie { data } => {
@@ -512,13 +556,27 @@ fn main() {
         Commands::Confirm { prompt, default, style } => {
             interactive::confirm::render(&prompt, &default, &style);
         }
-        Commands::Sparkline { data, animate, animation_time } => {
+        Commands::Sparkline { data, animate, animation_time, demo } => {
+            if demo {
+                println!("Example: termgfx sparkline \"1,4,2,8,5,7,3,9,6\"");
+                println!();
+                // Run with demo values
+                charts::sparkline::render_animated("1,4,2,8,5,7,3,9,6", true, 500);
+                return;
+            }
             charts::sparkline::render_animated(&data, animate, animation_time);
         }
         Commands::Diff { file1, file2, unified, context } => {
             output::diff::render(&file1, &file2, unified, context);
         }
-        Commands::Table { headers, rows, file, border, alignment, animate, animation_time } => {
+        Commands::Table { headers, rows, file, border, alignment, animate, animation_time, demo } => {
+            if demo {
+                println!("Example: termgfx table --headers \"Name,Age\" --rows \"Alice,30|Bob,25\"");
+                println!();
+                // Run with demo values
+                output::table::render_animated(Some("Name,Age"), Some("Alice,30|Bob,25"), None, "single", "left", true, 500);
+                return;
+            }
             output::table::render_animated(
                 headers.as_deref(),
                 rows.as_deref(),
@@ -589,7 +647,14 @@ fn main() {
                 desktop_only,
             );
         }
-        Commands::Gauge { value, min, max, label, style, color, animate } => {
+        Commands::Gauge { value, min, max, label, style, color, animate, demo } => {
+            if demo {
+                println!("Example: termgfx gauge 75 --label \"CPU\" --style semicircle");
+                println!();
+                // Run with demo values
+                output::gauge::render(75.0, 0.0, 100.0, Some("CPU"), "semicircle", None, true);
+                return;
+            }
             output::gauge::render(
                 value,
                 min,
