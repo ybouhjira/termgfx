@@ -63,6 +63,7 @@ assert_cmd = "2.0"
 predicates = "3.1"
 tempfile = "3.14"
 insta = "1.41"
+rexpect = "0.5"  # PTY-based testing for interactive commands
 
 [[bin]]
 name = "termgfx"
