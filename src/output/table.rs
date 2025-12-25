@@ -1,6 +1,8 @@
 use owo_colors::OwoColorize;
 use serde_json::Value;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Clone)]
 pub enum BorderStyle {
@@ -133,6 +135,7 @@ pub struct TableOptions {
     pub header_color: bool,
     pub row_striping: bool,
     pub max_width: Option<usize>,
+    pub animate: bool,
 }
 
 impl Default for TableOptions {
@@ -143,6 +146,7 @@ impl Default for TableOptions {
             header_color: true,
             row_striping: true,
             max_width: None,
+            animate: false,
         }
     }
 }
@@ -154,11 +158,24 @@ pub fn render(
     border: &str,
     alignment: &str,
 ) {
+    render_animated(headers_str, rows_str, file, border, alignment, false);
+}
+
+/// Render table with optional animation
+pub fn render_animated(
+    headers_str: Option<&str>,
+    rows_str: Option<&str>,
+    file: Option<&str>,
+    border: &str,
+    alignment: &str,
+    animate: bool,
+) {
     let border_style = BorderStyle::from_str(border);
     let align = Alignment::from_str(alignment);
     let options = TableOptions {
         border: border_style,
         alignment: align,
+        animate,
         ..Default::default()
     };
 
@@ -324,6 +341,9 @@ fn render_table(headers: &[String], rows: &[Vec<String>], options: &TableOptions
     // Header separator
     print_border_line(&col_widths, &border_chars, BorderLineType::Middle);
 
+    let delay = if options.animate { Duration::from_millis(100) } else { Duration::ZERO };
+    let mut stdout = io::stdout();
+
     // Rows
     for (row_idx, row) in rows.iter().enumerate() {
         print!("{}", border_chars.vertical);
@@ -340,6 +360,11 @@ fn render_table(headers: &[String], rows: &[Vec<String>], options: &TableOptions
             print!("{}", border_chars.vertical);
         }
         println!();
+
+        if options.animate {
+            stdout.flush().unwrap();
+            thread::sleep(delay);
+        }
     }
 
     // Bottom border

@@ -1,4 +1,8 @@
 use owo_colors::OwoColorize;
+use std::io::{stdout, Write, IsTerminal};
+use std::thread;
+use std::time::{Duration, Instant};
+use crossterm::{cursor::{Hide, Show, MoveTo}, terminal::{Clear, ClearType}, ExecutableCommand};
 
 const COLORS: [u8; 8] = [
     196, // Red
@@ -12,6 +16,11 @@ const COLORS: [u8; 8] = [
 ];
 
 pub fn render(data: &str) {
+    render_animated(data, false);
+}
+
+/// Render bar chart with optional animation
+pub fn render_animated(data: &str, animate: bool) {
     let entries = parse_data(data);
 
     if entries.is_empty() {
@@ -35,7 +44,14 @@ pub fn render(data: &str) {
     let available_width = term_width.saturating_sub(max_label_width + value_display_width + 5);
     let bar_max_width = available_width.max(20); // Minimum 20 chars for bars
 
-    // Render each bar
+    if animate && std::io::stdout().is_terminal() {
+        render_animated_bars(&entries, max_value, max_label_width, bar_max_width);
+    } else {
+        render_static_bars(&entries, max_value, max_label_width, bar_max_width);
+    }
+}
+
+fn render_static_bars(entries: &[(String, f64)], max_value: f64, max_label_width: usize, bar_max_width: usize) {
     for (idx, (label, value)) in entries.iter().enumerate() {
         let color = COLORS[idx % COLORS.len()];
         let bar_width = if max_value > 0.0 {
@@ -44,17 +60,14 @@ pub fn render(data: &str) {
             0
         };
 
-        // Create the bar
         let bar = "█".repeat(bar_width);
 
-        // Format value display
         let value_str = if value.fract() == 0.0 {
             format!("{:.0}", value)
         } else {
             format!("{:.2}", value)
         };
 
-        // Print with color: label (aligned), bar, value
         println!(
             "{:<width$}  {}  {}",
             label.truecolor(200, 200, 200),
@@ -63,6 +76,65 @@ pub fn render(data: &str) {
             width = max_label_width
         );
     }
+}
+
+fn render_animated_bars(entries: &[(String, f64)], max_value: f64, max_label_width: usize, bar_max_width: usize) {
+    let mut stdout = stdout();
+    stdout.execute(Hide).unwrap();
+
+    // Print initial empty lines
+    for _ in 0..entries.len() {
+        println!();
+    }
+
+    let start = Instant::now();
+    let duration = Duration::from_secs_f64(1.5);
+    let delay = Duration::from_millis(50);
+
+    loop {
+        let elapsed = start.elapsed();
+        let progress = (elapsed.as_secs_f64() / duration.as_secs_f64()).min(1.0);
+
+        // Move cursor up to redraw
+        for (i, (label, value)) in entries.iter().enumerate() {
+            let row = (entries.len() - 1 - i) as u16;
+            stdout.execute(MoveTo(0, row)).unwrap();
+            stdout.execute(Clear(ClearType::CurrentLine)).unwrap();
+
+            let color = COLORS[i % COLORS.len()];
+            let current_val = value * progress;
+            let bar_width = if max_value > 0.0 {
+                ((current_val / max_value) * bar_max_width as f64).round() as usize
+            } else {
+                0
+            };
+
+            let bar = "█".repeat(bar_width);
+
+            let value_str = if current_val.fract() == 0.0 {
+                format!("{:.0}", current_val)
+            } else {
+                format!("{:.2}", current_val)
+            };
+
+            print!(
+                "{:<width$}  {}  {}",
+                label.truecolor(200, 200, 200),
+                bar.color(owo_colors::XtermColors::from(color)),
+                value_str.truecolor(150, 150, 150),
+                width = max_label_width
+            );
+        }
+        stdout.flush().unwrap();
+
+        if elapsed >= duration {
+            break;
+        }
+        thread::sleep(delay);
+    }
+
+    stdout.execute(MoveTo(0, entries.len() as u16)).unwrap();
+    stdout.execute(Show).unwrap();
 }
 
 fn parse_data(data: &str) -> Vec<(String, f64)> {

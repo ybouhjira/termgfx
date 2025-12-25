@@ -1,5 +1,8 @@
 use owo_colors::OwoColorize;
 use unicode_width::UnicodeWidthStr;
+use std::io::{stdout, Write};
+use std::thread;
+use std::time::Duration;
 
 struct BorderChars {
     top_left: &'static str,
@@ -86,6 +89,11 @@ fn apply_gradient(text: &str, gradient: GradientColors, position: f32) -> String
 }
 
 pub fn render(title: &str, gradient: Option<&str>) {
+    render_animated(title, gradient, false);
+}
+
+/// Render banner with optional animation
+pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool) {
     let borders = BorderChars::double();
     let term_width = get_terminal_width();
     let gradient_colors = gradient.map(GradientColors::from_str).unwrap_or(GradientColors::Default);
@@ -98,16 +106,35 @@ pub fn render(title: &str, gradient: Option<&str>) {
     let min_content_width = title_width.max(subtitle_width) + padding + 2;
     let banner_width = if term_width > min_content_width { term_width.min(100) } else { min_content_width };
     let inner_width = banner_width.saturating_sub(2);
+
+    let delay = if animate { Duration::from_millis(20) } else { Duration::ZERO };
+    let mut stdout = stdout();
+
     let top_border = format!("{}{}{}", borders.top_left, borders.horizontal.repeat(inner_width), borders.top_right);
-    println!("{}", apply_gradient(&top_border, gradient_colors, 0.0));
-    render_banner_line("", inner_width, &borders, gradient_colors, 0.2);
-    render_banner_line(main_title, inner_width, &borders, gradient_colors, 0.4);
+    print_animated(&apply_gradient(&top_border, gradient_colors, 0.0), animate, delay, &mut stdout);
+
+    render_banner_line_animated("", inner_width, &borders, gradient_colors, 0.2, animate, delay, &mut stdout);
+    render_banner_line_animated(main_title, inner_width, &borders, gradient_colors, 0.4, animate, delay, &mut stdout);
     if let Some(sub) = subtitle {
-        render_banner_line(sub, inner_width, &borders, gradient_colors, 0.6);
+        render_banner_line_animated(sub, inner_width, &borders, gradient_colors, 0.6, animate, delay, &mut stdout);
     }
-    render_banner_line("", inner_width, &borders, gradient_colors, 0.8);
+    render_banner_line_animated("", inner_width, &borders, gradient_colors, 0.8, animate, delay, &mut stdout);
+
     let bottom_border = format!("{}{}{}", borders.bottom_left, borders.horizontal.repeat(inner_width), borders.bottom_right);
-    println!("{}", apply_gradient(&bottom_border, gradient_colors, 1.0));
+    print_animated(&apply_gradient(&bottom_border, gradient_colors, 1.0), animate, delay, &mut stdout);
+}
+
+fn print_animated(text: &str, animate: bool, delay: Duration, stdout: &mut std::io::Stdout) {
+    if animate {
+        for ch in text.chars() {
+            print!("{}", ch);
+            stdout.flush().unwrap();
+            thread::sleep(delay);
+        }
+        println!();
+    } else {
+        println!("{}", text);
+    }
 }
 
 fn render_banner_line(text: &str, width: usize, borders: &BorderChars, gradient: GradientColors, position: f32) {
@@ -117,4 +144,13 @@ fn render_banner_line(text: &str, width: usize, borders: &BorderChars, gradient:
     let right_padding = available_space - left_padding;
     let line = format!("{}{}{}{}{}", borders.vertical, " ".repeat(left_padding), text, " ".repeat(right_padding), borders.vertical);
     println!("{}", apply_gradient(&line, gradient, position));
+}
+
+fn render_banner_line_animated(text: &str, width: usize, borders: &BorderChars, gradient: GradientColors, position: f32, animate: bool, delay: Duration, stdout: &mut std::io::Stdout) {
+    let text_width = UnicodeWidthStr::width(text);
+    let available_space = width.saturating_sub(text_width);
+    let left_padding = available_space / 2;
+    let right_padding = available_space - left_padding;
+    let line = format!("{}{}{}{}{}", borders.vertical, " ".repeat(left_padding), text, " ".repeat(right_padding), borders.vertical);
+    print_animated(&apply_gradient(&line, gradient, position), animate, delay, stdout);
 }

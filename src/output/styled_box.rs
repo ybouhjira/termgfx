@@ -1,5 +1,8 @@
 use owo_colors::{OwoColorize, Style};
 use unicode_width::UnicodeWidthStr;
+use std::io::{stdout, Write};
+use std::thread;
+use std::time::Duration;
 
 /// Border character set for different styles
 #[derive(Debug, Clone)]
@@ -86,6 +89,11 @@ fn get_default_emoji(style_name: &str) -> Option<&'static str> {
 
 /// Render a styled box with the given message
 pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
+    render_animated(message, style, border, emoji, false);
+}
+
+/// Render a styled box with optional animation
+pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&str>, animate: bool) {
     let borders = BorderChars::get(border);
     let color_style = get_style(style);
     let emoji_str = emoji.or_else(|| get_default_emoji(style));
@@ -108,7 +116,21 @@ pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
         borders.horizontal.repeat(box_width),
         borders.top_right
     );
-    println!("{}", top_border.style(color_style));
+
+    let delay = if animate { Duration::from_millis(30) } else { Duration::ZERO };
+    let mut stdout = stdout();
+
+    // Animate top border
+    if animate {
+        for ch in top_border.style(color_style).to_string().chars() {
+            print!("{}", ch);
+            stdout.flush().unwrap();
+            thread::sleep(delay);
+        }
+        println!();
+    } else {
+        println!("{}", top_border.style(color_style));
+    }
 
     for (idx, line) in lines.iter().enumerate() {
         let mut content = String::new();
@@ -130,7 +152,17 @@ pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
             borders.vertical,
             width = right_padding
         );
-        println!("{}", formatted_line.style(color_style));
+
+        if animate {
+            for ch in formatted_line.style(color_style).to_string().chars() {
+                print!("{}", ch);
+                stdout.flush().unwrap();
+                thread::sleep(delay);
+            }
+            println!();
+        } else {
+            println!("{}", formatted_line.style(color_style));
+        }
     }
 
     let bottom_border = format!(
@@ -139,7 +171,17 @@ pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
         borders.horizontal.repeat(box_width),
         borders.bottom_right
     );
-    println!("{}", bottom_border.style(color_style));
+
+    if animate {
+        for ch in bottom_border.style(color_style).to_string().chars() {
+            print!("{}", ch);
+            stdout.flush().unwrap();
+            thread::sleep(delay);
+        }
+        println!();
+    } else {
+        println!("{}", bottom_border.style(color_style));
+    }
 }
 
 #[cfg(test)]

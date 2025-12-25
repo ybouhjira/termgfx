@@ -33,6 +33,9 @@ enum Commands {
         /// Emoji to display
         #[arg(short, long)]
         emoji: Option<String>,
+        /// Animate the box drawing
+        #[arg(short, long)]
+        animate: bool,
     },
     /// Display a styled banner
     Banner {
@@ -41,6 +44,9 @@ enum Commands {
         /// Gradient colors (e.g., "cyan-purple")
         #[arg(short, long)]
         gradient: Option<String>,
+        /// Animate the banner drawing
+        #[arg(short, long)]
+        animate: bool,
     },
     /// Show a loading spinner
     Spinner {
@@ -129,6 +135,9 @@ enum Commands {
     Sparkline {
         /// Comma-separated values
         data: String,
+        /// Animate the sparkline building
+        #[arg(short, long)]
+        animate: bool,
     },
     /// Show file differences side-by-side or unified
     Diff {
@@ -160,6 +169,9 @@ enum Commands {
         /// Column alignment: left, center, right
         #[arg(long, default_value = "left")]
         alignment: String,
+        /// Animate rows appearing one by one
+        #[arg(short, long)]
+        animate: bool,
     },
     /// Display a tree structure
     Tree {
@@ -168,6 +180,9 @@ enum Commands {
         /// JSON file path
         #[arg(short, long)]
         path: Option<String>,
+        /// Animate tree nodes expanding
+        #[arg(short, long)]
+        animate: bool,
     },
     /// Record, play, or export terminal sessions
     Record {
@@ -351,6 +366,9 @@ enum ChartCommands {
         /// Data in format "Label:Value,Label:Value"
         #[arg(short, long)]
         data: String,
+        /// Animate bars growing
+        #[arg(short, long)]
+        animate: bool,
     },
     /// Pie chart (ASCII)
     Pie {
@@ -391,11 +409,11 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Box { message, style, border, emoji } => {
-            output::styled_box::render(&message, &style, &border, emoji.as_deref());
+        Commands::Box { message, style, border, emoji, animate } => {
+            output::styled_box::render_animated(&message, &style, &border, emoji.as_deref(), animate);
         }
-        Commands::Banner { title, gradient } => {
-            output::banner::render(&title, gradient.as_deref());
+        Commands::Banner { title, gradient, animate } => {
+            output::banner::render_animated(&title, gradient.as_deref(), animate);
         }
         Commands::Spinner { message, style, duration } => {
             output::spinner::render(&message, &style, duration);
@@ -412,8 +430,8 @@ fn main() {
                 ChartCommands::Line { data, title } => {
                     charts::line::render(&data, title.as_deref());
                 }
-                ChartCommands::Bar { data } => {
-                    charts::bar::render(&data);
+                ChartCommands::Bar { data, animate } => {
+                    charts::bar::render_animated(&data, animate);
                 }
                 ChartCommands::Pie { data } => {
                     charts::pie::render(&data);
@@ -435,23 +453,24 @@ fn main() {
         Commands::Confirm { prompt, default, style } => {
             interactive::confirm::render(&prompt, &default, &style);
         }
-        Commands::Sparkline { data } => {
-            charts::sparkline::render(&data);
+        Commands::Sparkline { data, animate } => {
+            charts::sparkline::render_animated(&data, animate);
         }
         Commands::Diff { file1, file2, unified, context } => {
             output::diff::render(&file1, &file2, unified, context);
         }
-        Commands::Table { headers, rows, file, border, alignment } => {
-            output::table::render(
+        Commands::Table { headers, rows, file, border, alignment, animate } => {
+            output::table::render_animated(
                 headers.as_deref(),
                 rows.as_deref(),
                 file.as_deref(),
                 &border,
                 &alignment,
+                animate,
             );
         }
-        Commands::Tree { data, path } => {
-            output::tree::render(data.as_deref(), path.as_deref());
+        Commands::Tree { data, path, animate } => {
+            output::tree::render_animated(data.as_deref(), path.as_deref(), animate);
         }
         Commands::Record { record_command } => {
             match record_command {

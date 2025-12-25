@@ -1,5 +1,8 @@
 use owo_colors::OwoColorize;
 use serde_json::Value;
+use std::io::Write;
+use std::thread;
+use std::time::Duration;
 
 /// Tree characters for drawing hierarchical structures
 #[derive(Debug, Clone)]
@@ -92,6 +95,11 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
 
 /// Render a tree from inline data format: "root>child1,child2>grandchild"
 fn render_inline_tree(data: &str) {
+    render_inline_tree_animated(data, false);
+}
+
+/// Render a tree from inline data with optional animation
+fn render_inline_tree_animated(data: &str, animate: bool) {
     let chars = TreeChars::unicode();
     let parts: Vec<&str> = data.split('>').collect();
 
@@ -99,7 +107,14 @@ fn render_inline_tree(data: &str) {
         return;
     }
 
+    let delay = if animate { Duration::from_millis(150) } else { Duration::ZERO };
+    let mut stdout = std::io::stdout();
+
     println!("{} {}", "📁".bright_cyan(), parts[0].bright_cyan().bold());
+    if animate {
+        stdout.flush().unwrap();
+        thread::sleep(delay);
+    }
 
     for (i, part) in parts.iter().enumerate().skip(1) {
         let children: Vec<&str> = part.split(',').collect();
@@ -118,12 +133,22 @@ fn render_inline_tree(data: &str) {
                 chars.branch.style(color),
                 child.style(color)
             );
+
+            if animate {
+                stdout.flush().unwrap();
+                thread::sleep(delay);
+            }
         }
     }
 }
 
 /// Main render function - handles all tree types
 pub fn render(data: Option<&str>, path: Option<&str>) {
+    render_animated(data, path, false);
+}
+
+/// Render tree with optional animation
+pub fn render_animated(data: Option<&str>, path: Option<&str>, animate: bool) {
     let chars = TreeChars::unicode();
 
     if let Some(_p) = path {
@@ -133,7 +158,7 @@ pub fn render(data: Option<&str>, path: Option<&str>) {
         );
         std::process::exit(1);
     } else if let Some(d) = data {
-        render_inline_tree(d);
+        render_inline_tree_animated(d, animate);
     } else {
         use std::io::{self, Read};
         let mut buffer = String::new();
