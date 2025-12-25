@@ -414,6 +414,23 @@ enum Commands {
         #[arg(short, long)]
         animate: bool,
     },
+    /// Interactice file/directory picker
+    ///
+    /// Example: termgfx file --path /var --directory --ext rs,toml
+    File {
+        /// Initial path to start the picker
+        #[arg(short, long)]
+        path: Option<String>,
+        /// Only allow selecting directories
+        #[arg(short, long)]
+        directory: bool,
+        /// Comma-separated list of allowed file extensions (e.g., "txt,md")
+        #[arg(short, long)]
+        ext: Option<String>,
+        /// Maximum height of the picker in terminal lines
+        #[arg(long)]
+        height: Option<usize>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -698,6 +715,17 @@ fn main() {
                 &colors,
                 animate,
             );
+        }
+        Commands::File { path, directory, ext, height } => {
+            match interactive::file::render(path, directory, ext, height) {
+                Ok(selected_path) => {
+                    println!("{}", selected_path.display());
+                }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            }
         }
     }
 }
