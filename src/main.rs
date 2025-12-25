@@ -473,6 +473,15 @@ enum RecordCommands {
 }
 
 fn main() {
+    // Handle `--help <command>` or `-h <command>` as `help <command>`
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() >= 3 && (args[1] == "--help" || args[1] == "-h") && !args[2].starts_with('-') {
+        // Rewrite args to: termgfx <command> --help
+        let new_args = vec![args[0].clone(), args[2].clone(), "--help".to_string()];
+        Cli::parse_from(new_args);
+        return; // parse_from will print help and exit
+    }
+
     let cli = Cli::parse();
 
     match cli.command {
