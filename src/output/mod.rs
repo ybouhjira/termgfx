@@ -14,3 +14,4 @@ pub mod heatmap;
 pub mod dashboard;
 pub mod layout;
 pub mod watch;
+pub mod palette;
