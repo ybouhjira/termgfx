@@ -475,6 +475,26 @@ enum Commands {
         #[arg(short, long, default_value = "json")]
         output: String,
     },
+    /// Multi-step wizard with navigation and progress tracking
+    ///
+    /// Example: termgfx wizard --step "input:name:Your name" --step "select:role:Role:Admin,User" --step "summary:summary:Review"
+    #[command(
+        after_help = "Step types: input, select, multiselect, confirm, summary\nOutput formats: json, env\nNavigation: Enter=Next, Esc=Back"
+    )]
+    Wizard {
+        /// Wizard steps in format "type:id:prompt[:options]"
+        #[arg(short, long)]
+        step: Vec<String>,
+        /// JSON config file path
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Wizard title
+        #[arg(short, long)]
+        title: Option<String>,
+        /// Output format: json, env
+        #[arg(short, long, default_value = "json")]
+        output: String,
+    },
     /// Join content horizontally or vertically
     ///
     /// Example: termgfx join "Column A" "Column B" --gap 4
@@ -856,6 +876,21 @@ fn main() {
                 std::process::exit(1);
             }
             if let Err(e) = interactive::form::render(field, config, output) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Wizard {
+            step,
+            config,
+            title,
+            output,
+        } => {
+            if step.is_empty() && config.is_none() {
+                eprintln!("Error: Provide at least one --step or a --config file");
+                std::process::exit(1);
+            }
+            if let Err(e) = interactive::wizard::render(step, config, title, output) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }

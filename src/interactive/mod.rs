@@ -5,3 +5,4 @@ pub mod file;
 pub mod filter;
 pub mod pager;
 pub mod form;
+pub mod wizard;
