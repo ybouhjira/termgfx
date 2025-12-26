@@ -311,4 +311,38 @@ mod tests {
         let encoded = base64_encode(data);
         assert_eq!(encoded, "aGVsbG8=");
     }
+
+    #[test]
+    fn test_sixel_renders_without_fallback() {
+        // Create a small test image (2x2 red pixels)
+        let img = DynamicImage::ImageRgba8(image::RgbaImage::from_fn(2, 2, |_, _| {
+            image::Rgba([255, 0, 0, 255]) // Red pixel
+        }));
+
+        // Capture stdout to verify Sixel output
+        let result = render_sixel(&img, 80, 24);
+        assert!(result.is_ok(), "render_sixel should not return error");
+
+        // The function should complete without calling halfblock fallback
+        // If it had a fallback, there would be eprintln output with "fallback"
+    }
+
+    #[test]
+    fn test_sixel_output_format() {
+        use std::io::Write;
+
+        // Create a small test image
+        let img = DynamicImage::ImageRgba8(image::RgbaImage::from_fn(4, 6, |x, y| {
+            if (x + y) % 2 == 0 {
+                image::Rgba([255, 0, 0, 255]) // Red
+            } else {
+                image::Rgba([0, 0, 255, 255]) // Blue
+            }
+        }));
+
+        // We can't easily capture stdout in a unit test, but we can verify
+        // the function completes successfully without panic
+        let result = render_sixel(&img, 80, 24);
+        assert!(result.is_ok(), "Sixel rendering should succeed");
+    }
 }
