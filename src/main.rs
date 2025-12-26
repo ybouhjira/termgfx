@@ -458,6 +458,23 @@ enum Commands {
         #[arg(short, long)]
         title: Option<String>,
     },
+    /// Multi-field interactive form for collecting inputs
+    ///
+    /// Example: termgfx form --field "name:text:Your name" --field "role:select:Role:Admin,User"
+    #[command(
+        after_help = "Field types: text, password, select, multiselect, confirm, number\nOutput formats: json, env, csv"
+    )]
+    Form {
+        /// Form fields in format "name:type:label[:options]"
+        #[arg(short, long)]
+        field: Vec<String>,
+        /// JSON config file path
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Output format: json, env, csv
+        #[arg(short, long, default_value = "json")]
+        output: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -759,6 +776,20 @@ fn main() {
         }
         Commands::Pager { line_numbers, title } => {
             interactive::pager::render(line_numbers, title);
+        }
+        Commands::Form {
+            field,
+            config,
+            output,
+        } => {
+            if field.is_empty() && config.is_none() {
+                eprintln!("Error: Provide at least one --field or a --config file");
+                std::process::exit(1);
+            }
+            if let Err(e) = interactive::form::render(field, config, output) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }
