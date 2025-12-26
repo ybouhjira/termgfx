@@ -18,7 +18,9 @@ path = "src/lib.rs"
 
 [features]
 default = ["cli"]
-cli = ["clap", "crossterm", "ratatui", "ratatui-image", "image", "ureq", "ctrlc", "termion", "libc", "atty"]
+cli = ["clap", "crossterm", "ratatui", "ratatui-image", "image", "ureq", "ctrlc", "termion", "libc", "atty", "export"]
+export = ["svg"]
+svg = ["tiny-skia", "xmlwriter"]
 wasm = ["wasm-bindgen", "console_error_panic_hook", "web-sys"]
 
 [dependencies]
@@ -57,6 +59,10 @@ atty = { version = "0.2", optional = true }
 wasm-bindgen = { version = "0.2", optional = true }
 console_error_panic_hook = { version = "0.1", optional = true }
 web-sys = { version = "0.3", features = ["console"], optional = true }
+
+# Export/SVG support (optional)
+tiny-skia = { version = "0.11", optional = true }
+xmlwriter = { version = "0.1", optional = true }
 
 [dev-dependencies]
 # Testing
