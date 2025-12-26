@@ -105,9 +105,121 @@ fn render_kitty(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     Ok(())
 }
 
-fn render_sixel(_img: &DynamicImage, _term_width: usize, _term_height: usize) -> anyhow::Result<()> {
-    eprintln!("Note: Sixel rendering not fully implemented, using halfblock fallback");
-    render_halfblock(_img, _term_width, _term_height)
+fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> anyhow::Result<()> {
+    // Resize image to fit terminal width
+    // Assuming approx 8 pixels per character cell width
+    let max_width_px = (term_width as u32) * 8;
+    let (img_width, img_height) = img.dimensions();
+
+    let scaled_img = if img_width > max_width_px {
+        let scale = max_width_px as f32 / img_width as f32;
+        let new_height = (img_height as f32 * scale) as u32;
+        img.resize(max_width_px, new_height, image::imageops::FilterType::Lanczos3)
+    } else {
+        img.clone()
+    };
+
+    let rgba_img = scaled_img.to_rgba8();
+    let width = rgba_img.width();
+    let height = rgba_img.height();
+
+    // Quantize to 6x6x6 RGB cube (216 colors)
+    // Map: (r,g,b) -> index 0..215
+    let mut indexed_pixels = Vec::with_capacity((width * height) as usize);
+    let mut used_colors = [false; 216];
+
+    for pixel in rgba_img.pixels() {
+        // Handle transparency
+        if pixel[3] < 128 {
+            indexed_pixels.push(255); // Use 255 as marker for transparent
+            continue;
+        }
+
+        let r = pixel[0];
+        let g = pixel[1];
+        let b = pixel[2];
+
+        // Map 0-255 to 0-5
+        let r_idx = (r as u16 * 5 + 127) / 255;
+        let g_idx = (g as u16 * 5 + 127) / 255;
+        let b_idx = (b as u16 * 5 + 127) / 255;
+
+        let palette_index = (r_idx * 36 + g_idx * 6 + b_idx) as usize;
+        indexed_pixels.push(palette_index as u8);
+        used_colors[palette_index] = true;
+    }
+
+    // Start Sixel sequence
+    // DCS P1;P2;P3 q - P1=pixel aspect ratio, P2=background mode, P3=horizontal grid
+    // "Pan;Pad;Ph;Pv" - aspect ratio numerator/denominator, horizontal/vertical extent
+    print!("\x1bP0;0;0q\"1;1;{};{}", width, height);
+
+    // Emit Palette
+    for i in 0..216 {
+        if used_colors[i] {
+            let r_idx = i / 36;
+            let g_idx = (i % 36) / 6;
+            let b_idx = i % 6;
+
+            // Map 0..5 to 0..100 for Sixel
+            let r = (r_idx * 100 + 2) / 5;
+            let g = (g_idx * 100 + 2) / 5;
+            let b = (b_idx * 100 + 2) / 5;
+
+            print!("#{0};2;{1};{2};{3}", i, r, g, b);
+        }
+    }
+
+    // Encode bands
+    for y in (0..height).step_by(6) {
+        let rows_in_band = std::cmp::min(6, height - y);
+
+        for color_idx in 0..216 {
+            if !used_colors[color_idx] { continue; }
+
+            let mut has_pixels_for_color = false;
+            let mut color_cols = vec![0u8; width as usize];
+
+            for row_offset in 0..rows_in_band {
+                let img_y = y + row_offset;
+                for x in 0..width {
+                    let px_idx = (img_y * width + x) as usize;
+                    if indexed_pixels[px_idx] == color_idx as u8 {
+                        color_cols[x as usize] |= 1 << row_offset;
+                        has_pixels_for_color = true;
+                    }
+                }
+            }
+
+            if has_pixels_for_color {
+                print!("#{}", color_idx);
+
+                let mut x = 0;
+                while x < width as usize {
+                    let val = color_cols[x];
+                    let mut run_len = 1;
+                    while x + run_len < width as usize && color_cols[x + run_len] == val {
+                        run_len += 1;
+                    }
+
+                    let char_val = (val + 63) as char;
+                    if run_len > 1 {
+                        print!("!{}{}", run_len, char_val);
+                    } else {
+                        print!("{}", char_val);
+                    }
+                    x += run_len;
+                }
+                print!("$");
+            }
+        }
+        print!("-");
+    }
+
+    print!("\x1b\\");
+    println!(); // Newline after image
+    io::stdout().flush()?;
+    Ok(())
 }
 
 fn render_iterm2(img: &DynamicImage, term_width: usize, _term_height: usize) -> anyhow::Result<()> {
