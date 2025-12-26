@@ -5,3 +5,6 @@ pub mod file;
 pub mod filter;
 pub mod pager;
 pub mod form;
+pub mod tui;
+pub mod playground;
+pub mod wizard;

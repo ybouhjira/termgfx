@@ -475,6 +475,26 @@ enum Commands {
         #[arg(short, long, default_value = "json")]
         output: String,
     },
+    /// Multi-step wizard with navigation and progress tracking
+    ///
+    /// Example: termgfx wizard --step "input:name:Your name" --step "select:role:Role:Admin,User" --step "summary:summary:Review"
+    #[command(
+        after_help = "Step types: input, select, multiselect, confirm, summary\nOutput formats: json, env\nNavigation: Enter=Next, Esc=Back"
+    )]
+    Wizard {
+        /// Wizard steps in format "type:id:prompt[:options]"
+        #[arg(short, long)]
+        step: Vec<String>,
+        /// JSON config file path
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Wizard title
+        #[arg(short, long)]
+        title: Option<String>,
+        /// Output format: json, env
+        #[arg(short, long, default_value = "json")]
+        output: String,
+    },
     /// Join content horizontally or vertically
     ///
     /// Example: termgfx join "Column A" "Column B" --gap 4
@@ -544,6 +564,29 @@ enum Commands {
         #[arg(short, long)]
         exit_on_error: bool,
     },
+    /// Interactive TUI mode with event loop and multiple widgets
+    ///
+    /// Example: termgfx tui --layout 2x2 --widgets "box:Hello,gauge:75,sparkline:1;2;3;4,log:Line1"
+    #[command(after_help = "Widget types: box, gauge, sparkline, log\nKeys: q=quit, r=refresh")]
+    Tui {
+        /// JSON config file path
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Layout grid (e.g., "2x2", "3x1", "1x4")
+        #[arg(short, long)]
+        layout: Option<String>,
+        /// Widgets (comma-separated type:content, e.g., "box:Hello,gauge:75")
+        #[arg(short, long)]
+        widgets: Option<String>,
+        /// Auto-refresh interval in milliseconds
+        #[arg(short, long, default_value = "1000")]
+        refresh: u64,
+    },
+    /// Interactive playground/showcase for exploring components
+    ///
+    /// Example: termgfx playground
+    #[command(after_help = "Navigate: ← → or h/l for pages, ↑ ↓ or k/j for params\nEdit: Enter to edit param, q/Esc to quit")]
+    Playground,
 }
 
 #[derive(Subcommand)]
@@ -860,6 +903,21 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        Commands::Wizard {
+            step,
+            config,
+            title,
+            output,
+        } => {
+            if step.is_empty() && config.is_none() {
+                eprintln!("Error: Provide at least one --step or a --config file");
+                std::process::exit(1);
+            }
+            if let Err(e) = interactive::wizard::render(step, config, title, output) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
         Commands::Join {
             inputs,
             stdin,
@@ -920,6 +978,20 @@ fn main() {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
+        }
+        Commands::Tui {
+            config,
+            layout,
+            widgets,
+            refresh,
+        } => {
+            if let Err(e) = interactive::tui::render(config, layout, widgets, refresh) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Playground => {
+            interactive::playground::render();
         }
     }
 }
