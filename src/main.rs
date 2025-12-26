@@ -377,7 +377,7 @@ enum Commands {
         /// Dashboard title
         #[arg(short, long)]
         title: Option<String>,
-        /// Panels: "box:Hello,progress:75,sparkline:1,2,3,gauge:50"
+        /// Panels: "box:Hello,progress:75,sparkline:1;2;3,gauge:50"
         #[arg(short, long)]
         panels: Option<String>,
         /// Config file path (JSON)

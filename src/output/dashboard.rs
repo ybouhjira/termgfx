@@ -102,8 +102,9 @@ fn parse_layout(layout_str: &str) -> Result<Layout, String> {
     Ok(Layout { rows, cols })
 }
 
-/// Parse panels string like "box:Hello,progress:75,sparkline:1,2,3"
-/// Special handling: sparkline content can contain commas
+/// Parse panels string like "box:Hello,progress:75,sparkline:1;2;3"
+/// Sparkline values can use semicolons (preferred) or commas as delimiters
+/// Using semicolons avoids ambiguity with the panel separator commas
 fn parse_panels(panels_str: &str) -> Result<Vec<Panel>, String> {
     let mut panels = Vec::new();
     let mut current_pos = 0;
@@ -244,8 +245,11 @@ fn render_panel_content(panel: &Panel, width: usize, height: usize) -> Vec<Strin
             }
         }
         "sparkline" => {
+            // Support both semicolon (preferred) and comma as delimiters
+            // Semicolon is cleaner since commas are used as panel separators
+            let delimiter = if panel.content.contains(';') { ';' } else { ',' };
             let values: Vec<f64> = panel.content
-                .split(',')
+                .split(delimiter)
                 .filter_map(|s| s.trim().parse().ok())
                 .collect();
 

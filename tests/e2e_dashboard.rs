@@ -17,7 +17,7 @@ fn test_dashboard_help() {
         .args(["dashboard", "--help"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("Multi-panel TUI dashboard"));
+        .stdout(predicate::str::contains("sparkline:1;2;3"));
 }
 
 // ============================================================================
@@ -112,6 +112,21 @@ fn test_dashboard_sparkline_panel() {
         .assert()
         .success()
         .stdout(predicate::str::is_empty().not());
+}
+
+#[test]
+fn test_dashboard_sparkline_semicolon_delimiter() {
+    // Test semicolon delimiter for sparkline values (fixes #56)
+    termgfx()
+        .args([
+            "dashboard",
+            "--layout", "1x3",
+            "--panels", "box:Status,sparkline:10;20;30;40;50,progress:75"
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Status"))
+        .stdout(predicate::str::contains("75%"));
 }
 
 #[test]
