@@ -19,17 +19,26 @@ _termgfx() {
         'timeline:Display event timeline'
         'input:Interactive text input'
         'select:Single selection menu'
-        'choose:Multiple selection menu'
         'confirm:Yes/No confirmation'
         'spinner:Animated spinner'
         'progress:Progress bar display'
-        'typewriter:Typewriter text effect'
-        'animate:ASCII art animations'
+        'animate:Animation effects'
         'image:Display images in terminal'
         'record:Record terminal sessions'
         'script:Execute script files'
         'dashboard:Terminal dashboard layouts'
         'demo:Run feature demonstrations'
+        'tui:Interactive TUI mode with widget grid'
+        'playground:Interactive component showcase'
+        'wizard:Multi-step wizard with navigation'
+        'form:Multi-field interactive form'
+        'watch:Execute command repeatedly'
+        'filter:Fuzzy filter items from stdin'
+        'pager:Scrollable content viewer'
+        'file:Interactive file/directory picker'
+        'join:Join content horizontally/vertically'
+        'columns:Split stdin into columns'
+        'stack:Stack content vertically'
         'help:Show help information'
     )
 
@@ -154,6 +163,91 @@ _termgfx() {
                         '--title[Notification title]:title:' \
                         '--style[Notification style]:style:(info success warning error)'
                     ;;
+                tui)
+                    _arguments \
+                        '--config[JSON config file]:file:_files -g "*.json"' \
+                        '-c[JSON config file]:file:_files -g "*.json"' \
+                        '--layout[Grid layout NxM]:layout:(1x1 1x2 2x1 2x2 2x3 3x2 3x3 4x4)' \
+                        '-l[Grid layout NxM]:layout:(1x1 1x2 2x1 2x2 2x3 3x2 3x3 4x4)' \
+                        '--widgets[Widget definitions]:widgets:' \
+                        '-w[Widget definitions]:widgets:' \
+                        '--refresh[Refresh interval ms]:refresh:'
+                    ;;
+                playground)
+                    _arguments
+                    ;;
+                wizard)
+                    _arguments \
+                        '--step[Wizard step]:step:' \
+                        '-s[Wizard step]:step:' \
+                        '--config[JSON config file]:file:_files -g "*.json"' \
+                        '-c[JSON config file]:file:_files -g "*.json"' \
+                        '--title[Wizard title]:title:' \
+                        '--output[Output format]:format:(json env)'
+                    ;;
+                form)
+                    _arguments \
+                        '--field[Form field]:field:' \
+                        '-f[Form field]:field:' \
+                        '--config[JSON config file]:file:_files -g "*.json"' \
+                        '-c[JSON config file]:file:_files -g "*.json"' \
+                        '--output[Output format]:format:(json env csv)'
+                    ;;
+                watch)
+                    _arguments \
+                        '1:command:' \
+                        '--interval[Refresh interval]:interval:' \
+                        '-i[Refresh interval]:interval:' \
+                        '--no-title[Hide title]' \
+                        '-n[Hide title]' \
+                        '--differences[Highlight changes]' \
+                        '-d[Highlight changes]' \
+                        '--exit-on-error[Exit on error]'
+                    ;;
+                filter)
+                    _arguments \
+                        '--prompt[Prompt text]:prompt:' \
+                        '-p[Prompt text]:prompt:' \
+                        '--multi[Enable multi-select]' \
+                        '-m[Enable multi-select]' \
+                        '--height[List height]:height:'
+                    ;;
+                pager)
+                    _arguments \
+                        '--line-numbers[Show line numbers]' \
+                        '-l[Show line numbers]' \
+                        '--title[Header title]:title:'
+                    ;;
+                file)
+                    _arguments \
+                        '--path[Start path]:path:_files -/' \
+                        '-p[Start path]:path:_files -/' \
+                        '--directory[Directory only]' \
+                        '-d[Directory only]' \
+                        '--ext[File extensions]:ext:'
+                    ;;
+                join)
+                    _arguments \
+                        '*:inputs:' \
+                        '--vertical[Join vertically]' \
+                        '-v[Join vertically]' \
+                        '--gap[Gap size]:gap:' \
+                        '-g[Gap size]:gap:' \
+                        '--align[Alignment]:align:(left center right)'
+                    ;;
+                columns)
+                    _arguments \
+                        '--widths[Column widths]:widths:' \
+                        '-w[Column widths]:widths:' \
+                        '--gap[Gap size]:gap:'
+                    ;;
+                stack)
+                    _arguments \
+                        '*:inputs:' \
+                        '--align[Alignment]:align:(left center right)' \
+                        '-a[Alignment]:align:(left center right)' \
+                        '--gap[Gap size]:gap:'
+                    ;;
                 *)
                     ;;
             esac
@@ -178,6 +272,17 @@ alias tnotify='termgfx notification'
 alias tgauge='termgfx gauge'
 alias theat='termgfx heatmap'
 alias tdemo='termgfx demo'
+alias ttui='termgfx tui'
+alias tplay='termgfx playground'
+alias twizard='termgfx wizard'
+alias tform='termgfx form'
+alias twatch='termgfx watch'
+alias tfilter='termgfx filter'
+alias tpager='termgfx pager'
+alias tfile='termgfx file'
+alias tjoin='termgfx join'
+alias tcolumns='termgfx columns'
+alias tstack='termgfx stack'
 
 # ============= Helper Functions =============
 
