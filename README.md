@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/gifs/extras.gif" alt="TermGFX Demo" width="600">
+  <img src="docs/gifs/hero.gif" alt="TermGFX Demo" width="700">
 </p>
 
 <h1 align="center">🎨 TermGFX</h1>
