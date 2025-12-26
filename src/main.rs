@@ -44,7 +44,7 @@ enum Commands {
     /// Display a styled box with message
     ///
     /// Example: termgfx box "Success!" --style success --border rounded
-    #[command(after_help = "Styles: info, success, warning, danger, gradient\nBorders: single, double, rounded, thick, ascii")]
+    #[command(after_help = "Styles: info, success, warning, danger, gradient\nBorders: single, double, rounded, thick, ascii\nPresets: corporate, playful, minimal, retro, neon, elegant")]
     Box {
         /// The message to display
         message: String,
@@ -54,6 +54,9 @@ enum Commands {
         /// Border style: single, double, rounded, thick
         #[arg(short, long, default_value = "rounded")]
         border: String,
+        /// Style preset: corporate, playful, minimal, retro, neon, elegant
+        #[arg(long)]
+        preset: Option<String>,
         /// Emoji to display
         #[arg(short, long)]
         emoji: Option<String>,
@@ -587,6 +590,31 @@ enum Commands {
     /// Example: termgfx playground
     #[command(after_help = "Navigate: ← → or h/l for pages, ↑ ↓ or k/j for params\nEdit: Enter to edit param, q/Esc to quit")]
     Playground,
+    /// View and manage color palettes
+    ///
+    /// Example: termgfx palette list
+    #[command(subcommand_required = false)]
+    Palette {
+        #[command(subcommand)]
+        palette_command: Option<PaletteCommands>,
+    },
+}
+
+#[derive(Subcommand)]
+enum PaletteCommands {
+    /// List all available palettes
+    List,
+    /// Show a specific palette
+    Show {
+        /// Palette name (defaults to "default")
+        name: Option<String>,
+    },
+    /// Export palette as JSON
+    Export {
+        /// Palette name
+        #[arg(short, long, default_value = "default")]
+        name: String,
+    },
 }
 
 #[derive(Subcommand)]
@@ -992,6 +1020,36 @@ fn main() {
         }
         Commands::Playground => {
             interactive::playground::render();
+        }
+        Commands::Palette { palette_command } => {
+            match palette_command {
+                Some(PaletteCommands::List) | None => {
+                    output::palette::list_palettes();
+                }
+                Some(PaletteCommands::Show { name }) => {
+                    let palette_name = name.as_deref().unwrap_or("default");
+                    match output::palette::get_palette(palette_name) {
+                        Some(palette) => output::palette::show_palette(&palette),
+                        None => {
+                            eprintln!("Error: Palette '{}' not found", palette_name);
+                            eprintln!("Use 'termgfx palette list' to see available palettes");
+                            std::process::exit(1);
+                        }
+                    }
+                }
+                Some(PaletteCommands::Export { name }) => {
+                    match output::palette::get_palette(&name) {
+                        Some(palette) => {
+                            println!("{}", output::palette::export_palette(&palette));
+                        }
+                        None => {
+                            eprintln!("Error: Palette '{}' not found", name);
+                            eprintln!("Use 'termgfx palette list' to see available palettes");
+                            std::process::exit(1);
+                        }
+                    }
+                }
+            }
         }
     }
 }
