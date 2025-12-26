@@ -5,7 +5,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor, Stylize},
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{collections::HashSet, io::{self, Write}};
+use std::{collections::HashSet, io::{self, IsTerminal, Write}};
 
 pub fn render(prompt: &str, options: &[String], multi: bool) {
     if options.is_empty() {
@@ -29,6 +29,14 @@ pub fn render(prompt: &str, options: &[String], multi: bool) {
 }
 
 fn run_select(prompt: &str, options: &[String], multi: bool) -> io::Result<Vec<String>> {
+    // Check for interactive terminal
+    if !std::io::stdin().is_terminal() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Select requires an interactive terminal (TTY)",
+        ));
+    }
+
     let mut stdout = io::stdout();
     let mut selected_idx = 0;
     let mut selected_items: HashSet<usize> = HashSet::new();

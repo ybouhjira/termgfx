@@ -8,7 +8,7 @@ use crossterm::terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlt
 use std::{borrow::Cow,
     collections::HashSet,
     fs,
-    io::{self, Write},
+    io::{self, IsTerminal, Write},
     path::{Path, PathBuf}
 };
 
@@ -188,6 +188,14 @@ impl FilePicker {
     }
 
     fn run(&mut self) -> io::Result<PathBuf> {
+        // Check for interactive terminal
+        if !std::io::stdin().is_terminal() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "File picker requires an interactive terminal (TTY)",
+            ));
+        }
+
         let mut stdout = io::stdout();
 
         terminal::enable_raw_mode()?;

@@ -5,7 +5,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal,
 };
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 
 /// Render a yes/no confirmation prompt
 pub fn render(prompt: &str, default: &str, style: &str) {
@@ -35,6 +35,14 @@ pub fn render(prompt: &str, default: &str, style: &str) {
 }
 
 fn show_confirm_prompt(prompt: &str, default: bool, style: &str) -> io::Result<bool> {
+    // Check for interactive terminal
+    if !std::io::stdin().is_terminal() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Confirm requires an interactive terminal (TTY)",
+        ));
+    }
+
     terminal::enable_raw_mode()?;
 
     let mut stdout = io::stdout();

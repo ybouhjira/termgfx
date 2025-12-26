@@ -5,7 +5,7 @@ use crossterm::{
 };
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 use std::time::{Duration, Instant};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -62,6 +62,14 @@ impl TuiApp {
     }
 
     pub fn run(&mut self) -> io::Result<()> {
+        // Check for interactive terminal
+        if !std::io::stdin().is_terminal() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "TUI mode requires an interactive terminal (TTY)",
+            ));
+        }
+
         // Setup terminal
         enable_raw_mode()?;
         let mut stdout = io::stdout();
@@ -199,21 +207,26 @@ impl TuiApp {
     fn draw_border(&self, x: u16, y: u16, width: u16, height: u16) -> io::Result<()> {
         let mut stdout = io::stdout();
 
+        // Guard against too-small dimensions
+        if width < 3 || height < 3 {
+            return Ok(());
+        }
+
         // Top border
         execute!(stdout, crossterm::cursor::MoveTo(x, y))?;
-        write!(stdout, "┌{}┐", "─".repeat((width - 2) as usize))?;
+        write!(stdout, "┌{}┐", "─".repeat(width.saturating_sub(2) as usize))?;
 
         // Side borders
-        for i in 1..height - 1 {
+        for i in 1..height.saturating_sub(1) {
             execute!(stdout, crossterm::cursor::MoveTo(x, y + i))?;
             write!(stdout, "│")?;
-            execute!(stdout, crossterm::cursor::MoveTo(x + width - 1, y + i))?;
+            execute!(stdout, crossterm::cursor::MoveTo(x + width.saturating_sub(1), y + i))?;
             write!(stdout, "│")?;
         }
 
         // Bottom border
-        execute!(stdout, crossterm::cursor::MoveTo(x, y + height - 1))?;
-        write!(stdout, "└{}┘", "─".repeat((width - 2) as usize))?;
+        execute!(stdout, crossterm::cursor::MoveTo(x, y + height.saturating_sub(1)))?;
+        write!(stdout, "└{}┘", "─".repeat(width.saturating_sub(2) as usize))?;
 
         Ok(())
     }

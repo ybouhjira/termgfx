@@ -5,7 +5,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum ComponentPage {
@@ -276,6 +276,14 @@ pub fn render() {
 }
 
 fn run_playground() -> io::Result<()> {
+    // Check for interactive terminal
+    if !std::io::stdin().is_terminal() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Playground requires an interactive terminal (TTY)",
+        ));
+    }
+
     let mut stdout = io::stdout();
     let mut app = PlaygroundApp::new();
 

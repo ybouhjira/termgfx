@@ -237,6 +237,29 @@ termgfx image ./chart.png --protocol sixel
 termgfx image ./icon.png --protocol halfblock
 ```
 
+### Terminal Image Protocol Support
+
+TermGFX auto-detects the best image protocol for your terminal:
+
+| Terminal | Kitty | Sixel | iTerm2 | Halfblock | Auto-detected |
+|----------|:-----:|:-----:|:------:|:---------:|:-------------:|
+| **Kitty** | ✅ | ✅ | ❌ | ✅ | Kitty |
+| **iTerm2** | ❌ | ❌ | ✅ | ✅ | iTerm2 |
+| **WezTerm** | ✅ | ✅ | ✅ | ✅ | Sixel |
+| **foot** | ❌ | ✅ | ❌ | ✅ | Sixel |
+| **mlterm** | ❌ | ✅ | ❌ | ✅ | Sixel |
+| **mintty** | ❌ | ✅ | ❌ | ✅ | Sixel |
+| **contour** | ❌ | ✅ | ❌ | ✅ | Sixel |
+| **Mac Terminal** | ❌ | ❌ | ❌ | ✅ | Halfblock |
+| **VS Code** | ❌ | ❌ | ❌ | ✅ | Halfblock |
+| **Windows Terminal** | ❌ | ❌ | ❌ | ✅ | Halfblock |
+| **GNOME Terminal** | ❌ | ❌ | ❌ | ✅ | Halfblock |
+| **Alacritty** | ❌ | ❌ | ❌ | ✅ | Halfblock |
+
+**Protocol Quality:** Kitty > iTerm2 > Sixel > Halfblock (best to worst)
+
+**Halfblock** works everywhere with truecolor support (most modern terminals).
+
 ---
 
 ## 🛠️ Shell Script Examples

@@ -6,7 +6,7 @@ use crossterm::{
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::collections::HashSet;
-use std::io::{self, BufRead, Write};
+use std::io::{self, BufRead, IsTerminal, Write};
 
 pub struct FuzzyFilter {
     items: Vec<String>,
@@ -26,6 +26,14 @@ impl FuzzyFilter {
     }
 
     pub fn render(&self) -> io::Result<Vec<String>> {
+        // Check for interactive terminal
+        if !std::io::stdin().is_terminal() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Filter requires an interactive terminal (TTY)",
+            ));
+        }
+
         if self.items.is_empty() {
             return Ok(vec![]);
         }

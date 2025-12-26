@@ -5,7 +5,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, ClearType},
 };
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 
 pub fn render(prompt: &str, placeholder: Option<&str>, password: bool) {
     match run_input(prompt, placeholder, password) {
@@ -20,6 +20,14 @@ pub fn render(prompt: &str, placeholder: Option<&str>, password: bool) {
 }
 
 fn run_input(prompt: &str, placeholder: Option<&str>, password: bool) -> io::Result<String> {
+    // Check for interactive terminal
+    if !std::io::stdin().is_terminal() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Input requires an interactive terminal (TTY)",
+        ));
+    }
+
     let mut stdout = io::stdout();
     let mut input = String::new();
 

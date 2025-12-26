@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::{
     fs,
-    io::{self, Write},
+    io::{self, IsTerminal, Write},
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -118,6 +118,14 @@ impl Wizard {
     }
 
     pub fn run(&mut self, output_format: &str) -> io::Result<String> {
+        // Check for interactive terminal
+        if !std::io::stdin().is_terminal() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Wizard requires an interactive terminal (TTY)",
+            ));
+        }
+
         let mut stdout = io::stdout();
         terminal::enable_raw_mode()?;
         execute!(stdout, EnterAlternateScreen, Hide)?;

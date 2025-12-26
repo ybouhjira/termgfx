@@ -190,3 +190,104 @@ fn test_choose_shows_options_tty() {
     p.send("\x1b").unwrap();
     wait();
 }
+
+// ============================================================================
+// NEW INTERACTIVE COMMANDS TTY TESTS (v0.4.0+)
+// These test playground, tui, wizard, form, file picker, and filter
+// ============================================================================
+
+#[test]
+fn test_playground_shows_ui_tty() {
+    let mut p = spawn(&format!("{} playground", termgfx_bin()), Some(3000)).unwrap();
+    // Playground shows title and interactive UI
+    p.exp_string("Playground").unwrap();
+    // Quit with 'q'
+    p.send("q").unwrap();
+    wait();
+}
+
+#[test]
+fn test_tui_renders_widgets_tty() {
+    let mut p = spawn(&format!("{} tui --layout 1x1 --widgets 'box:Hello'", termgfx_bin()), Some(3000)).unwrap();
+    // TUI should show the box content
+    p.exp_string("Hello").unwrap();
+    // Quit with 'q'
+    p.send("q").unwrap();
+    wait();
+}
+
+#[test]
+fn test_tui_sparkline_widget_tty() {
+    let mut p = spawn(&format!("{} tui --layout 1x1 --widgets 'sparkline:1,2,3,4,5'", termgfx_bin()), Some(3000)).unwrap();
+    // TUI should render and be quittable
+    wait();
+    p.send("q").unwrap();
+    wait();
+}
+
+#[test]
+fn test_wizard_input_step_tty() {
+    let mut p = spawn(&format!("{} wizard --step 'input:name:Enter your name'", termgfx_bin()), Some(3000)).unwrap();
+    // Wizard should show the input prompt
+    p.exp_string("Enter your name").unwrap();
+    // Cancel with Escape
+    p.send("\x1b").unwrap();
+    wait();
+}
+
+#[test]
+fn test_wizard_select_step_tty() {
+    let mut p = spawn(&format!("{} wizard --step 'select:color:Pick a color:red,green,blue'", termgfx_bin()), Some(3000)).unwrap();
+    // Wizard should show options
+    p.exp_string("Pick a color").unwrap();
+    p.exp_string("red").unwrap();
+    p.send("\x1b").unwrap();
+    wait();
+}
+
+#[test]
+fn test_wizard_confirm_step_tty() {
+    let mut p = spawn(&format!("{} wizard --step 'confirm:proceed:Continue?'", termgfx_bin()), Some(3000)).unwrap();
+    // Wizard should show confirmation prompt
+    p.exp_string("Continue").unwrap();
+    p.send("\x1b").unwrap();
+    wait();
+}
+
+#[test]
+fn test_form_shows_fields_tty() {
+    let mut p = spawn(&format!("{} form --field 'name:text:Your Name'", termgfx_bin()), Some(3000)).unwrap();
+    // Form should show the field label
+    p.exp_string("Your Name").unwrap();
+    // Cancel with Escape
+    p.send("\x1b").unwrap();
+    wait();
+}
+
+#[test]
+fn test_form_multiple_fields_tty() {
+    let mut p = spawn(&format!("{} form --field 'name:text:Name' --field 'email:text:Email'", termgfx_bin()), Some(3000)).unwrap();
+    p.exp_string("Name").unwrap();
+    p.exp_string("Email").unwrap();
+    p.send("\x1b").unwrap();
+    wait();
+}
+
+#[test]
+fn test_form_select_field_tty() {
+    let mut p = spawn(&format!("{} form --field 'role:select:Role:admin,user,guest'", termgfx_bin()), Some(3000)).unwrap();
+    p.exp_string("Role").unwrap();
+    p.send("\x1b").unwrap();
+    wait();
+}
+
+#[test]
+fn test_file_picker_shows_ui_tty() {
+    let mut p = spawn(&format!("{} file", termgfx_bin()), Some(3000)).unwrap();
+    // File picker shows path and filter
+    p.exp_string("Path").unwrap();
+    p.exp_string("Filter").unwrap();
+    // Cancel with Escape
+    p.send("\x1b").unwrap();
+    wait();
+}

@@ -53,24 +53,34 @@ fn load_image(path: &str) -> anyhow::Result<DynamicImage> {
 }
 
 fn detect_protocol() -> Protocol {
+    // Check for specific terminal programs first
     if let Ok(term_program) = env::var("TERM_PROGRAM") {
-        if term_program == "iTerm.app" {
-            return Protocol::ITerm2;
+        match term_program.as_str() {
+            "iTerm.app" => return Protocol::ITerm2,
+            "Apple_Terminal" => return Protocol::Halfblock, // Mac Terminal doesn't support Sixel
+            "WezTerm" => return Protocol::Sixel,
+            "mintty" => return Protocol::Sixel,
+            _ => {}
         }
     }
+
+    // Check TERM variable for known terminals
     if let Ok(term) = env::var("TERM") {
         if term.contains("kitty") {
             return Protocol::Kitty;
         }
-        if term.contains("xterm") {
+        // mlterm, foot, contour, and xterm (real xterm, not emulators) support Sixel
+        if term.contains("mlterm") || term.contains("foot") || term.contains("contour") {
             return Protocol::Sixel;
         }
     }
-    if let Ok(colorterm) = env::var("COLORTERM") {
-        if colorterm == "truecolor" || colorterm == "24bit" {
-            return Protocol::Halfblock;
-        }
+
+    // Check for Sixel support via SIXEL env var (some terminals set this)
+    if env::var("SIXEL").is_ok() {
+        return Protocol::Sixel;
     }
+
+    // Default to halfblock - works on all truecolor terminals
     Protocol::Halfblock
 }
 
