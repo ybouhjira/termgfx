@@ -18,6 +18,10 @@ pub mod interactive;
 #[cfg(feature = "cli")]
 pub mod script;
 
+// Export functionality (optional feature)
+#[cfg(feature = "export")]
+pub mod export;
+
 // ============================================================================
 // WASM Bindings - HTML Output for Browser
 // ============================================================================

@@ -58,6 +58,10 @@ wasm-bindgen = { version = "0.2", optional = true }
 console_error_panic_hook = { version = "0.1", optional = true }
 web-sys = { version = "0.3", features = ["console"], optional = true }
 
+# Export/SVG support (optional - feature: export)
+tiny-skia = { version = "0.11", optional = true }
+xmlwriter = { version = "0.1", optional = true }
+
 [dev-dependencies]
 # Testing
 assert_cmd = "2.0"
