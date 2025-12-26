@@ -524,6 +524,26 @@ enum Commands {
         #[arg(short, long, default_value = "1")]
         gap: usize,
     },
+    /// Watch mode - repeatedly execute a command and display output
+    ///
+    /// Example: termgfx watch "date" --interval 1s
+    #[command(after_help = "Intervals: 1s, 500ms, 2.5s\nPress Ctrl+C to stop")]
+    Watch {
+        /// Command to execute repeatedly
+        command: String,
+        /// Refresh interval (e.g., "1s", "500ms", "2.5s")
+        #[arg(short, long, default_value = "2s")]
+        interval: String,
+        /// Don't show header with command and interval
+        #[arg(short, long)]
+        no_title: bool,
+        /// Highlight differences between updates
+        #[arg(short, long)]
+        differences: bool,
+        /// Exit on command error
+        #[arg(short, long)]
+        exit_on_error: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -878,6 +898,25 @@ fn main() {
             gap,
         } => {
             if let Err(e) = output::layout::handle_stack(inputs, stdin, &align, gap) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Watch {
+            command,
+            interval,
+            no_title,
+            differences,
+            exit_on_error,
+        } => {
+            let duration = match output::watch::parse_interval(&interval) {
+                Ok(d) => d,
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+            };
+            if let Err(e) = output::watch::render(&command, duration, no_title, differences, exit_on_error) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
