@@ -305,7 +305,6 @@ cargo build --release
 
 - 📖 [Full Documentation](https://docs.rs/termgfx)
 - 🎬 [Demo Script](scripts/v0.3.0-demo.sh) - Interactive feature showcase
-- 📊 [Competitor Comparison](docs/COMPETITORS.md) - vs Gum, Rich, Plotext
 - 🔧 [UX Analysis](docs/UX-ANALYSIS.md) - Design decisions
 
 ---
