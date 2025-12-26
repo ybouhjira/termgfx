@@ -15,3 +15,4 @@ pub mod dashboard;
 pub mod layout;
 pub mod watch;
 pub mod palette;
+pub mod style;
