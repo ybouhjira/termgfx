@@ -150,8 +150,9 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     }
 
     // Start Sixel sequence
-    // DCS P q "1;1;width;height"
-    print!("\x1bPq\"1;1;{};{}", width, height);
+    // DCS P1;P2;P3 q - P1=pixel aspect ratio, P2=background mode, P3=horizontal grid
+    // "Pan;Pad;Ph;Pv" - aspect ratio numerator/denominator, horizontal/vertical extent
+    print!("\x1bP0;0;0q\"1;1;{};{}", width, height);
 
     // Emit Palette
     for i in 0..216 {
@@ -216,6 +217,7 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     }
 
     print!("\x1b\\");
+    println!(); // Newline after image
     io::stdout().flush()?;
     Ok(())
 }
