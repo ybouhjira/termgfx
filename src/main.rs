@@ -700,7 +700,7 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Box { message, style, border, emoji, animate, animation_time, demo } => {
+        Commands::Box { message, style, border, emoji, animate, animation_time, demo, preset: _ } => {
             if demo {
                 println!("Example: termgfx box \"Hello\" --style success");
                 println!();
@@ -1020,6 +1020,36 @@ fn main() {
         }
         Commands::Playground => {
             interactive::playground::render();
+        }
+        Commands::Palette { palette_command } => {
+            match palette_command {
+                Some(PaletteCommands::List) | None => {
+                    output::palette::list_palettes();
+                }
+                Some(PaletteCommands::Show { name }) => {
+                    let palette_name = name.as_deref().unwrap_or("default");
+                    match output::palette::get_palette(palette_name) {
+                        Some(palette) => output::palette::show_palette(&palette),
+                        None => {
+                            eprintln!("Error: Palette '{}' not found", palette_name);
+                            eprintln!("Use 'termgfx palette list' to see available palettes");
+                            std::process::exit(1);
+                        }
+                    }
+                }
+                Some(PaletteCommands::Export { name }) => {
+                    match output::palette::get_palette(&name) {
+                        Some(palette) => {
+                            println!("{}", output::palette::export_palette(&palette));
+                        }
+                        None => {
+                            eprintln!("Error: Palette '{}' not found", name);
+                            eprintln!("Use 'termgfx palette list' to see available palettes");
+                            std::process::exit(1);
+                        }
+                    }
+                }
+            }
         }
         Commands::Palette { palette_command } => {
             match palette_command {
