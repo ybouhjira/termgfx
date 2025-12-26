@@ -544,6 +544,24 @@ enum Commands {
         #[arg(short, long)]
         exit_on_error: bool,
     },
+    /// Interactive TUI mode with widget grid layout
+    ///
+    /// Example: termgfx tui --layout 2x2 --widgets "box:Hello,gauge:75,sparkline:1;2;3,log:Lines"
+    #[command(after_help = "Widget types: box, gauge, sparkline, log\nLayout format: NxM (e.g., 2x2, 3x1)")]
+    Tui {
+        /// JSON config file path
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Layout: NxM (e.g., "2x2", "1x3")
+        #[arg(short, long)]
+        layout: Option<String>,
+        /// Widgets: "type:content,type:content" (e.g., "box:Hello,gauge:75")
+        #[arg(short, long)]
+        widgets: Option<String>,
+        /// Refresh interval in milliseconds
+        #[arg(short, long, default_value = "1000")]
+        refresh: u64,
+    },
 }
 
 #[derive(Subcommand)]
@@ -917,6 +935,17 @@ fn main() {
                 }
             };
             if let Err(e) = output::watch::render(&command, duration, no_title, differences, exit_on_error) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Tui {
+            config,
+            layout,
+            widgets,
+            refresh,
+        } => {
+            if let Err(e) = interactive::tui::render(config, layout, widgets, refresh) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
