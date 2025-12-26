@@ -296,7 +296,7 @@ enum Commands {
     },
     /// Run interactive demo showcase
     Demo {
-        /// Demo section: boxes, charts, progress, animation, all
+        /// Demo section: boxes, charts, progress, animation, tui, all
         #[arg(short, long)]
         section: Option<String>,
     },
