@@ -1,0 +1,41 @@
+{
+  "fields": [
+    {
+      "name": "name",
+      "type": "text",
+      "label": "Your name"
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "label": "Email address"
+    },
+    {
+      "name": "password",
+      "type": "password",
+      "label": "Password"
+    },
+    {
+      "name": "role",
+      "type": "select",
+      "label": "Role",
+      "options": ["Admin", "User", "Guest"]
+    },
+    {
+      "name": "permissions",
+      "type": "multiselect",
+      "label": "Permissions",
+      "options": ["Read", "Write", "Delete", "Share"]
+    },
+    {
+      "name": "age",
+      "type": "number",
+      "label": "Age"
+    },
+    {
+      "name": "notify",
+      "type": "confirm",
+      "label": "Enable notifications"
+    }
+  ]
+}
