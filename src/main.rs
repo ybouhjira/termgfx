@@ -475,6 +475,55 @@ enum Commands {
         #[arg(short, long, default_value = "json")]
         output: String,
     },
+    /// Join content horizontally or vertically
+    ///
+    /// Example: termgfx join "Column A" "Column B" --gap 4
+    #[command(after_help = "Alignment: left, center, right")]
+    Join {
+        /// Content pieces to join (optional if using stdin)
+        inputs: Vec<String>,
+        /// Read from stdin as additional input
+        #[arg(long)]
+        stdin: bool,
+        /// Join vertically instead of horizontally
+        #[arg(short, long)]
+        vertical: bool,
+        /// Gap between joined items (spaces/lines)
+        #[arg(short, long, default_value = "2")]
+        gap: usize,
+        /// Alignment: left, center, right
+        #[arg(short, long, default_value = "left")]
+        align: String,
+    },
+    /// Split stdin content into columns
+    ///
+    /// Example: cat file.txt | termgfx columns --widths 20,30,20
+    #[command(after_help = "Widths: comma-separated column widths in characters")]
+    Columns {
+        /// Column widths (comma-separated, e.g., "20,30,20")
+        #[arg(short, long)]
+        widths: String,
+        /// Gap between columns (spaces)
+        #[arg(short, long, default_value = "2")]
+        gap: usize,
+    },
+    /// Stack content vertically with alignment
+    ///
+    /// Example: termgfx stack "Header" "Content" "Footer" --align center
+    #[command(after_help = "Alignment: left, center, right")]
+    Stack {
+        /// Content pieces to stack (optional if using stdin)
+        inputs: Vec<String>,
+        /// Read from stdin as additional input
+        #[arg(long)]
+        stdin: bool,
+        /// Alignment: left, center, right
+        #[arg(short, long, default_value = "left")]
+        align: String,
+        /// Gap between stacked items (blank lines)
+        #[arg(short, long, default_value = "1")]
+        gap: usize,
+    },
 }
 
 #[derive(Subcommand)]
@@ -787,6 +836,48 @@ fn main() {
                 std::process::exit(1);
             }
             if let Err(e) = interactive::form::render(field, config, output) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Join {
+            inputs,
+            stdin,
+            vertical,
+            gap,
+            align,
+        } => {
+            if let Err(e) = output::layout::handle_join(inputs, stdin, vertical, gap, &align) {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Columns { widths, gap } => {
+            let widths_vec: Result<Vec<usize>, _> = widths
+                .split(',')
+                .map(|s| s.trim().parse::<usize>())
+                .collect();
+
+            match widths_vec {
+                Ok(w) => {
+                    if let Err(e) = output::layout::handle_columns(w, gap) {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                }
+                Err(_) => {
+                    eprintln!("Error: Invalid widths format (use comma-separated numbers, e.g., '20,30,20')");
+                    std::process::exit(1);
+                }
+            }
+        }
+        Commands::Stack {
+            inputs,
+            stdin,
+            align,
+            gap,
+        } => {
+            if let Err(e) = output::layout::handle_stack(inputs, stdin, &align, gap) {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
