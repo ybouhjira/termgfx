@@ -71,11 +71,7 @@ fn render_horizontal_timeline(
     };
 
     // Calculate spacing
-    let max_label_len = events
-        .iter()
-        .map(|e| e.label.len())
-        .max()
-        .unwrap_or(0);
+    let max_label_len = events.iter().map(|e| e.label.len()).max().unwrap_or(0);
     let segment_width = max_label_len.max(10);
 
     // Render dates if present

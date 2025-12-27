@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -50,29 +51,6 @@ fn test_select_help() {
         .success()
         .stdout(predicate::str::contains("prompt"))
         .stdout(predicate::str::contains("options"));
-}
-
-// ============================================================================
-// CHOOSE COMMAND TESTS
-// ============================================================================
-
-#[test]
-fn test_choose_help() {
-    termgfx()
-        .args(["choose", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("prompt"))
-        .stdout(predicate::str::contains("options"));
-}
-
-#[test]
-fn test_choose_multi_flag_exists() {
-    termgfx()
-        .args(["choose", "--help"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("multi"));
 }
 
 // ============================================================================

@@ -1,9 +1,9 @@
-use std::io::{self, Write};
 use crossterm::{
-    terminal, cursor,
-    ExecutableCommand,
-    style::{Color, SetForegroundColor, ResetColor},
+    cursor,
+    style::{Color, ResetColor, SetForegroundColor},
+    terminal, ExecutableCommand,
 };
+use std::io::{self, Write};
 
 pub fn render(
     value: f64,

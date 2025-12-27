@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -38,10 +39,7 @@ fn test_no_args_shows_help() {
 
 #[test]
 fn test_unknown_command() {
-    termgfx()
-        .arg("unknowncommand")
-        .assert()
-        .failure();
+    termgfx().arg("unknowncommand").assert().failure();
 }
 
 // ============================================================================
@@ -91,12 +89,12 @@ fn test_spinner_help() {
 }
 
 #[test]
-fn test_typewriter_help() {
+fn test_animate_help() {
     termgfx()
-        .args(["typewriter", "--help"])
+        .args(["animate", "--help"])
         .assert()
         .success()
-        .stdout(predicate::str::is_match("(?i)message").unwrap())
+        .stdout(predicate::str::is_match("(?i)typewriter").unwrap())
         .stdout(predicate::str::is_match("(?i)speed").unwrap());
 }
 
@@ -186,26 +184,17 @@ fn test_chart_pie_help() {
 
 #[test]
 fn test_box_missing_message() {
-    termgfx()
-        .args(["box"])
-        .assert()
-        .failure();
+    termgfx().args(["box"]).assert().failure();
 }
 
 #[test]
 fn test_banner_missing_title() {
-    termgfx()
-        .args(["banner"])
-        .assert()
-        .failure();
+    termgfx().args(["banner"]).assert().failure();
 }
 
 #[test]
 fn test_progress_missing_percent() {
-    termgfx()
-        .args(["progress"])
-        .assert()
-        .failure();
+    termgfx().args(["progress"]).assert().failure();
 }
 
 #[test]
@@ -218,64 +207,40 @@ fn test_progress_invalid_percent() {
 
 #[test]
 fn test_spinner_missing_message() {
-    termgfx()
-        .args(["spinner"])
-        .assert()
-        .failure();
+    termgfx().args(["spinner"]).assert().failure();
 }
 
 #[test]
 fn test_typewriter_missing_message() {
-    termgfx()
-        .args(["typewriter"])
-        .assert()
-        .failure();
+    termgfx().args(["typewriter"]).assert().failure();
 }
 
 #[test]
 fn test_sparkline_missing_data() {
-    termgfx()
-        .args(["sparkline"])
-        .assert()
-        .failure();
+    termgfx().args(["sparkline"]).assert().failure();
 }
 
 #[test]
 fn test_diff_missing_files() {
-    termgfx()
-        .args(["diff"])
-        .assert()
-        .failure();
+    termgfx().args(["diff"]).assert().failure();
 }
 
 #[test]
 fn test_diff_missing_second_file() {
-    termgfx()
-        .args(["diff", "file1.txt"])
-        .assert()
-        .failure();
+    termgfx().args(["diff", "file1.txt"]).assert().failure();
 }
 
 #[test]
 fn test_chart_line_missing_data() {
-    termgfx()
-        .args(["chart", "line"])
-        .assert()
-        .failure();
+    termgfx().args(["chart", "line"]).assert().failure();
 }
 
 #[test]
 fn test_chart_bar_missing_data() {
-    termgfx()
-        .args(["chart", "bar"])
-        .assert()
-        .failure();
+    termgfx().args(["chart", "bar"]).assert().failure();
 }
 
 #[test]
 fn test_chart_pie_missing_data() {
-    termgfx()
-        .args(["chart", "pie"])
-        .assert()
-        .failure();
+    termgfx().args(["chart", "pie"]).assert().failure();
 }

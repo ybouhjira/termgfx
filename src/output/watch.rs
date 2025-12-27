@@ -43,7 +43,7 @@ pub fn exec_command(command: &str) -> Result<String, String> {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     if !stderr.is_empty() && !output.status.success() {
-        return Err(format!("{}", stderr.trim()));
+        return Err(stderr.trim().to_string());
     }
 
     Ok(stdout.trim().to_string())
@@ -73,6 +73,7 @@ pub fn clear_screen() {
 }
 
 /// Clear the current line and move cursor to beginning
+#[allow(dead_code)]
 pub fn clear_line() {
     let mut stdout = io::stdout();
     stdout
@@ -83,6 +84,7 @@ pub fn clear_line() {
 }
 
 /// Move cursor to beginning of line
+#[allow(dead_code)]
 pub fn move_to_line_start() {
     let mut stdout = io::stdout();
     stdout.execute(cursor::MoveToColumn(0)).ok();
@@ -173,7 +175,7 @@ fn format_interval(d: Duration) -> String {
     let ms = d.as_millis();
     if ms < 1000 {
         format!("{}ms", ms)
-    } else if ms % 1000 == 0 {
+    } else if ms.is_multiple_of(1000) {
         format!("{}s", ms / 1000)
     } else {
         format!("{:.1}s", d.as_secs_f64())

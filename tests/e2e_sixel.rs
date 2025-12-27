@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 
 const TEST_IMAGE: &str = "docs/gifs/box.gif";
@@ -74,10 +75,7 @@ fn test_sixel_dcs_sequence() {
     );
 
     // Check for Sixel end: ESC \
-    assert!(
-        stdout.contains("\x1b\\"),
-        "Should end with \\x1b\\\\"
-    );
+    assert!(stdout.contains("\x1b\\"), "Should end with \\x1b\\\\");
 }
 
 /// Test that sixel contains color palette

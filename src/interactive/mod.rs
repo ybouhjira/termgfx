@@ -1,10 +1,10 @@
-pub mod input;
-pub mod select;
 pub mod confirm;
 pub mod file;
 pub mod filter;
-pub mod pager;
 pub mod form;
-pub mod tui;
+pub mod input;
+pub mod pager;
 pub mod playground;
+pub mod select;
+pub mod tui;
 pub mod wizard;

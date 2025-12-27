@@ -1,6 +1,5 @@
-use std::process::Command;
-
 /// Style configuration for notifications
+#[allow(dead_code)]
 struct NotificationStyle {
     emoji: &'static str,
     color: &'static str,
@@ -65,40 +64,47 @@ fn render_terminal(message: &str, title: Option<&str>, style: &NotificationStyle
     print!("\x07");
 
     // Top border
-    println!("{}{}╭─────────────────────────────────────────╮{}",
-             style.color, bold, reset);
+    println!(
+        "{}{}╭─────────────────────────────────────────╮{}",
+        style.color, bold, reset
+    );
 
     // Title (if provided) or emoji-only line
     if let Some(t) = title {
-        println!("{}{}│ {}  {}                                 │{}",
-                 style.color, bold, style.emoji, t, reset);
-        println!("{}{}├─────────────────────────────────────────┤{}",
-                 style.color, bold, reset);
+        println!(
+            "{}{}│ {}  {}                                 │{}",
+            style.color, bold, style.emoji, t, reset
+        );
+        println!(
+            "{}{}├─────────────────────────────────────────┤{}",
+            style.color, bold, reset
+        );
     } else {
-        println!("{}{}│ {}                                      │{}",
-                 style.color, bold, style.emoji, reset);
+        println!(
+            "{}{}│ {}                                      │{}",
+            style.color, bold, style.emoji, reset
+        );
     }
 
     // Message (word-wrapped to fit box)
     let wrapped_lines = wrap_text(message, 38);
     for line in wrapped_lines {
-        println!("{}{}│ {:<39} │{}",
-                 style.color, bold, line, reset);
+        println!("{}{}│ {:<39} │{}", style.color, bold, line, reset);
     }
 
     // Bottom border
-    println!("{}{}╰─────────────────────────────────────────╯{}",
-             style.color, bold, reset);
+    println!(
+        "{}{}╰─────────────────────────────────────────╯{}",
+        style.color, bold, reset
+    );
 }
 
 /// Render desktop notification using macOS osascript
 fn render_desktop(message: &str, title: Option<&str>, style: &NotificationStyle, sound: bool) {
     #[cfg(target_os = "macos")]
     {
-        let notification_title = format!("{} {}",
-            style.emoji,
-            title.unwrap_or("Notification")
-        );
+        use std::process::Command;
+        let notification_title = format!("{} {}", style.emoji, title.unwrap_or("Notification"));
 
         let mut script = format!(
             "display notification \"{}\" with title \"{}\"",
@@ -110,10 +116,7 @@ fn render_desktop(message: &str, title: Option<&str>, style: &NotificationStyle,
             script.push_str(&format!(" sound name \"{}\"", style.sound));
         }
 
-        let result = Command::new("osascript")
-            .arg("-e")
-            .arg(&script)
-            .output();
+        let result = Command::new("osascript").arg("-e").arg(&script).output();
 
         // Graceful fallback - don't panic if desktop notification fails
         if let Err(_e) = result {
@@ -137,7 +140,7 @@ fn wrap_text(text: &str, width: usize) -> Vec<String> {
     for word in text.split_whitespace() {
         if current_line.is_empty() {
             current_line = word.to_string();
-        } else if current_line.len() + word.len() + 1 <= width {
+        } else if current_line.len() + word.len() < width {
             current_line.push(' ');
             current_line.push_str(word);
         } else {

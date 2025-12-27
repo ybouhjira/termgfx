@@ -1,8 +1,8 @@
 use owo_colors::{OwoColorize, Style};
-use unicode_width::UnicodeWidthStr;
 use std::io::{stdout, Write};
 use std::thread;
 use std::time::Duration;
+use unicode_width::UnicodeWidthStr;
 
 /// Border character set for different styles
 #[derive(Debug, Clone)]
@@ -94,7 +94,14 @@ pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
 
 /// Render a styled box with optional animation
 /// animation_time_ms: total animation duration in milliseconds (delay is calculated per line)
-pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&str>, animate: bool, animation_time_ms: u64) {
+pub fn render_animated(
+    message: &str,
+    style: &str,
+    border: &str,
+    emoji: Option<&str>,
+    animate: bool,
+    animation_time_ms: u64,
+) {
     let borders = BorderChars::get(border);
     let color_style = get_style(style);
     let emoji_str = emoji.or_else(|| get_default_emoji(style));
@@ -136,9 +143,11 @@ pub fn render_animated(message: &str, style: &str, border: &str, emoji: Option<&
 
     for (idx, line) in lines.iter().enumerate() {
         let mut content = String::new();
-        if idx == 0 && emoji_str.is_some() {
-            content.push_str(emoji_str.unwrap());
-            content.push(' ');
+        if idx == 0 {
+            if let Some(emoji) = emoji_str {
+                content.push_str(emoji);
+                content.push(' ');
+            }
         }
         content.push_str(line);
         let content_width = UnicodeWidthStr::width(content.as_str());

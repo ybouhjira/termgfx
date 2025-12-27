@@ -1,14 +1,14 @@
-use owo_colors::OwoColorize;
 use crossterm::{
-    cursor::{Hide, Show, MoveToColumn, MoveTo},
+    cursor::{Hide, MoveTo, MoveToColumn, Show},
     terminal::{Clear, ClearType},
     ExecutableCommand,
 };
+use owo_colors::OwoColorize;
 use std::io::{stdout, IsTerminal, Write};
-use std::thread;
-use std::time::Duration;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 const BRAILLE_OFFSET: u32 = 0x2800;
 const HEIGHT: usize = 10;
@@ -21,7 +21,12 @@ pub struct LineChart<'a> {
 }
 
 impl<'a> LineChart<'a> {
-    pub fn new(data: &'a str, title: Option<&'a str>, animate: bool, animation_time_ms: u64) -> Self {
+    pub fn new(
+        data: &'a str,
+        title: Option<&'a str>,
+        animate: bool,
+        animation_time_ms: u64,
+    ) -> Self {
         Self {
             data,
             title,
@@ -39,7 +44,8 @@ impl<'a> LineChart<'a> {
     }
 
     fn _render_static(&self) {
-        let values: Vec<f64> = self.data
+        let values: Vec<f64> = self
+            .data
             .split(',')
             .filter_map(|s| s.trim().parse().ok())
             .collect();
@@ -56,7 +62,11 @@ impl<'a> LineChart<'a> {
 
         let max_val = values.iter().cloned().fold(f64::MIN, f64::max);
         let min_val = values.iter().cloned().fold(f64::MAX, f64::min);
-        let range = if (max_val - min_val).abs() < f64::EPSILON { 1.0 } else { max_val - min_val };
+        let range = if (max_val - min_val).abs() < f64::EPSILON {
+            1.0
+        } else {
+            max_val - min_val
+        };
 
         let width = values.len() * 2;
         let mut canvas = vec![vec![0u8; width]; HEIGHT * 4];
@@ -125,7 +135,8 @@ impl<'a> LineChart<'a> {
     }
 
     fn _render_animated(&self) {
-        let values: Vec<f64> = self.data
+        let values: Vec<f64> = self
+            .data
             .split(',')
             .filter_map(|s| s.trim().parse().ok())
             .collect();
@@ -154,7 +165,11 @@ impl<'a> LineChart<'a> {
 
         let max_val = values.iter().cloned().fold(f64::MIN, f64::max);
         let min_val = values.iter().cloned().fold(f64::MAX, f64::min);
-        let range = if (max_val - min_val).abs() < f64::EPSILON { 1.0 } else { max_val - min_val };
+        let range = if (max_val - min_val).abs() < f64::EPSILON {
+            1.0
+        } else {
+            max_val - min_val
+        };
 
         let width = values.len() * 2;
         let mut current_canvas = vec![vec![0u8; width]; HEIGHT * 4];
@@ -204,15 +219,20 @@ impl<'a> LineChart<'a> {
 
             // Clear previous chart drawing and redraw
             let _ = stdout.execute(MoveTo(0, num_lines_before_chart as u16));
-            for _ in 0..(HEIGHT + 1) { // Clear chart area + axis line
+            for _ in 0..(HEIGHT + 1) {
+                // Clear chart area + axis line
                 let _ = stdout.execute(Clear(ClearType::CurrentLine));
                 let _ = writeln!(stdout);
             }
             let _ = stdout.execute(MoveTo(0, num_lines_before_chart as u16)); // Move back up
 
             if let Some(title_text) = self.title {
-                let _ = writeln!(stdout, "{}
-", title_text.bright_cyan().bold());
+                let _ = writeln!(
+                    stdout,
+                    "{}
+",
+                    title_text.bright_cyan().bold()
+                );
             }
 
             for row in 0..HEIGHT {

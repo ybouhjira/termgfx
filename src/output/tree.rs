@@ -7,10 +7,10 @@ use std::time::Duration;
 /// Tree characters for drawing hierarchical structures
 #[derive(Debug, Clone)]
 struct TreeChars {
-    branch: &'static str,    // ├──
-    last: &'static str,      // └──
-    vertical: &'static str,  // │
-    space: &'static str,     // "   "
+    branch: &'static str,   // ├──
+    last: &'static str,     // └──
+    vertical: &'static str, // │
+    space: &'static str,    // "   "
 }
 
 impl TreeChars {
@@ -46,7 +46,11 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
             let entries: Vec<_> = map.iter().collect();
             for (i, (key, val)) in entries.iter().enumerate() {
                 let is_last_item = i == entries.len() - 1;
-                let connector = if is_last_item { chars.last } else { chars.branch };
+                let connector = if is_last_item {
+                    chars.last
+                } else {
+                    chars.branch
+                };
 
                 // Icon based on value type
                 let icon = match val {
@@ -66,7 +70,11 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
 
                 // Recurse for nested objects
                 if let Value::Object(_) = val {
-                    let extension = if is_last_item { chars.space } else { chars.vertical };
+                    let extension = if is_last_item {
+                        chars.space
+                    } else {
+                        chars.vertical
+                    };
                     let new_prefix = format!("{}{}", prefix, extension);
                     render_json_tree(val, &new_prefix, is_last_item, depth + 1, chars);
                 }
@@ -75,7 +83,11 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
         Value::Array(arr) => {
             for (i, item) in arr.iter().enumerate() {
                 let is_last_item = i == arr.len() - 1;
-                let connector = if is_last_item { chars.last } else { chars.branch };
+                let connector = if is_last_item {
+                    chars.last
+                } else {
+                    chars.branch
+                };
 
                 println!(
                     "{}{}📌 {}",
@@ -84,7 +96,11 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
                     format!("[{}]", i).style(color)
                 );
 
-                let extension = if is_last_item { chars.space } else { chars.vertical };
+                let extension = if is_last_item {
+                    chars.space
+                } else {
+                    chars.vertical
+                };
                 let new_prefix = format!("{}{}", prefix, extension);
                 render_json_tree(item, &new_prefix, is_last_item, depth + 1, chars);
             }
@@ -94,6 +110,7 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
 }
 
 /// Render a tree from inline data format: "root>child1,child2>grandchild"
+#[allow(dead_code)]
 fn render_inline_tree(data: &str) {
     render_inline_tree_animated(data, false, 500);
 }
@@ -109,7 +126,11 @@ fn render_inline_tree_animated(data: &str, animate: bool, animation_time_ms: u64
     }
 
     // Count total nodes: root + all children across all levels
-    let total_nodes: usize = 1 + parts.iter().skip(1).map(|p| p.split(',').count()).sum::<usize>();
+    let total_nodes: usize = 1 + parts
+        .iter()
+        .skip(1)
+        .map(|p| p.split(',').count())
+        .sum::<usize>();
     let delay = if animate && total_nodes > 0 {
         Duration::from_millis(animation_time_ms / total_nodes as u64)
     } else {
@@ -150,13 +171,19 @@ fn render_inline_tree_animated(data: &str, animate: bool, animation_time_ms: u64
 }
 
 /// Main render function - handles all tree types
+#[allow(dead_code)]
 pub fn render(data: Option<&str>, path: Option<&str>) {
     render_animated(data, path, false, 500);
 }
 
 /// Render tree with optional animation
 /// animation_time_ms: total animation duration in milliseconds (delay is calculated per node)
-pub fn render_animated(data: Option<&str>, path: Option<&str>, animate: bool, animation_time_ms: u64) {
+pub fn render_animated(
+    data: Option<&str>,
+    path: Option<&str>,
+    animate: bool,
+    animation_time_ms: u64,
+) {
     let chars = TreeChars::unicode();
 
     if let Some(_p) = path {
@@ -172,11 +199,15 @@ pub fn render_animated(data: Option<&str>, path: Option<&str>, animate: bool, an
         let mut buffer = String::new();
 
         if let Err(e) = io::stdin().read_to_string(&mut buffer) {
-            eprintln!("{} Failed to read stdin: {}", "Error:".bright_red().bold(), e);
+            eprintln!(
+                "{} Failed to read stdin: {}",
+                "Error:".bright_red().bold(),
+                e
+            );
             std::process::exit(1);
         }
 
-        match serde_json::from_str::<Value>(&buffer.trim()) {
+        match serde_json::from_str::<Value>(buffer.trim()) {
             Ok(json) => {
                 println!("{} {}", "📁".bright_cyan(), "root".bright_cyan().bold());
                 render_json_tree(&json, "", true, 0, &chars);

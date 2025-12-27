@@ -120,7 +120,7 @@ pub fn columns(
 
     let num_cols = widths.len();
     let total_lines = lines.len();
-    let lines_per_col = (total_lines + num_cols - 1) / num_cols; // Ceiling division
+    let lines_per_col = total_lines.div_ceil(num_cols); // Ceiling division
 
     let mut columns: Vec<Vec<&str>> = vec![Vec::new(); num_cols];
     for (i, line) in lines.iter().enumerate() {
@@ -176,7 +176,7 @@ pub fn stack(
     let max_width = inputs
         .iter()
         .flat_map(|s| s.lines())
-        .map(|line| display_width(line))
+        .map(display_width)
         .max()
         .unwrap_or(0);
 

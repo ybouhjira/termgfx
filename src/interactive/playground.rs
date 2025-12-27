@@ -221,17 +221,18 @@ impl PlaygroundApp {
             ComponentPage::Gauge => match idx {
                 0 => {
                     if let Ok(v) = value.parse::<f64>() {
-                        self.gauge_params.value = v.min(100.0).max(0.0);
+                        self.gauge_params.value = v.clamp(0.0, 100.0);
                     }
                 }
                 1 => self.gauge_params.label = value,
                 2 => self.gauge_params.style = value,
                 _ => {}
             },
-            ComponentPage::Sparkline => match idx {
-                0 => self.sparkline_params.data = value,
-                _ => {}
-            },
+            ComponentPage::Sparkline => {
+                if idx == 0 {
+                    self.sparkline_params.data = value
+                }
+            }
         }
     }
 
@@ -278,8 +279,7 @@ pub fn render() {
 fn run_playground() -> io::Result<()> {
     // Check for interactive terminal
     if !std::io::stdin().is_terminal() {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        return Err(io::Error::other(
             "Playground requires an interactive terminal (TTY)",
         ));
     }
@@ -547,14 +547,14 @@ fn render_box_preview(stdout: &mut io::Stdout, params: &BoxParams) -> io::Result
         "rounded" => "╭─╮│╰─╯",
         "double" => "╔═╗║╚═╝",
         "thick" => "┏━┓┃┗━┛",
-        "single" | _ => "┌─┐│└─┘",
+        _ => "┌─┐│└─┘", // single (default)
     };
 
     let color = match params.style.as_str() {
         "success" => Color::Green,
         "warning" => Color::Yellow,
         "danger" => Color::Red,
-        "info" | _ => Color::Cyan,
+        _ => Color::Cyan, // info (default)
     };
 
     let chars: Vec<char> = border_char.chars().collect();
@@ -598,7 +598,7 @@ fn render_progress_preview(stdout: &mut io::Stdout, params: &ProgressParams) -> 
         "blocks" => "█",
         "modern" => "━",
         "thin" => "─",
-        "gradient" | _ => "█",
+        _ => "█", // gradient (default)
     };
 
     execute!(stdout, SetForegroundColor(Color::Green))?;
@@ -609,11 +609,7 @@ fn render_progress_preview(stdout: &mut io::Stdout, params: &ProgressParams) -> 
     for _ in filled..width {
         execute!(stdout, Print("░"))?;
     }
-    execute!(
-        stdout,
-        ResetColor,
-        Print(format!(" {}%\n", params.percent))
-    )?;
+    execute!(stdout, ResetColor, Print(format!(" {}%\n", params.percent)))?;
 
     Ok(())
 }
@@ -649,14 +645,11 @@ fn render_gauge_preview(stdout: &mut io::Stdout, params: &GaugeParams) -> io::Re
     Ok(())
 }
 
-fn render_sparkline_preview(
-    stdout: &mut io::Stdout,
-    params: &SparklineParams,
-) -> io::Result<()> {
+fn render_sparkline_preview(stdout: &mut io::Stdout, params: &SparklineParams) -> io::Result<()> {
     // Parse data and render mini chart
     let values: Vec<f64> = params
         .data
-        .split(|c| c == ',' || c == ';')
+        .split([',', ';'])
         .filter_map(|s| s.trim().parse().ok())
         .collect();
 
@@ -679,7 +672,10 @@ fn render_sparkline_preview(
         } else {
             spark_chars.len() / 2
         };
-        execute!(stdout, Print(spark_chars[normalized.min(spark_chars.len() - 1)]))?;
+        execute!(
+            stdout,
+            Print(spark_chars[normalized.min(spark_chars.len() - 1)])
+        )?;
     }
 
     execute!(stdout, ResetColor, Print("\n"))?;

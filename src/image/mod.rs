@@ -1,6 +1,6 @@
 use image::{DynamicImage, GenericImageView, ImageFormat};
-use std::io::{self, Write};
 use std::env;
+use std::io::{self, Write};
 
 /// Protocol to use for rendering images
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -103,7 +103,11 @@ fn render_kitty(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     let scaled_img = if img_width > max_width_px {
         let scale = max_width_px as f32 / img_width as f32;
         let new_height = (img_height as f32 * scale) as u32;
-        img.resize(max_width_px, new_height, image::imageops::FilterType::Lanczos3)
+        img.resize(
+            max_width_px,
+            new_height,
+            image::imageops::FilterType::Lanczos3,
+        )
     } else {
         img.clone()
     };
@@ -124,7 +128,11 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     let scaled_img = if img_width > max_width_px {
         let scale = max_width_px as f32 / img_width as f32;
         let new_height = (img_height as f32 * scale) as u32;
-        img.resize(max_width_px, new_height, image::imageops::FilterType::Lanczos3)
+        img.resize(
+            max_width_px,
+            new_height,
+            image::imageops::FilterType::Lanczos3,
+        )
     } else {
         img.clone()
     };
@@ -165,6 +173,7 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     print!("\x1bP0;0;0q\"1;1;{};{}", width, height);
 
     // Emit Palette
+    #[allow(clippy::needless_range_loop)]
     for i in 0..216 {
         if used_colors[i] {
             let r_idx = i / 36;
@@ -184,8 +193,11 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     for y in (0..height).step_by(6) {
         let rows_in_band = std::cmp::min(6, height - y);
 
+        #[allow(clippy::needless_range_loop)]
         for color_idx in 0..216 {
-            if !used_colors[color_idx] { continue; }
+            if !used_colors[color_idx] {
+                continue;
+            }
 
             let mut has_pixels_for_color = false;
             let mut color_cols = vec![0u8; width as usize];
@@ -238,7 +250,11 @@ fn render_iterm2(img: &DynamicImage, term_width: usize, _term_height: usize) -> 
     let scaled_img = if img_width > max_width_px {
         let scale = max_width_px as f32 / img_width as f32;
         let new_height = (img_height as f32 * scale) as u32;
-        img.resize(max_width_px, new_height, image::imageops::FilterType::Lanczos3)
+        img.resize(
+            max_width_px,
+            new_height,
+            image::imageops::FilterType::Lanczos3,
+        )
     } else {
         img.clone()
     };
@@ -250,7 +266,11 @@ fn render_iterm2(img: &DynamicImage, term_width: usize, _term_height: usize) -> 
     Ok(())
 }
 
-fn render_halfblock(img: &DynamicImage, term_width: usize, term_height: usize) -> anyhow::Result<()> {
+fn render_halfblock(
+    img: &DynamicImage,
+    term_width: usize,
+    term_height: usize,
+) -> anyhow::Result<()> {
     let max_chars_width = term_width - 2;
     let max_chars_height = (term_height - 4) * 2;
     let (img_width, img_height) = img.dimensions();
@@ -259,7 +279,11 @@ fn render_halfblock(img: &DynamicImage, term_width: usize, term_height: usize) -
     let scale = width_scale.min(height_scale);
     let scaled_width = (img_width as f32 * scale) as u32;
     let scaled_height = (img_height as f32 * scale) as u32;
-    let resized = img.resize_exact(scaled_width, scaled_height, image::imageops::FilterType::Lanczos3);
+    let resized = img.resize_exact(
+        scaled_width,
+        scaled_height,
+        image::imageops::FilterType::Lanczos3,
+    );
     let rgb_img = resized.to_rgb8();
     let (width, height) = rgb_img.dimensions();
     for y in (0..height).step_by(2) {
@@ -272,8 +296,12 @@ fn render_halfblock(img: &DynamicImage, term_width: usize, term_height: usize) -
             };
             print!(
                 "\x1b[38;2;{};{};{}m\x1b[48;2;{};{};{}m▀",
-                top_pixel[0], top_pixel[1], top_pixel[2],
-                bottom_pixel[0], bottom_pixel[1], bottom_pixel[2]
+                top_pixel[0],
+                top_pixel[1],
+                top_pixel[2],
+                bottom_pixel[0],
+                bottom_pixel[1],
+                bottom_pixel[2]
             );
         }
         println!("\x1b[0m");
@@ -296,8 +324,16 @@ fn base64_encode(data: &[u8]) -> String {
         let b4 = (buf[2] & 0x3f) as usize;
         result.push(CHARS[b1] as char);
         result.push(CHARS[b2] as char);
-        result.push(if chunk.len() > 1 { CHARS[b3] as char } else { '=' });
-        result.push(if chunk.len() > 2 { CHARS[b4] as char } else { '=' });
+        result.push(if chunk.len() > 1 {
+            CHARS[b3] as char
+        } else {
+            '='
+        });
+        result.push(if chunk.len() > 2 {
+            CHARS[b4] as char
+        } else {
+            '='
+        });
     }
     result
 }
@@ -339,8 +375,6 @@ mod tests {
 
     #[test]
     fn test_sixel_output_format() {
-        use std::io::Write;
-
         // Create a small test image
         let img = DynamicImage::ImageRgba8(image::RgbaImage::from_fn(4, 6, |x, y| {
             if (x + y) % 2 == 0 {

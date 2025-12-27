@@ -55,17 +55,15 @@ fn parse_data(data: &str) -> Vec<Vec<f64>> {
 
 fn parse_file(path: &str) -> Vec<Vec<f64>> {
     match fs::read_to_string(path) {
-        Ok(content) => {
-            content
-                .lines()
-                .map(|line| {
-                    line.split(',')
-                        .filter_map(|cell| cell.trim().parse::<f64>().ok())
-                        .collect()
-                })
-                .filter(|row: &Vec<f64>| !row.is_empty())
-                .collect()
-        }
+        Ok(content) => content
+            .lines()
+            .map(|line| {
+                line.split(',')
+                    .filter_map(|cell| cell.trim().parse::<f64>().ok())
+                    .collect()
+            })
+            .filter(|row: &Vec<f64>| !row.is_empty())
+            .collect(),
         Err(e) => {
             eprintln!("Error reading file: {}", e);
             std::process::exit(1);

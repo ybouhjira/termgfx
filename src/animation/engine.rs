@@ -1,20 +1,22 @@
 use crossterm::{
-    cursor::{Hide, Show, MoveToColumn, MoveTo},
+    cursor::{Hide, MoveTo, MoveToColumn, Show},
     terminal::{Clear, ClearType},
     ExecutableCommand,
 };
 use std::io::{stdout, Write};
-use std::thread;
-use std::time::{Duration, Instant};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::thread;
+use std::time::{Duration, Instant};
 
 /// Core animation engine that handles frame timing and terminal control
+#[allow(dead_code)]
 pub struct Animator {
     running: Arc<AtomicBool>,
     frame_delay: Duration,
 }
 
+#[allow(dead_code)]
 impl Animator {
     pub fn new(frame_delay_ms: u64) -> Self {
         let running = Arc::new(AtomicBool::new(true));
@@ -103,7 +105,12 @@ impl Animator {
             // Move up and redraw all lines
             for (i, content) in contents.iter().enumerate() {
                 let line_num = lines - contents.len() + i;
-                stdout.execute(MoveTo(0, (line_num as u16).saturating_sub(lines as u16 - 1))).unwrap();
+                stdout
+                    .execute(MoveTo(
+                        0,
+                        (line_num as u16).saturating_sub(lines as u16 - 1),
+                    ))
+                    .unwrap();
                 stdout.execute(Clear(ClearType::CurrentLine)).unwrap();
                 print!("{}", content);
             }

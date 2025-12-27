@@ -68,7 +68,10 @@ fn render_custom_gradient(percent: u8, start: (u8, u8, u8), end: (u8, u8, u8)) {
     for _ in 0..empty {
         bar.push_str("\x1b[38;2;72;79;88m░\x1b[0m");
     }
-    let percent_str = format!("\x1b[1m\x1b[38;2;{};{};{}m{}%\x1b[0m", end.0, end.1, end.2, percent);
+    let percent_str = format!(
+        "\x1b[1m\x1b[38;2;{};{};{}m{}%\x1b[0m",
+        end.0, end.1, end.2, percent
+    );
     println!("{} {}", bar, percent_str);
 }
 
@@ -77,8 +80,12 @@ fn render_blocks(percent: u8) {
     let filled = (width * percent as usize) / 100;
     let empty = width - filled;
     let mut bar = String::new();
-    for _ in 0..filled { bar.push('█'); }
-    for _ in 0..empty { bar.push('░'); }
+    for _ in 0..filled {
+        bar.push('█');
+    }
+    for _ in 0..empty {
+        bar.push('░');
+    }
     let percent_str = format!("{}%", percent);
     println!("{} {}", bar.cyan(), percent_str.bright_cyan().bold());
 }
@@ -90,16 +97,26 @@ fn render_gradient(percent: u8) {
     let mut bar = String::new();
     for i in 0..filled {
         let progress = (i as f32 / width as f32) * 100.0;
-        let char = if progress < 33.0 { '█'.red().to_string() }
-        else if progress < 66.0 { '█'.yellow().to_string() }
-        else { '█'.green().to_string() };
+        let char = if progress < 33.0 {
+            '█'.red().to_string()
+        } else if progress < 66.0 {
+            '█'.yellow().to_string()
+        } else {
+            '█'.green().to_string()
+        };
         bar.push_str(&char);
     }
-    for _ in 0..empty { bar.push_str(&"░".bright_black().to_string()); }
+    for _ in 0..empty {
+        bar.push_str(&"░".bright_black().to_string());
+    }
     let percent_display = format!("{}%", percent);
-    let percent_colored = if percent < 33 { percent_display.red().to_string() }
-    else if percent < 66 { percent_display.yellow().to_string() }
-    else { percent_display.green().to_string() };
+    let percent_colored = if percent < 33 {
+        percent_display.red().to_string()
+    } else if percent < 66 {
+        percent_display.yellow().to_string()
+    } else {
+        percent_display.green().to_string()
+    };
     println!("{} {}", bar, percent_colored.bold());
 }
 
@@ -109,9 +126,15 @@ fn render_classic(percent: u8) {
     let empty = width.saturating_sub(filled + 1);
     let mut bar = String::new();
     bar.push('[');
-    for _ in 0..filled { bar.push_str(&"=".cyan().to_string()); }
-    if filled < width { bar.push_str(&">".bright_cyan().to_string()); }
-    for _ in 0..empty { bar.push(' '); }
+    for _ in 0..filled {
+        bar.push_str(&"=".cyan().to_string());
+    }
+    if filled < width {
+        bar.push_str(&">".bright_cyan().to_string());
+    }
+    for _ in 0..empty {
+        bar.push(' ');
+    }
     bar.push(']');
     let percent_str = format!("{}%", percent);
     println!("{} {}", bar, percent_str.bright_cyan().bold());
@@ -122,8 +145,12 @@ fn render_thin(percent: u8) {
     let filled = (width * percent as usize) / 100;
     let empty = width - filled;
     let mut bar = String::new();
-    for _ in 0..filled { bar.push_str(&"━".cyan().to_string()); }
-    for _ in 0..empty { bar.push_str(&"━".bright_black().to_string()); }
+    for _ in 0..filled {
+        bar.push_str(&"━".cyan().to_string());
+    }
+    for _ in 0..empty {
+        bar.push_str(&"━".bright_black().to_string());
+    }
     let percent_str = format!("{}%", percent);
     println!("{} {}", bar, percent_str.bright_cyan().bold());
 }
@@ -134,15 +161,29 @@ fn render_animated(percent: u8) {
     let empty = width - filled;
     let mut bar = String::new();
     for i in 0..filled {
-        let char = match i % 4 { 0 => '█', 1 => '▓', 2 => '▒', 3 => '░', _ => '█' };
+        let char = match i % 4 {
+            0 => '█',
+            1 => '▓',
+            2 => '▒',
+            3 => '░',
+            _ => '█',
+        };
         bar.push_str(&char.cyan().to_string());
     }
-    for _ in 0..empty { bar.push(' '); }
+    for _ in 0..empty {
+        bar.push(' ');
+    }
     let percent_str = format!("{}%", percent);
     println!("{} {}", bar, percent_str.bright_cyan().bold());
 }
 
-pub fn render_animated_progress(target: u8, style: &str, from: Option<&str>, to: Option<&str>, duration_ms: u64) {
+pub fn render_animated_progress(
+    target: u8,
+    style: &str,
+    from: Option<&str>,
+    to: Option<&str>,
+    duration_ms: u64,
+) {
     let target = target.min(100);
 
     // If not a TTY (piped/captured), just show final result
@@ -193,7 +234,10 @@ fn build_custom_gradient_bar(percent: u8, start: (u8, u8, u8), end: (u8, u8, u8)
     for _ in 0..empty {
         bar.push_str("\x1b[38;2;72;79;88m░\x1b[0m");
     }
-    let percent_str = format!("\x1b[1m\x1b[38;2;{};{};{}m{:>3}%\x1b[0m", end.0, end.1, end.2, percent);
+    let percent_str = format!(
+        "\x1b[1m\x1b[38;2;{};{};{}m{:>3}%\x1b[0m",
+        end.0, end.1, end.2, percent
+    );
     format!("{} {}", bar, percent_str)
 }
 

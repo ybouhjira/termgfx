@@ -1,7 +1,7 @@
+use owo_colors::OwoColorize;
 use std::io::{stdout, Write};
 use std::thread;
 use std::time::Duration;
-use owo_colors::OwoColorize;
 
 const BLOCKS: [char; 8] = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
 

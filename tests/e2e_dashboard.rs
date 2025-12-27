@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
@@ -29,8 +30,10 @@ fn test_dashboard_basic_single_panel() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x1",
-            "--panels", "box:Hello Dashboard"
+            "--layout",
+            "1x1",
+            "--panels",
+            "box:Hello Dashboard",
         ])
         .assert()
         .success()
@@ -42,8 +45,10 @@ fn test_dashboard_grid_layout_2x2() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "2x2",
-            "--panels", "box:Panel 1,box:Panel 2,box:Panel 3,box:Panel 4"
+            "--layout",
+            "2x2",
+            "--panels",
+            "box:Panel 1,box:Panel 2,box:Panel 3,box:Panel 4",
         ])
         .assert()
         .success()
@@ -58,8 +63,10 @@ fn test_dashboard_grid_layout_3x1() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "3x1",
-            "--panels", "box:Top,box:Middle,box:Bottom"
+            "--layout",
+            "3x1",
+            "--panels",
+            "box:Top,box:Middle,box:Bottom",
         ])
         .assert()
         .success()
@@ -73,9 +80,12 @@ fn test_dashboard_with_title() {
     termgfx()
         .args([
             "dashboard",
-            "--title", "System Dashboard",
-            "--layout", "2x1",
-            "--panels", "box:CPU,box:Memory"
+            "--title",
+            "System Dashboard",
+            "--layout",
+            "2x1",
+            "--panels",
+            "box:CPU,box:Memory",
         ])
         .assert()
         .success()
@@ -91,11 +101,7 @@ fn test_dashboard_with_title() {
 #[test]
 fn test_dashboard_progress_panel() {
     termgfx()
-        .args([
-            "dashboard",
-            "--layout", "1x1",
-            "--panels", "progress:75"
-        ])
+        .args(["dashboard", "--layout", "1x1", "--panels", "progress:75"])
         .assert()
         .success()
         .stdout(predicate::str::contains("75%"));
@@ -106,8 +112,10 @@ fn test_dashboard_sparkline_panel() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x1",
-            "--panels", "sparkline:1,2,3,4,5"
+            "--layout",
+            "1x1",
+            "--panels",
+            "sparkline:1,2,3,4,5",
         ])
         .assert()
         .success()
@@ -120,8 +128,10 @@ fn test_dashboard_sparkline_semicolon_delimiter() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x3",
-            "--panels", "box:Status,sparkline:10;20;30;40;50,progress:75"
+            "--layout",
+            "1x3",
+            "--panels",
+            "box:Status,sparkline:10;20;30;40;50,progress:75",
         ])
         .assert()
         .success()
@@ -132,11 +142,7 @@ fn test_dashboard_sparkline_semicolon_delimiter() {
 #[test]
 fn test_dashboard_gauge_panel() {
     termgfx()
-        .args([
-            "dashboard",
-            "--layout", "1x1",
-            "--panels", "gauge:50"
-        ])
+        .args(["dashboard", "--layout", "1x1", "--panels", "gauge:50"])
         .assert()
         .success()
         .stdout(predicate::str::contains("50%"));
@@ -147,8 +153,10 @@ fn test_dashboard_text_panel() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x1",
-            "--panels", "text:Simple text content"
+            "--layout",
+            "1x1",
+            "--panels",
+            "text:Simple text content",
         ])
         .assert()
         .success()
@@ -160,8 +168,10 @@ fn test_dashboard_mixed_panels() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "2x2",
-            "--panels", "box:Status,progress:75,sparkline:1,2,3,gauge:50"
+            "--layout",
+            "2x2",
+            "--panels",
+            "box:Status,progress:75,sparkline:1,2,3,gauge:50",
         ])
         .assert()
         .success()
@@ -179,9 +189,12 @@ fn test_dashboard_border_single() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x1",
-            "--panels", "box:Test",
-            "--border", "single"
+            "--layout",
+            "1x1",
+            "--panels",
+            "box:Test",
+            "--border",
+            "single",
         ])
         .assert()
         .success()
@@ -193,9 +206,12 @@ fn test_dashboard_border_double() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x1",
-            "--panels", "box:Test",
-            "--border", "double"
+            "--layout",
+            "1x1",
+            "--panels",
+            "box:Test",
+            "--border",
+            "double",
         ])
         .assert()
         .success()
@@ -207,9 +223,12 @@ fn test_dashboard_border_rounded() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "1x1",
-            "--panels", "box:Test",
-            "--border", "rounded"
+            "--layout",
+            "1x1",
+            "--panels",
+            "box:Test",
+            "--border",
+            "rounded",
         ])
         .assert()
         .success()
@@ -233,13 +252,14 @@ fn test_dashboard_from_config_file() {
   ]
 }"#;
 
-    let mut config_file = NamedTempFile::new().unwrap();
+    let config_file = NamedTempFile::new().unwrap();
     fs::write(config_file.path(), config_content).unwrap();
 
     termgfx()
         .args([
             "dashboard",
-            "--config", config_file.path().to_str().unwrap()
+            "--config",
+            config_file.path().to_str().unwrap(),
         ])
         .assert()
         .success()
@@ -258,15 +278,17 @@ fn test_dashboard_config_override_panels() {
   ]
 }"#;
 
-    let mut config_file = NamedTempFile::new().unwrap();
+    let config_file = NamedTempFile::new().unwrap();
     fs::write(config_file.path(), config_content).unwrap();
 
     // CLI panels should override config panels
     termgfx()
         .args([
             "dashboard",
-            "--config", config_file.path().to_str().unwrap(),
-            "--panels", "box:From CLI"
+            "--config",
+            config_file.path().to_str().unwrap(),
+            "--panels",
+            "box:From CLI",
         ])
         .assert()
         .success()
@@ -283,8 +305,10 @@ fn test_dashboard_missing_panels() {
     termgfx()
         .args([
             "dashboard",
-            "--layout", "2x2",
-            "--panels", "box:Panel 1,box:Panel 2"
+            "--layout",
+            "2x2",
+            "--panels",
+            "box:Panel 1,box:Panel 2",
         ])
         .assert()
         .failure()
@@ -294,11 +318,7 @@ fn test_dashboard_missing_panels() {
 #[test]
 fn test_dashboard_invalid_layout() {
     termgfx()
-        .args([
-            "dashboard",
-            "--layout", "invalid",
-            "--panels", "box:Test"
-        ])
+        .args(["dashboard", "--layout", "invalid", "--panels", "box:Test"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("Invalid layout format"));
@@ -307,11 +327,7 @@ fn test_dashboard_invalid_layout() {
 #[test]
 fn test_dashboard_invalid_panel_type() {
     termgfx()
-        .args([
-            "dashboard",
-            "--layout", "1x1",
-            "--panels", "invalid:Test"
-        ])
+        .args(["dashboard", "--layout", "1x1", "--panels", "invalid:Test"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("Unknown panel type"));
@@ -320,10 +336,7 @@ fn test_dashboard_invalid_panel_type() {
 #[test]
 fn test_dashboard_missing_config_file() {
     termgfx()
-        .args([
-            "dashboard",
-            "--config", "/nonexistent/file.json"
-        ])
+        .args(["dashboard", "--config", "/nonexistent/file.json"])
         .assert()
         .failure()
         .stderr(predicate::str::contains("Failed to read config"));
@@ -331,13 +344,14 @@ fn test_dashboard_missing_config_file() {
 
 #[test]
 fn test_dashboard_invalid_json_config() {
-    let mut config_file = NamedTempFile::new().unwrap();
+    let config_file = NamedTempFile::new().unwrap();
     fs::write(config_file.path(), "{ invalid json }").unwrap();
 
     termgfx()
         .args([
             "dashboard",
-            "--config", config_file.path().to_str().unwrap()
+            "--config",
+            config_file.path().to_str().unwrap(),
         ])
         .assert()
         .failure()
@@ -351,11 +365,7 @@ fn test_dashboard_invalid_json_config() {
 #[test]
 fn test_dashboard_empty_panel_content() {
     termgfx()
-        .args([
-            "dashboard",
-            "--layout", "1x1",
-            "--panels", "box:"
-        ])
+        .args(["dashboard", "--layout", "1x1", "--panels", "box:"])
         .assert()
         .success()
         .stdout(predicate::str::is_empty().not());
@@ -378,10 +388,7 @@ fn test_dashboard_large_grid() {
 fn test_dashboard_default_layout() {
     // Should use default 2x2 layout
     termgfx()
-        .args([
-            "dashboard",
-            "--panels", "box:1,box:2,box:3,box:4"
-        ])
+        .args(["dashboard", "--panels", "box:1,box:2,box:3,box:4"])
         .assert()
         .success()
         .stdout(predicate::str::contains("1"))

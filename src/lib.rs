@@ -8,13 +8,13 @@ use wasm_bindgen::prelude::*;
 
 // Re-export modules for CLI usage
 #[cfg(feature = "cli")]
-pub mod output;
-#[cfg(feature = "cli")]
 pub mod charts;
 #[cfg(feature = "cli")]
 pub mod image;
 #[cfg(feature = "cli")]
 pub mod interactive;
+#[cfg(feature = "cli")]
+pub mod output;
 #[cfg(feature = "cli")]
 pub mod script;
 
@@ -138,12 +138,18 @@ pub fn render_progress(percent: u8, style: &str) -> String {
         "blocks" => {
             let bar = "<span class=\"cyan\">█</span>".repeat(filled);
             let empty_bar = "<span class=\"dim\">░</span>".repeat(empty);
-            format!("{}{} <span class=\"cyan bold\">{}%</span>", bar, empty_bar, percent)
+            format!(
+                "{}{} <span class=\"cyan bold\">{}%</span>",
+                bar, empty_bar, percent
+            )
         }
         "dots" => {
             let bar = "<span class=\"cyan\">●</span>".repeat(filled);
             let empty_bar = "<span class=\"dim\">○</span>".repeat(empty);
-            format!("{}{} <span class=\"cyan bold\">{}%</span>", bar, empty_bar, percent)
+            format!(
+                "{}{} <span class=\"cyan bold\">{}%</span>",
+                bar, empty_bar, percent
+            )
         }
         "animated" => {
             let pattern = ['█', '▓', '▒', '░'];
@@ -151,7 +157,10 @@ pub fn render_progress(percent: u8, style: &str) -> String {
                 .map(|i| format!("<span class=\"cyan\">{}</span>", pattern[i % pattern.len()]))
                 .collect();
             let empty_bar = "<span class=\"dim\"> </span>".repeat(empty);
-            format!("{}{} <span class=\"cyan bold\">{}%</span>", bar, empty_bar, percent)
+            format!(
+                "{}{} <span class=\"cyan bold\">{}%</span>",
+                bar, empty_bar, percent
+            )
         }
         _ => {
             // Gradient: red -> yellow -> green
@@ -175,7 +184,10 @@ pub fn render_progress(percent: u8, style: &str) -> String {
             } else {
                 "green"
             };
-            format!("{}{} <span class=\"{} bold\">{}%</span>", bar, empty_bar, pct_class, percent)
+            format!(
+                "{}{} <span class=\"{} bold\">{}%</span>",
+                bar, empty_bar, pct_class, percent
+            )
         }
     }
 }
@@ -260,7 +272,11 @@ pub fn render_table(headers: &str, rows: &str, border: &str) -> String {
     output.push_str(&format!("<span class=\"dim\">{}</span>", v));
     for (i, header) in headers.iter().enumerate() {
         let padding = widths[i] - header.chars().count();
-        output.push_str(&format!(" <span class=\"cyan bold\">{}</span>{} ", header, " ".repeat(padding)));
+        output.push_str(&format!(
+            " <span class=\"cyan bold\">{}</span>{} ",
+            header,
+            " ".repeat(padding)
+        ));
         output.push_str(&format!("<span class=\"dim\">{}</span>", v));
     }
     output.push('\n');
@@ -285,7 +301,12 @@ pub fn render_table(headers: &str, rows: &str, border: &str) -> String {
                 if row_class.is_empty() {
                     output.push_str(&format!(" {}{} ", cell, " ".repeat(padding)));
                 } else {
-                    output.push_str(&format!(" <span class=\"{}\">{}</span>{} ", row_class, cell, " ".repeat(padding)));
+                    output.push_str(&format!(
+                        " <span class=\"{}\">{}</span>{} ",
+                        row_class,
+                        cell,
+                        " ".repeat(padding)
+                    ));
                 }
                 output.push_str(&format!("<span class=\"dim\">{}</span>", v));
             }
@@ -341,17 +362,32 @@ fn render_tree_value(value: &serde_json::Value, prefix: &str, depth: usize) -> S
             let entries: Vec<_> = map.iter().collect();
             for (i, (key, val)) in entries.iter().enumerate() {
                 let is_last_item = i == entries.len() - 1;
-                let connector = if is_last_item { "└── " } else { "├── " };
-                let icon = if val.is_object() { "📁" } else if val.is_array() { "📦" } else { "📄" };
+                let connector = if is_last_item {
+                    "└── "
+                } else {
+                    "├── "
+                };
+                let icon = if val.is_object() {
+                    "📁"
+                } else if val.is_array() {
+                    "📦"
+                } else {
+                    "📄"
+                };
 
                 output.push_str(&format!(
                     "{}<span class=\"{}\">{}</span>{} <span class=\"bold\">{}</span>\n",
                     prefix, color, connector, icon, key
                 ));
 
-                let new_prefix = format!("{}{}",
+                let new_prefix = format!(
+                    "{}{}",
                     prefix,
-                    if is_last_item { "    " } else { "<span class=\"dim\">│</span>   " }
+                    if is_last_item {
+                        "    "
+                    } else {
+                        "<span class=\"dim\">│</span>   "
+                    }
                 );
                 output.push_str(&render_tree_value(val, &new_prefix, depth + 1));
             }
@@ -359,21 +395,33 @@ fn render_tree_value(value: &serde_json::Value, prefix: &str, depth: usize) -> S
         serde_json::Value::Array(arr) => {
             for (i, val) in arr.iter().enumerate() {
                 let is_last_item = i == arr.len() - 1;
-                let connector = if is_last_item { "└── " } else { "├── " };
+                let connector = if is_last_item {
+                    "└── "
+                } else {
+                    "├── "
+                };
 
                 if val.is_string() {
                     output.push_str(&format!(
                         "{}<span class=\"{}\">{}</span><span class=\"green\">{}</span>\n",
-                        prefix, color, connector, val.as_str().unwrap()
+                        prefix,
+                        color,
+                        connector,
+                        val.as_str().unwrap()
                     ));
                 } else {
                     output.push_str(&format!(
                         "{}<span class=\"{}\">{}</span>\n",
                         prefix, color, connector
                     ));
-                    let new_prefix = format!("{}{}",
+                    let new_prefix = format!(
+                        "{}{}",
                         prefix,
-                        if is_last_item { "    " } else { "<span class=\"dim\">│</span>   " }
+                        if is_last_item {
+                            "    "
+                        } else {
+                            "<span class=\"dim\">│</span>   "
+                        }
                     );
                     output.push_str(&render_tree_value(val, &new_prefix, depth + 1));
                 }

@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::io::Write;
@@ -20,7 +21,11 @@ fn test_diff_identical_files() {
     writeln!(file2, "line 1\nline 2\nline 3").unwrap();
 
     termgfx()
-        .args(["diff", file1.path().to_str().unwrap(), file2.path().to_str().unwrap()])
+        .args([
+            "diff",
+            file1.path().to_str().unwrap(),
+            file2.path().to_str().unwrap(),
+        ])
         .assert()
         .success();
 }
@@ -34,7 +39,11 @@ fn test_diff_different_files() {
     writeln!(file2, "line 1\nmodified\nline 3").unwrap();
 
     termgfx()
-        .args(["diff", file1.path().to_str().unwrap(), file2.path().to_str().unwrap()])
+        .args([
+            "diff",
+            file1.path().to_str().unwrap(),
+            file2.path().to_str().unwrap(),
+        ])
         .assert()
         .success();
 }
@@ -48,7 +57,12 @@ fn test_diff_unified_format() {
     writeln!(file2, "a\nx\nc").unwrap();
 
     termgfx()
-        .args(["diff", file1.path().to_str().unwrap(), file2.path().to_str().unwrap(), "--unified"])
+        .args([
+            "diff",
+            file1.path().to_str().unwrap(),
+            file2.path().to_str().unwrap(),
+            "--unified",
+        ])
         .assert()
         .success();
 }
@@ -62,7 +76,14 @@ fn test_diff_with_context() {
     writeln!(file2, "1\n2\nX\n4\n5").unwrap();
 
     termgfx()
-        .args(["diff", file1.path().to_str().unwrap(), file2.path().to_str().unwrap(), "--unified", "--context", "2"])
+        .args([
+            "diff",
+            file1.path().to_str().unwrap(),
+            file2.path().to_str().unwrap(),
+            "--unified",
+            "--context",
+            "2",
+        ])
         .assert()
         .success();
 }
@@ -72,7 +93,11 @@ fn test_diff_nonexistent_file() {
     let file1 = NamedTempFile::new().unwrap();
 
     termgfx()
-        .args(["diff", file1.path().to_str().unwrap(), "/nonexistent/file.txt"])
+        .args([
+            "diff",
+            file1.path().to_str().unwrap(),
+            "/nonexistent/file.txt",
+        ])
         .assert()
         .failure();
 }
@@ -84,7 +109,13 @@ fn test_diff_nonexistent_file() {
 #[test]
 fn test_table_inline_data() {
     termgfx()
-        .args(["table", "--headers", "Name,Age,City", "--rows", "Alice,30,NYC|Bob,25,LA"])
+        .args([
+            "table",
+            "--headers",
+            "Name,Age,City",
+            "--rows",
+            "Alice,30,NYC|Bob,25,LA",
+        ])
         .assert()
         .success()
         .stdout(predicate::str::contains("Name"))
@@ -105,7 +136,15 @@ fn test_table_single_row() {
 #[test]
 fn test_table_border_single() {
     termgfx()
-        .args(["table", "--headers", "X,Y", "--rows", "1,2", "--border", "single"])
+        .args([
+            "table",
+            "--headers",
+            "X,Y",
+            "--rows",
+            "1,2",
+            "--border",
+            "single",
+        ])
         .assert()
         .success();
 }
@@ -113,7 +152,15 @@ fn test_table_border_single() {
 #[test]
 fn test_table_border_double() {
     termgfx()
-        .args(["table", "--headers", "X,Y", "--rows", "1,2", "--border", "double"])
+        .args([
+            "table",
+            "--headers",
+            "X,Y",
+            "--rows",
+            "1,2",
+            "--border",
+            "double",
+        ])
         .assert()
         .success();
 }
@@ -121,7 +168,15 @@ fn test_table_border_double() {
 #[test]
 fn test_table_border_rounded() {
     termgfx()
-        .args(["table", "--headers", "X,Y", "--rows", "1,2", "--border", "rounded"])
+        .args([
+            "table",
+            "--headers",
+            "X,Y",
+            "--rows",
+            "1,2",
+            "--border",
+            "rounded",
+        ])
         .assert()
         .success();
 }
@@ -129,7 +184,15 @@ fn test_table_border_rounded() {
 #[test]
 fn test_table_alignment_left() {
     termgfx()
-        .args(["table", "--headers", "Col", "--rows", "Data", "--alignment", "left"])
+        .args([
+            "table",
+            "--headers",
+            "Col",
+            "--rows",
+            "Data",
+            "--alignment",
+            "left",
+        ])
         .assert()
         .success();
 }
@@ -137,7 +200,15 @@ fn test_table_alignment_left() {
 #[test]
 fn test_table_alignment_center() {
     termgfx()
-        .args(["table", "--headers", "Col", "--rows", "Data", "--alignment", "center"])
+        .args([
+            "table",
+            "--headers",
+            "Col",
+            "--rows",
+            "Data",
+            "--alignment",
+            "center",
+        ])
         .assert()
         .success();
 }
@@ -145,7 +216,15 @@ fn test_table_alignment_center() {
 #[test]
 fn test_table_alignment_right() {
     termgfx()
-        .args(["table", "--headers", "Col", "--rows", "Data", "--alignment", "right"])
+        .args([
+            "table",
+            "--headers",
+            "Col",
+            "--rows",
+            "Data",
+            "--alignment",
+            "right",
+        ])
         .assert()
         .success();
 }
@@ -166,7 +245,13 @@ fn test_table_from_csv_file() {
 #[test]
 fn test_table_many_columns() {
     termgfx()
-        .args(["table", "--headers", "A,B,C,D,E", "--rows", "1,2,3,4,5|6,7,8,9,10"])
+        .args([
+            "table",
+            "--headers",
+            "A,B,C,D,E",
+            "--rows",
+            "1,2,3,4,5|6,7,8,9,10",
+        ])
         .assert()
         .success();
 }

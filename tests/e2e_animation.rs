@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -30,7 +31,9 @@ fn test_animate_progress() {
 #[test]
 fn test_animate_counter() {
     termgfx()
-        .args(["animate", "-t", "counter", "--from", "0", "--to", "10", "-D", "0.1"])
+        .args([
+            "animate", "-t", "counter", "--from", "0", "--to", "10", "-D", "0.1",
+        ])
         .assert()
         .success();
 }
@@ -38,7 +41,15 @@ fn test_animate_counter() {
 #[test]
 fn test_animate_typewriter() {
     termgfx()
-        .args(["animate", "-t", "typewriter", "--text", "Hello", "-D", "0.1"])
+        .args([
+            "animate",
+            "-t",
+            "typewriter",
+            "--text",
+            "Hello",
+            "-D",
+            "0.1",
+        ])
         .assert()
         .success();
 }
@@ -46,7 +57,15 @@ fn test_animate_typewriter() {
 #[test]
 fn test_animate_chart_build() {
     termgfx()
-        .args(["animate", "-t", "chart-build", "-d", "10,20,30", "-D", "0.1"])
+        .args([
+            "animate",
+            "-t",
+            "chart-build",
+            "-d",
+            "10,20,30",
+            "-D",
+            "0.1",
+        ])
         .assert()
         .success();
 }
@@ -62,7 +81,10 @@ fn test_animate_bars() {
 #[test]
 fn test_animate_with_prefix_suffix() {
     termgfx()
-        .args(["animate", "-t", "counter", "--from", "0", "--to", "100", "--prefix", "$", "--suffix", "k", "-D", "0.1"])
+        .args([
+            "animate", "-t", "counter", "--from", "0", "--to", "100", "--prefix", "$", "--suffix",
+            "k", "-D", "0.1",
+        ])
         .assert()
         .success();
 }
@@ -115,7 +137,9 @@ fn test_demo_animation_section() {
 #[test]
 fn test_animate_with_style() {
     termgfx()
-        .args(["animate", "-t", "progress", "--style", "blocks", "-D", "0.1"])
+        .args([
+            "animate", "-t", "progress", "--style", "blocks", "-D", "0.1",
+        ])
         .assert()
         .success();
 }

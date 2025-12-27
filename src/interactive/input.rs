@@ -22,8 +22,7 @@ pub fn render(prompt: &str, placeholder: Option<&str>, password: bool) {
 fn run_input(prompt: &str, placeholder: Option<&str>, password: bool) -> io::Result<String> {
     // Check for interactive terminal
     if !std::io::stdin().is_terminal() {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        return Err(io::Error::other(
             "Input requires an interactive terminal (TTY)",
         ));
     }
@@ -79,7 +78,10 @@ fn run_input(prompt: &str, placeholder: Option<&str>, password: bool) -> io::Res
                     modifiers: KeyModifiers::CONTROL,
                     ..
                 } => {
-                    break Err(io::Error::new(io::ErrorKind::Interrupted, "Cancelled by user"));
+                    break Err(io::Error::new(
+                        io::ErrorKind::Interrupted,
+                        "Cancelled by user",
+                    ));
                 }
 
                 // Backspace - delete character

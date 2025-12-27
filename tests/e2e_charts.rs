@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -21,7 +22,14 @@ fn test_chart_line_basic() {
 #[test]
 fn test_chart_line_with_title() {
     termgfx()
-        .args(["chart", "line", "--data", "5,10,15,20", "--title", "Sales Data"])
+        .args([
+            "chart",
+            "line",
+            "--data",
+            "5,10,15,20",
+            "--title",
+            "Sales Data",
+        ])
         .assert()
         .success()
         .stdout(predicate::str::contains("Sales Data"));
@@ -75,7 +83,12 @@ fn test_chart_bar_single_bar() {
 #[test]
 fn test_chart_bar_many_bars() {
     termgfx()
-        .args(["chart", "bar", "--data", "Jan:10,Feb:20,Mar:15,Apr:30,May:25"])
+        .args([
+            "chart",
+            "bar",
+            "--data",
+            "Jan:10,Feb:20,Mar:15,Apr:30,May:25",
+        ])
         .assert()
         .success();
 }

@@ -1,9 +1,9 @@
+use crate::charts;
+use crate::output;
 use std::fs;
 use std::io::{stdout, IsTerminal};
 use std::thread;
 use std::time::Duration;
-use crate::output;
-use crate::charts;
 
 #[derive(Debug, Clone)]
 pub struct ScriptCommand {
@@ -76,21 +76,32 @@ fn parse_command_line(line: &str) -> Option<ScriptCommand> {
         i += 1;
     }
 
-    Some(ScriptCommand { command, args, options })
+    Some(ScriptCommand {
+        command,
+        args,
+        options,
+    })
 }
 
 fn get_option(options: &[(String, String)], key: &str) -> Option<String> {
-    options.iter()
+    options
+        .iter()
         .find(|(k, _)| k == key)
         .map(|(_, v)| v.clone())
 }
 
 fn parse_duration(duration_str: &str) -> Duration {
     if duration_str.ends_with("ms") {
-        let ms = duration_str.trim_end_matches("ms").parse::<u64>().unwrap_or(1000);
+        let ms = duration_str
+            .trim_end_matches("ms")
+            .parse::<u64>()
+            .unwrap_or(1000);
         Duration::from_millis(ms)
     } else if duration_str.ends_with('s') {
-        let s = duration_str.trim_end_matches('s').parse::<u64>().unwrap_or(1);
+        let s = duration_str
+            .trim_end_matches('s')
+            .parse::<u64>()
+            .unwrap_or(1);
         Duration::from_secs(s)
     } else {
         // Default to seconds
@@ -108,21 +119,22 @@ pub fn execute_script(commands: Vec<ScriptCommand>) {
 fn execute_command(cmd: &ScriptCommand) {
     match cmd.command.as_str() {
         "banner" => {
-            let title = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("Banner");
+            let title = cmd.args.first().map(|s| s.as_str()).unwrap_or("Banner");
             let gradient = get_option(&cmd.options, "gradient");
             output::banner::render(title, gradient.as_deref());
         }
 
         "box" => {
-            let message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("");
+            let message = cmd.args.first().map(|s| s.as_str()).unwrap_or("");
             let style = get_option(&cmd.options, "style").unwrap_or_else(|| "info".to_string());
-            let border = get_option(&cmd.options, "border").unwrap_or_else(|| "rounded".to_string());
+            let border =
+                get_option(&cmd.options, "border").unwrap_or_else(|| "rounded".to_string());
             let emoji = get_option(&cmd.options, "emoji");
             output::styled_box::render(message, &style, &border, emoji.as_deref());
         }
 
         "progress" => {
-            let percent = if let Some(arg) = cmd.args.get(0) {
+            let percent = if let Some(arg) = cmd.args.first() {
                 if arg.contains('-') {
                     // Range format: 0-100
                     let parts: Vec<&str> = arg.split('-').collect();
@@ -166,14 +178,14 @@ fn execute_command(cmd: &ScriptCommand) {
         }
 
         "spinner" => {
-            let _message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("Loading...");
+            let _message = cmd.args.first().map(|s| s.as_str()).unwrap_or("Loading...");
             let _style = get_option(&cmd.options, "style").unwrap_or_else(|| "dots".to_string());
             // Note: Spinner runs indefinitely with Ctrl+C, not suitable for scripts
             eprintln!("Note: spinner command not supported in scripts (runs indefinitely)");
         }
 
         "typewriter" => {
-            let message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("");
+            let message = cmd.args.first().map(|s| s.as_str()).unwrap_or("");
             let speed = get_option(&cmd.options, "speed")
                 .and_then(|s| s.parse::<u64>().ok())
                 .unwrap_or(50);
@@ -181,14 +193,14 @@ fn execute_command(cmd: &ScriptCommand) {
         }
 
         "wait" => {
-            if let Some(duration_str) = cmd.args.get(0) {
+            if let Some(duration_str) = cmd.args.first() {
                 let duration = parse_duration(duration_str);
                 thread::sleep(duration);
             }
         }
 
         "sparkline" => {
-            let data = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("1,2,3,4,5");
+            let data = cmd.args.first().map(|s| s.as_str()).unwrap_or("1,2,3,4,5");
             charts::sparkline::render(data);
         }
 
@@ -199,8 +211,8 @@ fn execute_command(cmd: &ScriptCommand) {
 }
 
 pub fn run_script_file(path: &str) -> Result<(), String> {
-    let content = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read script file: {}", e))?;
+    let content =
+        fs::read_to_string(path).map_err(|e| format!("Failed to read script file: {}", e))?;
 
     let commands = parse_script(&content);
     execute_script(commands);

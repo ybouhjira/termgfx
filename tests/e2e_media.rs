@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::io::Write;
@@ -178,7 +179,11 @@ fn test_script_from_file() {
 #[test]
 fn test_script_with_options() {
     termgfx()
-        .args(["script", "--inline", "box \"Styled\" style:warning border:double"])
+        .args([
+            "script",
+            "--inline",
+            "box \"Styled\" style:warning border:double",
+        ])
         .assert()
         .success()
         .stdout(predicate::str::contains("Styled"));
@@ -199,7 +204,9 @@ fn test_script_no_file_or_inline() {
         .args(["script"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Either --file or --inline must be provided"));
+        .stderr(predicate::str::contains(
+            "Either --file or --inline must be provided",
+        ));
 }
 
 #[test]

@@ -64,8 +64,7 @@ impl TuiApp {
     pub fn run(&mut self) -> io::Result<()> {
         // Check for interactive terminal
         if !std::io::stdin().is_terminal() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "TUI mode requires an interactive terminal (TTY)",
             ));
         }
@@ -152,17 +151,25 @@ impl TuiApp {
         }
 
         // Render help text at bottom
-        execute!(
+        execute!(stdout, crossterm::cursor::MoveTo(0, term_height - 1),)?;
+        write!(
             stdout,
-            crossterm::cursor::MoveTo(0, term_height - 1),
+            " [q] quit | [r] refresh | Auto-refresh: {}ms",
+            self.config.refresh_interval
         )?;
-        write!(stdout, " [q] quit | [r] refresh | Auto-refresh: {}ms", self.config.refresh_interval)?;
 
         stdout.flush()?;
         Ok(())
     }
 
-    fn render_widget(&self, widget: &Widget, x: u16, y: u16, width: u16, height: u16) -> io::Result<()> {
+    fn render_widget(
+        &self,
+        widget: &Widget,
+        x: u16,
+        y: u16,
+        width: u16,
+        height: u16,
+    ) -> io::Result<()> {
         let mut stdout = io::stdout();
 
         // Draw border
@@ -220,12 +227,18 @@ impl TuiApp {
         for i in 1..height.saturating_sub(1) {
             execute!(stdout, crossterm::cursor::MoveTo(x, y + i))?;
             write!(stdout, "│")?;
-            execute!(stdout, crossterm::cursor::MoveTo(x + width.saturating_sub(1), y + i))?;
+            execute!(
+                stdout,
+                crossterm::cursor::MoveTo(x + width.saturating_sub(1), y + i)
+            )?;
             write!(stdout, "│")?;
         }
 
         // Bottom border
-        execute!(stdout, crossterm::cursor::MoveTo(x, y + height.saturating_sub(1)))?;
+        execute!(
+            stdout,
+            crossterm::cursor::MoveTo(x, y + height.saturating_sub(1))
+        )?;
         write!(stdout, "└{}┘", "─".repeat(width.saturating_sub(2) as usize))?;
 
         Ok(())
@@ -233,11 +246,13 @@ impl TuiApp {
 
     fn render_gauge(&self, value: f64, x: u16, y: u16, width: u16) -> io::Result<()> {
         let mut stdout = io::stdout();
-        let percentage = value.min(100.0).max(0.0);
+        let percentage = value.clamp(0.0, 100.0);
         let filled = ((width as f64) * percentage / 100.0) as usize;
 
         execute!(stdout, crossterm::cursor::MoveTo(x, y))?;
-        write!(stdout, "{}{}  {:.1}%",
+        write!(
+            stdout,
+            "{}{}  {:.1}%",
             "█".repeat(filled),
             "░".repeat((width as usize).saturating_sub(filled)),
             percentage
@@ -338,8 +353,7 @@ pub fn render(
     };
 
     let mut app = TuiApp::new(config)?;
-    app.run()
-        .map_err(|e| format!("TUI error: {}", e))?;
+    app.run().map_err(|e| format!("TUI error: {}", e))?;
 
     Ok(())
 }

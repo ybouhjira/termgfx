@@ -1,12 +1,15 @@
+use crossterm::{
+    cursor::{Hide, Show},
+    ExecutableCommand,
+};
+use owo_colors::OwoColorize;
 use std::io::{stdout, Write};
 use std::thread;
 use std::time::Duration;
-use owo_colors::OwoColorize;
-use crossterm::{cursor::{Hide, Show}, ExecutableCommand};
 
-use crate::output::{banner, styled_box, progress};
-use crate::charts::{sparkline, bar, pie, pie::PieChart};
 use crate::animation::effects;
+use crate::charts::{bar, pie::PieChart, sparkline};
+use crate::output::{banner, progress, styled_box};
 
 fn wait(secs: f64) {
     thread::sleep(Duration::from_secs_f64(secs));
@@ -41,7 +44,10 @@ pub fn run_demo(section: Option<&str>) {
         Some("all") => run_full_demo(),
         Some(s) => {
             stdout.execute(Show).unwrap();
-            eprintln!("Unknown section: {}. Available: boxes, charts, progress, animation, tui, all", s);
+            eprintln!(
+                "Unknown section: {}. Available: boxes, charts, progress, animation, tui, all",
+                s
+            );
             return;
         }
     }
@@ -208,13 +214,47 @@ fn demo_tui() {
     println!();
 
     // Simulated TUI preview
-    println!("  {}", "┌─────────────────────┬─────────────────────┐".cyan());
-    println!("  {}  {}  {}  {}  {}", "│".cyan(), "Box Widget".white().bold(), " ".repeat(8), "│".cyan(), format!("Gauge: {}%", "75").yellow());
-    println!("  {}  {}  {}  {}  {}", "│".cyan(), "Hello World!", " ".repeat(7), "│".cyan(), "████████░░░░".green());
-    println!("  {}", "├─────────────────────┼─────────────────────┤".cyan());
-    println!("  {}  {}  {}  {}", "│".cyan(), "Sparkline".magenta(), " ".repeat(10), "│".cyan());
-    println!("  {}  {}  {}  {}", "│".cyan(), "▂▄▆█▆▄▂▃▅▇▅▃".magenta(), " ".repeat(7), "│".cyan());
-    println!("  {}", "└─────────────────────┴─────────────────────┘".cyan());
+    println!(
+        "  {}",
+        "┌─────────────────────┬─────────────────────┐".cyan()
+    );
+    println!(
+        "  {}  {}  {}  {}  {}",
+        "│".cyan(),
+        "Box Widget".white().bold(),
+        " ".repeat(8),
+        "│".cyan(),
+        format!("Gauge: {}%", "75").yellow()
+    );
+    println!(
+        "  {}  Hello World!  {}  {}  {}",
+        "│".cyan(),
+        " ".repeat(7),
+        "│".cyan(),
+        "████████░░░░".green()
+    );
+    println!(
+        "  {}",
+        "├─────────────────────┼─────────────────────┤".cyan()
+    );
+    println!(
+        "  {}  {}  {}  {}",
+        "│".cyan(),
+        "Sparkline".magenta(),
+        " ".repeat(10),
+        "│".cyan()
+    );
+    println!(
+        "  {}  {}  {}  {}",
+        "│".cyan(),
+        "▂▄▆█▆▄▂▃▅▇▅▃".magenta(),
+        " ".repeat(7),
+        "│".cyan()
+    );
+    println!(
+        "  {}",
+        "└─────────────────────┴─────────────────────┘".cyan()
+    );
     println!();
     wait(0.5);
 
@@ -223,7 +263,9 @@ fn demo_tui() {
     typewriter_print("Widget types: ", 20);
     let widgets = ["box", "gauge", "sparkline", "log"];
     for (i, w) in widgets.iter().enumerate() {
-        if i > 0 { print!(", "); }
+        if i > 0 {
+            print!(", ");
+        }
         print!("{}", w.green());
         wait(0.2);
     }
@@ -238,7 +280,10 @@ fn demo_tui() {
     println!();
     println!("  {} termgfx tui --layout 2x2 --widgets \"box:Hello,gauge:75,sparkline:1;2;3;4;5,log:Lines\"", "$".bright_black());
     println!();
-    println!("  {} termgfx tui --config dashboard.json", "$".bright_black());
+    println!(
+        "  {} termgfx tui --config dashboard.json",
+        "$".bright_black()
+    );
     println!();
     wait(0.5);
 

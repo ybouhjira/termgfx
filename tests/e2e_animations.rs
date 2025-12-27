@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -40,7 +41,13 @@ fn test_banner_animate_flag() {
 #[test]
 fn test_banner_animate_with_gradient() {
     termgfx()
-        .args(["banner", "Gradient", "--gradient", "cyan-purple", "--animate"])
+        .args([
+            "banner",
+            "Gradient",
+            "--gradient",
+            "cyan-purple",
+            "--animate",
+        ])
         .assert()
         .success();
 }
@@ -80,7 +87,13 @@ fn test_bar_chart_animate_flag() {
 #[test]
 fn test_bar_chart_animate_multiple_bars() {
     termgfx()
-        .args(["chart", "bar", "--data", "Sales:100,Costs:80,Profit:20", "--animate"])
+        .args([
+            "chart",
+            "bar",
+            "--data",
+            "Sales:100,Costs:80,Profit:20",
+            "--animate",
+        ])
         .assert()
         .success();
 }
@@ -92,7 +105,14 @@ fn test_bar_chart_animate_multiple_bars() {
 #[test]
 fn test_table_animate_flag() {
     termgfx()
-        .args(["table", "--headers", "A,B,C", "--rows", "1,2,3|4,5,6", "--animate"])
+        .args([
+            "table",
+            "--headers",
+            "A,B,C",
+            "--rows",
+            "1,2,3|4,5,6",
+            "--animate",
+        ])
         .assert()
         .success();
 }
@@ -100,7 +120,16 @@ fn test_table_animate_flag() {
 #[test]
 fn test_table_animate_with_border() {
     termgfx()
-        .args(["table", "--headers", "Name,Age", "--rows", "Alice,30|Bob,25", "--border", "double", "--animate"])
+        .args([
+            "table",
+            "--headers",
+            "Name,Age",
+            "--rows",
+            "Alice,30|Bob,25",
+            "--border",
+            "double",
+            "--animate",
+        ])
         .assert()
         .success();
 }
@@ -133,7 +162,15 @@ fn test_tree_animate_deep() {
 fn test_multiple_animation_options() {
     // Ensure all animate flags work
     termgfx()
-        .args(["box", "Test", "--style", "info", "--border", "rounded", "--animate"])
+        .args([
+            "box",
+            "Test",
+            "--style",
+            "info",
+            "--border",
+            "rounded",
+            "--animate",
+        ])
         .assert()
         .success();
 
