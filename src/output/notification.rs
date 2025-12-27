@@ -1,6 +1,5 @@
-use std::process::Command;
-
 /// Style configuration for notifications
+#[allow(dead_code)]
 struct NotificationStyle {
     emoji: &'static str,
     color: &'static str,
@@ -104,6 +103,7 @@ fn render_terminal(message: &str, title: Option<&str>, style: &NotificationStyle
 fn render_desktop(message: &str, title: Option<&str>, style: &NotificationStyle, sound: bool) {
     #[cfg(target_os = "macos")]
     {
+        use std::process::Command;
         let notification_title = format!("{} {}", style.emoji, title.unwrap_or("Notification"));
 
         let mut script = format!(
