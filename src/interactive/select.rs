@@ -5,7 +5,10 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor, Stylize},
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::{collections::HashSet, io::{self, IsTerminal, Write}};
+use std::{
+    collections::HashSet,
+    io::{self, IsTerminal, Write},
+};
 
 pub fn render(prompt: &str, options: &[String], multi: bool) {
     if options.is_empty() {
@@ -47,7 +50,14 @@ fn run_select(prompt: &str, options: &[String], multi: bool) -> io::Result<Vec<S
 
     let result = loop {
         // Render the prompt and options
-        render_menu(&mut stdout, prompt, options, selected_idx, &selected_items, multi)?;
+        render_menu(
+            &mut stdout,
+            prompt,
+            options,
+            selected_idx,
+            &selected_items,
+            multi,
+        )?;
 
         // Handle key events
         if let Event::Key(KeyEvent { code, .. }) = event::read()? {
@@ -71,8 +81,12 @@ fn run_select(prompt: &str, options: &[String], multi: bool) -> io::Result<Vec<S
                 }
                 KeyCode::Enter => {
                     if multi {
-                        let mut result_vec = selected_items.iter().map(|&idx| options[idx].clone()).collect::<Vec<String>>();
-                        result_vec.sort_by_key(|item| options.iter().position(|x| x == item).unwrap()); // Maintain original order
+                        let mut result_vec = selected_items
+                            .iter()
+                            .map(|&idx| options[idx].clone())
+                            .collect::<Vec<String>>();
+                        result_vec
+                            .sort_by_key(|item| options.iter().position(|x| x == item).unwrap()); // Maintain original order
                         break Ok(result_vec);
                     } else {
                         break Ok(vec![options[selected_idx].clone()]);
@@ -119,7 +133,11 @@ fn render_menu(
         let is_selected_multi = selected_items.contains(&idx);
 
         let prefix = if multi {
-            if is_selected_multi { "[x]" } else { "[ ]" }
+            if is_selected_multi {
+                "[x]"
+            } else {
+                "[ ]"
+            }
         } else {
             " "
         };
@@ -133,7 +151,11 @@ fn render_menu(
 
         execute!(
             stdout,
-            SetForegroundColor(if is_current { Color::Green } else { Color::Reset }),
+            SetForegroundColor(if is_current {
+                Color::Green
+            } else {
+                Color::Reset
+            }),
             Print(format!("{} {} {}", indicator, prefix, formatted_option)),
             ResetColor,
             Print("\n")

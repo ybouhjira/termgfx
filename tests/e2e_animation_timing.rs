@@ -77,7 +77,13 @@ fn test_banner_with_gradient_animation_timing() {
     let start = Instant::now();
 
     termgfx()
-        .args(["banner", "GRADIENT", "--gradient", "cyan-purple", "--animate"])
+        .args([
+            "banner",
+            "GRADIENT",
+            "--gradient",
+            "cyan-purple",
+            "--animate",
+        ])
         .timeout(MAX_ANIMATION_TIME)
         .assert()
         .success();
@@ -100,7 +106,11 @@ fn test_sparkline_animation_completes_in_time() {
     let start = Instant::now();
 
     termgfx()
-        .args(["sparkline", "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20", "--animate"])
+        .args([
+            "sparkline",
+            "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+            "--animate",
+        ])
         .timeout(MAX_ANIMATION_TIME)
         .assert()
         .success();
@@ -123,7 +133,13 @@ fn test_bar_chart_animation_completes_in_time() {
     let start = Instant::now();
 
     termgfx()
-        .args(["chart", "bar", "--data", "A:10,B:20,C:30,D:40,E:50", "--animate"])
+        .args([
+            "chart",
+            "bar",
+            "--data",
+            "A:10,B:20,C:30,D:40,E:50",
+            "--animate",
+        ])
         .timeout(MAX_ANIMATION_TIME)
         .assert()
         .success();
@@ -146,7 +162,14 @@ fn test_table_animation_completes_in_time() {
     let start = Instant::now();
 
     termgfx()
-        .args(["table", "--headers", "A,B,C,D", "--rows", "1,2,3,4|5,6,7,8|9,10,11,12|13,14,15,16", "--animate"])
+        .args([
+            "table",
+            "--headers",
+            "A,B,C,D",
+            "--rows",
+            "1,2,3,4|5,6,7,8|9,10,11,12|13,14,15,16",
+            "--animate",
+        ])
         .timeout(MAX_ANIMATION_TIME)
         .assert()
         .success();
@@ -215,7 +238,12 @@ fn test_timeline_animation_completes_in_time() {
     let start = Instant::now();
 
     termgfx()
-        .args(["timeline", "--events", "Start,Middle,End,Final", "--animate"])
+        .args([
+            "timeline",
+            "--events",
+            "Start,Middle,End,Final",
+            "--animate",
+        ])
         .timeout(MAX_ANIMATION_TIME)
         .assert()
         .success();
@@ -287,7 +315,14 @@ fn test_all_animations_are_fast() {
     // Table
     let start = Instant::now();
     termgfx()
-        .args(["table", "--headers", "A,B", "--rows", "1,2|3,4", "--animate"])
+        .args([
+            "table",
+            "--headers",
+            "A,B",
+            "--rows",
+            "1,2|3,4",
+            "--animate",
+        ])
         .assert()
         .success();
     assert!(start.elapsed() < fast_limit, "Table too slow");

@@ -1,11 +1,11 @@
 use clap::{Parser, Subcommand};
 
-mod output;
+mod animation;
 mod charts;
 mod image;
 mod interactive;
+mod output;
 mod script;
-mod animation;
 
 #[derive(Parser)]
 #[command(name = "termgfx")]
@@ -44,7 +44,9 @@ enum Commands {
     /// Display a styled box with message
     ///
     /// Example: termgfx box "Success!" --style success --border rounded
-    #[command(after_help = "Styles: info, success, warning, danger, gradient\nBorders: single, double, rounded, thick, ascii\nPresets: corporate, playful, minimal, retro, neon, elegant")]
+    #[command(
+        after_help = "Styles: info, success, warning, danger, gradient\nBorders: single, double, rounded, thick, ascii\nPresets: corporate, playful, minimal, retro, neon, elegant"
+    )]
     Box {
         /// The message to display
         message: String,
@@ -207,7 +209,9 @@ enum Commands {
     /// Display a formatted table from data
     ///
     /// Example: termgfx table --headers "Name,Age,City" --rows "Alice,30,NYC|Bob,25,LA"
-    #[command(after_help = "Borders: single, double, rounded, none\nAlignment: left, center, right")]
+    #[command(
+        after_help = "Borders: single, double, rounded, none\nAlignment: left, center, right"
+    )]
     Table {
         /// CSV headers (comma-separated)
         #[arg(long)]
@@ -588,12 +592,16 @@ enum Commands {
     /// Interactive playground/showcase for exploring components
     ///
     /// Example: termgfx playground
-    #[command(after_help = "Navigate: ← → or h/l for pages, ↑ ↓ or k/j for params\nEdit: Enter to edit param, q/Esc to quit")]
+    #[command(
+        after_help = "Navigate: ← → or h/l for pages, ↑ ↓ or k/j for params\nEdit: Enter to edit param, q/Esc to quit"
+    )]
     Playground,
     /// Preview and manage style presets
     ///
     /// Example: termgfx style preview
-    #[command(after_help = "Subcommands: preview, list\nStyles: info, success, warning, danger, gradient, neutral")]
+    #[command(
+        after_help = "Subcommands: preview, list\nStyles: info, success, warning, danger, gradient, neutral"
+    )]
     Style {
         #[command(subcommand)]
         style_command: Option<StyleCommands>,
@@ -719,17 +727,46 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Box { message, style, border, emoji, animate, animation_time, demo, preset: _ } => {
+        Commands::Box {
+            message,
+            style,
+            border,
+            emoji,
+            animate,
+            animation_time,
+            demo,
+            preset: _,
+        } => {
             if demo {
                 println!("Example: termgfx box \"Hello\" --style success");
                 println!();
                 // Run with demo values
-                output::styled_box::render_animated("Hello World!", "success", "rounded", None, true, 500);
+                output::styled_box::render_animated(
+                    "Hello World!",
+                    "success",
+                    "rounded",
+                    None,
+                    true,
+                    500,
+                );
                 return;
             }
-            output::styled_box::render_animated(&message, &style, &border, emoji.as_deref(), animate, animation_time);
+            output::styled_box::render_animated(
+                &message,
+                &style,
+                &border,
+                emoji.as_deref(),
+                animate,
+                animation_time,
+            );
         }
-        Commands::Banner { title, gradient, animate, animation_time, demo } => {
+        Commands::Banner {
+            title,
+            gradient,
+            animate,
+            animation_time,
+            demo,
+        } => {
             if demo {
                 println!("Example: termgfx banner \"Welcome\" --gradient cyan-purple");
                 println!();
@@ -739,10 +776,22 @@ fn main() {
             }
             output::banner::render_animated(&title, gradient.as_deref(), animate, animation_time);
         }
-        Commands::Spinner { message, style, duration } => {
+        Commands::Spinner {
+            message,
+            style,
+            duration,
+        } => {
             output::spinner::render(&message, &style, duration);
         }
-        Commands::Progress { percent, style, from, to, animate, duration, demo } => {
+        Commands::Progress {
+            percent,
+            style,
+            from,
+            to,
+            animate,
+            duration,
+            demo,
+        } => {
             if demo {
                 println!("Example: termgfx progress 75 --style gradient --animate");
                 println!();
@@ -751,20 +800,42 @@ fn main() {
                 return;
             }
             if animate {
-                output::progress::render_animated_progress(percent, &style, from.as_deref(), to.as_deref(), duration);
+                output::progress::render_animated_progress(
+                    percent,
+                    &style,
+                    from.as_deref(),
+                    to.as_deref(),
+                    duration,
+                );
             } else {
                 output::progress::render(percent, &style, from.as_deref(), to.as_deref());
             }
         }
         Commands::Chart { chart_type } => {
             match chart_type {
-                ChartCommands::Line { data, title, animate, animation_time } => {
-                    let line_chart = charts::line::LineChart::new(&data, title.as_deref(), animate, animation_time);
+                ChartCommands::Line {
+                    data,
+                    title,
+                    animate,
+                    animation_time,
+                } => {
+                    let line_chart = charts::line::LineChart::new(
+                        &data,
+                        title.as_deref(),
+                        animate,
+                        animation_time,
+                    );
                     line_chart.render();
                 }
-                ChartCommands::Bar { data, animate, demo } => {
+                ChartCommands::Bar {
+                    data,
+                    animate,
+                    demo,
+                } => {
                     if demo {
-                        println!("Example: termgfx chart bar --data \"Sales:100,Costs:60,Profit:40\"");
+                        println!(
+                            "Example: termgfx chart bar --data \"Sales:100,Costs:60,Profit:40\""
+                        );
                         println!();
                         // Run with demo values
                         charts::bar::render_animated("Sales:100,Costs:60,Profit:40", true);
@@ -772,7 +843,11 @@ fn main() {
                     }
                     charts::bar::render_animated(&data, animate);
                 }
-                ChartCommands::Pie { data, animate, animation_time } => {
+                ChartCommands::Pie {
+                    data,
+                    animate,
+                    animation_time,
+                } => {
                     let pie_chart = charts::pie::PieChart::new(&data, animate, animation_time);
                     pie_chart.render();
                 }
@@ -781,16 +856,33 @@ fn main() {
         Commands::Image { path, protocol } => {
             image::render(&path, &protocol);
         }
-        Commands::Input { prompt, placeholder, password } => {
+        Commands::Input {
+            prompt,
+            placeholder,
+            password,
+        } => {
             interactive::input::render(&prompt, placeholder.as_deref(), password);
         }
-        Commands::Select { prompt, options, multi } => {
+        Commands::Select {
+            prompt,
+            options,
+            multi,
+        } => {
             interactive::select::render(&prompt, &options, multi);
         }
-        Commands::Confirm { prompt, default, style } => {
+        Commands::Confirm {
+            prompt,
+            default,
+            style,
+        } => {
             interactive::confirm::render(&prompt, &default, &style);
         }
-        Commands::Sparkline { data, animate, animation_time, demo } => {
+        Commands::Sparkline {
+            data,
+            animate,
+            animation_time,
+            demo,
+        } => {
             if demo {
                 println!("Example: termgfx sparkline \"1,4,2,8,5,7,3,9,6\"");
                 println!();
@@ -800,15 +892,39 @@ fn main() {
             }
             charts::sparkline::render_animated(&data, animate, animation_time);
         }
-        Commands::Diff { file1, file2, unified, context } => {
+        Commands::Diff {
+            file1,
+            file2,
+            unified,
+            context,
+        } => {
             output::diff::render(&file1, &file2, unified, context);
         }
-        Commands::Table { headers, rows, file, border, alignment, animate, animation_time, demo } => {
+        Commands::Table {
+            headers,
+            rows,
+            file,
+            border,
+            alignment,
+            animate,
+            animation_time,
+            demo,
+        } => {
             if demo {
-                println!("Example: termgfx table --headers \"Name,Age\" --rows \"Alice,30|Bob,25\"");
+                println!(
+                    "Example: termgfx table --headers \"Name,Age\" --rows \"Alice,30|Bob,25\""
+                );
                 println!();
                 // Run with demo values
-                output::table::render_animated(Some("Name,Age"), Some("Alice,30|Bob,25"), None, "single", "left", true, 500);
+                output::table::render_animated(
+                    Some("Name,Age"),
+                    Some("Alice,30|Bob,25"),
+                    None,
+                    "single",
+                    "left",
+                    true,
+                    500,
+                );
                 return;
             }
             output::table::render_animated(
@@ -821,27 +937,50 @@ fn main() {
                 animation_time,
             );
         }
-        Commands::Tree { data, path, animate, animation_time } => {
-            output::tree::render_animated(data.as_deref(), path.as_deref(), animate, animation_time);
+        Commands::Tree {
+            data,
+            path,
+            animate,
+            animation_time,
+        } => {
+            output::tree::render_animated(
+                data.as_deref(),
+                path.as_deref(),
+                animate,
+                animation_time,
+            );
         }
-        Commands::Record { record_command } => {
-            match record_command {
-                RecordCommands::Start { output } => {
-                    output::record::start(&output);
-                }
-                RecordCommands::Play { input, speed } => {
-                    output::record::play(&input, speed);
-                }
-                RecordCommands::Export { input, format, output } => {
-                    output::record::export(&input, &format, &output);
-                }
+        Commands::Record { record_command } => match record_command {
+            RecordCommands::Start { output } => {
+                output::record::start(&output);
             }
-        }
+            RecordCommands::Play { input, speed } => {
+                output::record::play(&input, speed);
+            }
+            RecordCommands::Export {
+                input,
+                format,
+                output,
+            } => {
+                output::record::export(&input, &format, &output);
+            }
+        },
 
         Commands::Script { file, inline } => {
             script::run(file.as_deref(), inline.as_deref());
         }
-        Commands::Animate { effect_type, text, data, duration, speed, from, to, style, prefix, suffix } => {
+        Commands::Animate {
+            effect_type,
+            text,
+            data,
+            duration,
+            speed,
+            from,
+            to,
+            style,
+            prefix,
+            suffix,
+        } => {
             animation::effects::run(
                 &effect_type,
                 text.as_deref(),
@@ -858,7 +997,13 @@ fn main() {
         Commands::Demo { section } => {
             animation::demo::run_demo(section.as_deref());
         }
-        Commands::Timeline { events, style, color, animate, vertical } => {
+        Commands::Timeline {
+            events,
+            style,
+            color,
+            animate,
+            vertical,
+        } => {
             let args = output::timeline::TimelineArgs {
                 events,
                 style,
@@ -871,7 +1016,14 @@ fn main() {
                 std::process::exit(1);
             }
         }
-        Commands::Notification { message, title, style, sound, terminal_only, desktop_only } => {
+        Commands::Notification {
+            message,
+            title,
+            style,
+            sound,
+            terminal_only,
+            desktop_only,
+        } => {
             output::notification::render(
                 &message,
                 title.as_deref(),
@@ -881,7 +1033,16 @@ fn main() {
                 desktop_only,
             );
         }
-        Commands::Gauge { value, min, max, label, style, color, animate, demo } => {
+        Commands::Gauge {
+            value,
+            min,
+            max,
+            label,
+            style,
+            color,
+            animate,
+            demo,
+        } => {
             if demo {
                 println!("Example: termgfx gauge 75 --label \"CPU\" --style semicircle");
                 println!();
@@ -899,7 +1060,13 @@ fn main() {
                 animate,
             );
         }
-        Commands::Dashboard { layout, title, panels, config, border } => {
+        Commands::Dashboard {
+            layout,
+            title,
+            panels,
+            config,
+            border,
+        } => {
             output::dashboard::render(
                 &layout,
                 title.as_deref(),
@@ -908,7 +1075,15 @@ fn main() {
                 &border,
             );
         }
-        Commands::Heatmap { data, file, x_labels, y_labels, title, colors, animate } => {
+        Commands::Heatmap {
+            data,
+            file,
+            x_labels,
+            y_labels,
+            title,
+            colors,
+            animate,
+        } => {
             output::heatmap::render(
                 data.as_deref(),
                 file.as_deref(),
@@ -919,21 +1094,31 @@ fn main() {
                 animate,
             );
         }
-        Commands::File { path, directory, ext, height } => {
-            match interactive::file::render(path, directory, ext, height) {
-                Ok(selected_path) => {
-                    println!("{}", selected_path.display());
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
-                }
+        Commands::File {
+            path,
+            directory,
+            ext,
+            height,
+        } => match interactive::file::render(path, directory, ext, height) {
+            Ok(selected_path) => {
+                println!("{}", selected_path.display());
             }
-        }
-        Commands::Filter { prompt, multi, height } => {
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        },
+        Commands::Filter {
+            prompt,
+            multi,
+            height,
+        } => {
             interactive::filter::render(prompt, multi, height);
         }
-        Commands::Pager { line_numbers, title } => {
+        Commands::Pager {
+            line_numbers,
+            title,
+        } => {
             interactive::pager::render(line_numbers, title);
         }
         Commands::Form {
@@ -1021,7 +1206,9 @@ fn main() {
                     std::process::exit(1);
                 }
             };
-            if let Err(e) = output::watch::render(&command, duration, no_title, differences, exit_on_error) {
+            if let Err(e) =
+                output::watch::render(&command, duration, no_title, differences, exit_on_error)
+            {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
@@ -1040,82 +1227,72 @@ fn main() {
         Commands::Playground => {
             interactive::playground::render();
         }
-        Commands::Style { style_command } => {
-            match style_command {
-                Some(StyleCommands::Preview { preset }) => {
-                    if let Some(preset_name) = preset {
-                        output::style::render_preset_preview(&preset_name);
-                    } else {
-                        output::style::render_all_preview();
-                    }
-                }
-                Some(StyleCommands::List) => {
-                    output::style::render_style_list();
-                }
-                None => {
+        Commands::Style { style_command } => match style_command {
+            Some(StyleCommands::Preview { preset }) => {
+                if let Some(preset_name) = preset {
+                    output::style::render_preset_preview(&preset_name);
+                } else {
                     output::style::render_all_preview();
                 }
             }
-        }
-        Commands::Palette { palette_command } => {
-            match palette_command {
-                Some(PaletteCommands::List) | None => {
-                    output::palette::list_palettes();
-                }
-                Some(PaletteCommands::Show { name }) => {
-                    let palette_name = name.as_deref().unwrap_or("default");
-                    match output::palette::get_palette(palette_name) {
-                        Some(palette) => output::palette::show_palette(&palette),
-                        None => {
-                            eprintln!("Error: Palette '{}' not found", palette_name);
-                            eprintln!("Use 'termgfx palette list' to see available palettes");
-                            std::process::exit(1);
-                        }
-                    }
-                }
-                Some(PaletteCommands::Export { name }) => {
-                    match output::palette::get_palette(&name) {
-                        Some(palette) => {
-                            println!("{}", output::palette::export_palette(&palette));
-                        }
-                        None => {
-                            eprintln!("Error: Palette '{}' not found", name);
-                            eprintln!("Use 'termgfx palette list' to see available palettes");
-                            std::process::exit(1);
-                        }
+            Some(StyleCommands::List) => {
+                output::style::render_style_list();
+            }
+            None => {
+                output::style::render_all_preview();
+            }
+        },
+        Commands::Palette { palette_command } => match palette_command {
+            Some(PaletteCommands::List) | None => {
+                output::palette::list_palettes();
+            }
+            Some(PaletteCommands::Show { name }) => {
+                let palette_name = name.as_deref().unwrap_or("default");
+                match output::palette::get_palette(palette_name) {
+                    Some(palette) => output::palette::show_palette(&palette),
+                    None => {
+                        eprintln!("Error: Palette '{}' not found", palette_name);
+                        eprintln!("Use 'termgfx palette list' to see available palettes");
+                        std::process::exit(1);
                     }
                 }
             }
-        }
-        Commands::Palette { palette_command } => {
-            match palette_command {
-                Some(PaletteCommands::List) | None => {
-                    output::palette::list_palettes();
+            Some(PaletteCommands::Export { name }) => match output::palette::get_palette(&name) {
+                Some(palette) => {
+                    println!("{}", output::palette::export_palette(&palette));
                 }
-                Some(PaletteCommands::Show { name }) => {
-                    let palette_name = name.as_deref().unwrap_or("default");
-                    match output::palette::get_palette(palette_name) {
-                        Some(palette) => output::palette::show_palette(&palette),
-                        None => {
-                            eprintln!("Error: Palette '{}' not found", palette_name);
-                            eprintln!("Use 'termgfx palette list' to see available palettes");
-                            std::process::exit(1);
-                        }
-                    }
+                None => {
+                    eprintln!("Error: Palette '{}' not found", name);
+                    eprintln!("Use 'termgfx palette list' to see available palettes");
+                    std::process::exit(1);
                 }
-                Some(PaletteCommands::Export { name }) => {
-                    match output::palette::get_palette(&name) {
-                        Some(palette) => {
-                            println!("{}", output::palette::export_palette(&palette));
-                        }
-                        None => {
-                            eprintln!("Error: Palette '{}' not found", name);
-                            eprintln!("Use 'termgfx palette list' to see available palettes");
-                            std::process::exit(1);
-                        }
+            },
+        },
+        Commands::Palette { palette_command } => match palette_command {
+            Some(PaletteCommands::List) | None => {
+                output::palette::list_palettes();
+            }
+            Some(PaletteCommands::Show { name }) => {
+                let palette_name = name.as_deref().unwrap_or("default");
+                match output::palette::get_palette(palette_name) {
+                    Some(palette) => output::palette::show_palette(&palette),
+                    None => {
+                        eprintln!("Error: Palette '{}' not found", palette_name);
+                        eprintln!("Use 'termgfx palette list' to see available palettes");
+                        std::process::exit(1);
                     }
                 }
             }
-        }
+            Some(PaletteCommands::Export { name }) => match output::palette::get_palette(&name) {
+                Some(palette) => {
+                    println!("{}", output::palette::export_palette(&palette));
+                }
+                None => {
+                    eprintln!("Error: Palette '{}' not found", name);
+                    eprintln!("Use 'termgfx palette list' to see available palettes");
+                    std::process::exit(1);
+                }
+            },
+        },
     }
 }

@@ -1,15 +1,15 @@
-use owo_colors::OwoColorize;
-use std::f64::consts::PI;
 use crossterm::{
-    cursor::{Hide, Show, MoveToColumn, MoveTo},
+    cursor::{Hide, MoveTo, MoveToColumn, Show},
     terminal::{Clear, ClearType},
     ExecutableCommand,
 };
+use owo_colors::OwoColorize;
+use std::f64::consts::PI;
 use std::io::{stdout, IsTerminal, Write};
-use std::thread;
-use std::time::Duration;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 const COLORS: [u8; 8] = [
     196, // Red
@@ -186,9 +186,7 @@ impl<'a> PieChart<'a> {
         let _ = stdout.flush();
         let _ = stdout.execute(Show);
     }
-
-
-    } // Close impl<'a> PieChart<'a>
+} // Close impl<'a> PieChart<'a>
 
 fn render_circle(segments: &[(String, f64, f64)]) {
     let radius = 9.0;

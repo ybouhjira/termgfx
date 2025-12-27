@@ -1,8 +1,12 @@
+use crossterm::{
+    cursor::{Hide, MoveTo, Show},
+    terminal::{Clear, ClearType},
+    ExecutableCommand,
+};
 use owo_colors::OwoColorize;
-use std::io::{stdout, Write, IsTerminal};
+use std::io::{stdout, IsTerminal, Write};
 use std::thread;
 use std::time::{Duration, Instant};
-use crossterm::{cursor::{Hide, Show, MoveTo}, terminal::{Clear, ClearType}, ExecutableCommand};
 
 const COLORS: [u8; 8] = [
     196, // Red
@@ -29,7 +33,11 @@ pub fn render_animated(data: &str, animate: bool) {
     }
 
     // Find max value for scaling
-    let max_value = entries.iter().map(|(_, v)| *v).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(1.0);
+    let max_value = entries
+        .iter()
+        .map(|(_, v)| *v)
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(1.0);
 
     // Get terminal width, default to 80
     let term_width = crossterm::terminal::size()
@@ -37,7 +45,11 @@ pub fn render_animated(data: &str, animate: bool) {
         .unwrap_or(80);
 
     // Calculate max label width
-    let max_label_width = entries.iter().map(|(label, _)| label.len()).max().unwrap_or(0);
+    let max_label_width = entries
+        .iter()
+        .map(|(label, _)| label.len())
+        .max()
+        .unwrap_or(0);
 
     // Reserve space for label, spacing, value display
     let value_display_width = max_value.to_string().len().max(6); // At least 6 for "100.00"
@@ -51,7 +63,12 @@ pub fn render_animated(data: &str, animate: bool) {
     }
 }
 
-fn render_static_bars(entries: &[(String, f64)], max_value: f64, max_label_width: usize, bar_max_width: usize) {
+fn render_static_bars(
+    entries: &[(String, f64)],
+    max_value: f64,
+    max_label_width: usize,
+    bar_max_width: usize,
+) {
     for (idx, (label, value)) in entries.iter().enumerate() {
         let color = COLORS[idx % COLORS.len()];
         let bar_width = if max_value > 0.0 {
@@ -78,7 +95,12 @@ fn render_static_bars(entries: &[(String, f64)], max_value: f64, max_label_width
     }
 }
 
-fn render_animated_bars(entries: &[(String, f64)], max_value: f64, max_label_width: usize, bar_max_width: usize) {
+fn render_animated_bars(
+    entries: &[(String, f64)],
+    max_value: f64,
+    max_label_width: usize,
+    bar_max_width: usize,
+) {
     let mut stdout = stdout();
     stdout.execute(Hide).unwrap();
 

@@ -47,7 +47,9 @@ impl StylePreset {
 
     /// Find a preset by name
     pub fn find(name: &str) -> Option<StylePreset> {
-        Self::all().into_iter().find(|p| p.name == name.to_lowercase())
+        Self::all()
+            .into_iter()
+            .find(|p| p.name == name.to_lowercase())
     }
 }
 
@@ -55,7 +57,11 @@ impl StylePreset {
 fn render_sample_box(preset: &StylePreset) -> String {
     let mut result = String::new();
     result.push_str("╭─────────────────╮\n");
-    result.push_str(&format!("│ {} {} Sample Box │\n", preset.emoji, preset.name.to_uppercase()));
+    result.push_str(&format!(
+        "│ {} {} Sample Box │\n",
+        preset.emoji,
+        preset.name.to_uppercase()
+    ));
     result.push_str("│ Beautiful styling │\n");
     result.push_str("╰─────────────────╯\n");
     result
@@ -81,9 +87,18 @@ pub fn render_all_preview() {
     let presets = StylePreset::all();
     let mut stdout = stdout();
 
-    let _ = writeln!(stdout, "\n╔════════════════════════════════════════════════════════════════════════╗");
-    let _ = writeln!(stdout, "║     TERMGFX STYLE PRESETS - Complete Style Showcase                    ║");
-    let _ = writeln!(stdout, "╚════════════════════════════════════════════════════════════════════════╝\n");
+    let _ = writeln!(
+        stdout,
+        "\n╔════════════════════════════════════════════════════════════════════════╗"
+    );
+    let _ = writeln!(
+        stdout,
+        "║     TERMGFX STYLE PRESETS - Complete Style Showcase                    ║"
+    );
+    let _ = writeln!(
+        stdout,
+        "╚════════════════════════════════════════════════════════════════════════╝\n"
+    );
 
     // Display each preset
     for (idx, preset) in presets.iter().enumerate() {
@@ -91,7 +106,13 @@ pub fn render_all_preview() {
             let _ = writeln!(stdout, "");
         }
 
-        let _ = writeln!(stdout, "├─ {} {} ({})", preset.emoji, preset.name.to_uppercase(), preset.description);
+        let _ = writeln!(
+            stdout,
+            "├─ {} {} ({})",
+            preset.emoji,
+            preset.name.to_uppercase(),
+            preset.description
+        );
         let _ = writeln!(stdout, "");
 
         // Sample box
@@ -101,22 +122,47 @@ pub fn render_all_preview() {
         let _ = writeln!(stdout, "  ┌─ Components");
         let _ = writeln!(stdout, "  │  • Chart:    {}", render_sample_chart(preset));
         let _ = writeln!(stdout, "  │  • Data:     {}", render_sample_table(preset));
-        let _ = writeln!(stdout, "  │  • Sparkle:  {}", render_sample_sparkline(preset));
+        let _ = writeln!(
+            stdout,
+            "  │  • Sparkle:  {}",
+            render_sample_sparkline(preset)
+        );
         let _ = writeln!(stdout, "  └─────────────────────────────────────────────\n");
     }
 
     // Usage guide
-    let _ = writeln!(stdout, "╔════════════════════════════════════════════════════════════════════════╗");
-    let _ = writeln!(stdout, "║  USAGE EXAMPLES                                                        ║");
-    let _ = writeln!(stdout, "╠════════════════════════════════════════════════════════════════════════╣");
+    let _ = writeln!(
+        stdout,
+        "╔════════════════════════════════════════════════════════════════════════╗"
+    );
+    let _ = writeln!(
+        stdout,
+        "║  USAGE EXAMPLES                                                        ║"
+    );
+    let _ = writeln!(
+        stdout,
+        "╠════════════════════════════════════════════════════════════════════════╣"
+    );
 
     let examples = vec![
         ("Box with style", "termgfx box \"Success!\" --style success"),
-        ("Banner with style", "termgfx banner \"Welcome\" --style info"),
+        (
+            "Banner with style",
+            "termgfx banner \"Welcome\" --style info",
+        ),
         ("Progress bar", "termgfx progress 75 --style gradient"),
-        ("Notification", "termgfx notification \"Done\" --style success"),
-        ("Table with style", "termgfx table --headers \"Name,Age\" --rows \"Alice,30\""),
-        ("Gauge indicator", "termgfx gauge 75 --label \"CPU\" --style semicircle"),
+        (
+            "Notification",
+            "termgfx notification \"Done\" --style success",
+        ),
+        (
+            "Table with style",
+            "termgfx table --headers \"Name,Age\" --rows \"Alice,30\"",
+        ),
+        (
+            "Gauge indicator",
+            "termgfx gauge 75 --label \"CPU\" --style semicircle",
+        ),
     ];
 
     for (desc, cmd) in examples {
@@ -126,7 +172,10 @@ pub fn render_all_preview() {
         let _ = writeln!(stdout, "║");
     }
 
-    let _ = writeln!(stdout, "╚════════════════════════════════════════════════════════════════════════╝\n");
+    let _ = writeln!(
+        stdout,
+        "╚════════════════════════════════════════════════════════════════════════╝\n"
+    );
 }
 
 /// Preview a single style preset in detail
@@ -134,7 +183,9 @@ pub fn render_preset_preview(preset_name: &str) {
     if let Some(preset) = StylePreset::find(preset_name) {
         let mut stdout = stdout();
 
-        let _ = writeln!(stdout, "\n═══ {} {} - {} ═══\n",
+        let _ = writeln!(
+            stdout,
+            "\n═══ {} {} - {} ═══\n",
             preset.emoji,
             preset.name.to_uppercase(),
             preset.description
@@ -146,19 +197,31 @@ pub fn render_preset_preview(preset_name: &str) {
 
         // Single border
         let _ = writeln!(stdout, "╭─────────────────────────────────────╮");
-        let _ = writeln!(stdout, "│ Single Border with {} Style              │", preset.name);
+        let _ = writeln!(
+            stdout,
+            "│ Single Border with {} Style              │",
+            preset.name
+        );
         let _ = writeln!(stdout, "╰─────────────────────────────────────╯");
         let _ = writeln!(stdout, "");
 
         // Double border
         let _ = writeln!(stdout, "╔═════════════════════════════════════╗");
-        let _ = writeln!(stdout, "║ Double Border with {} Style             ║", preset.name);
+        let _ = writeln!(
+            stdout,
+            "║ Double Border with {} Style             ║",
+            preset.name
+        );
         let _ = writeln!(stdout, "╚═════════════════════════════════════╝");
         let _ = writeln!(stdout, "");
 
         // Heavy border
         let _ = writeln!(stdout, "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
-        let _ = writeln!(stdout, "┃ Heavy Border with {} Style              ┃", preset.name);
+        let _ = writeln!(
+            stdout,
+            "┃ Heavy Border with {} Style              ┃",
+            preset.name
+        );
         let _ = writeln!(stdout, "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
         let _ = writeln!(stdout, "");
 
@@ -178,7 +241,8 @@ pub fn render_preset_preview(preset_name: &str) {
         let _ = writeln!(stdout, "");
     } else {
         eprintln!("Error: Unknown style preset '{}'", preset_name);
-        eprintln!("Available presets: {}",
+        eprintln!(
+            "Available presets: {}",
             StylePreset::all()
                 .iter()
                 .map(|p| p.name)
@@ -200,7 +264,9 @@ pub fn render_style_list() {
 
     for preset in presets {
         let padding = max_name_len.saturating_sub(preset.name.len()) + 3;
-        let _ = writeln!(stdout, "  {} {}{}  - {}",
+        let _ = writeln!(
+            stdout,
+            "  {} {}{}  - {}",
             preset.emoji,
             preset.name,
             " ".repeat(padding),
@@ -208,7 +274,10 @@ pub fn render_style_list() {
         );
     }
 
-    let _ = writeln!(stdout, "\nUse 'termgfx style preview <preset>' for detailed preview\n");
+    let _ = writeln!(
+        stdout,
+        "\nUse 'termgfx style preview <preset>' for detailed preview\n"
+    );
 }
 
 #[cfg(test)]

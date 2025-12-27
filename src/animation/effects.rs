@@ -1,5 +1,5 @@
-use owo_colors::OwoColorize;
 use crate::animation::engine::Animator;
+use owo_colors::OwoColorize;
 
 /// Animate a progress bar from 0 to 100%
 pub fn progress(duration_secs: f64, style: &str) {
@@ -20,21 +20,33 @@ fn render_progress_inline(percent: u8, style: &str) -> String {
     match style {
         "blocks" => {
             let bar: String = "█".repeat(filled) + &"░".repeat(empty);
-            format!("{} {}%", bar.cyan(), percent.to_string().bright_cyan().bold())
+            format!(
+                "{} {}%",
+                bar.cyan(),
+                percent.to_string().bright_cyan().bold()
+            )
         }
         "gradient" => {
             let mut bar = String::new();
             for i in 0..filled {
                 let p = (i as f32 / width as f32) * 100.0;
-                let c = if p < 33.0 { '█'.red().to_string() }
-                else if p < 66.0 { '█'.yellow().to_string() }
-                else { '█'.green().to_string() };
+                let c = if p < 33.0 {
+                    '█'.red().to_string()
+                } else if p < 66.0 {
+                    '█'.yellow().to_string()
+                } else {
+                    '█'.green().to_string()
+                };
                 bar.push_str(&c);
             }
             bar.push_str(&"░".bright_black().to_string().repeat(empty));
-            let pct = if percent < 33 { percent.to_string().red().bold().to_string() }
-            else if percent < 66 { percent.to_string().yellow().bold().to_string() }
-            else { percent.to_string().green().bold().to_string() };
+            let pct = if percent < 33 {
+                percent.to_string().red().bold().to_string()
+            } else if percent < 66 {
+                percent.to_string().yellow().bold().to_string()
+            } else {
+                percent.to_string().green().bold().to_string()
+            };
             format!("{} {}%", bar, pct)
         }
         "thin" => {
@@ -44,17 +56,21 @@ fn render_progress_inline(percent: u8, style: &str) -> String {
         }
         _ => {
             let bar: String = "█".repeat(filled) + &"░".repeat(empty);
-            format!("{} {}%", bar.cyan(), percent.to_string().bright_cyan().bold())
+            format!(
+                "{} {}%",
+                bar.cyan(),
+                percent.to_string().bright_cyan().bold()
+            )
         }
     }
 }
 
 /// Typewriter effect - reveal text character by character
 pub fn typewriter(text: &str, chars_per_sec: f64) {
+    use crossterm::{cursor::Hide, cursor::Show, ExecutableCommand};
     use std::io::{stdout, Write};
     use std::thread;
     use std::time::Duration;
-    use crossterm::{cursor::Hide, cursor::Show, ExecutableCommand};
 
     let mut stdout = stdout();
     stdout.execute(Hide).unwrap();
@@ -80,17 +96,26 @@ pub fn counter(from: i64, to: i64, duration_secs: f64, prefix: &str, suffix: &st
     animator.run_timed(duration_secs, move |_frame, progress| {
         let range = (to - from) as f64;
         let value = from + (range * progress) as i64;
-        format!("{}{}{}", prefix.bright_black(), value.to_string().cyan().bold(), suffix.bright_black())
+        format!(
+            "{}{}{}",
+            prefix.bright_black(),
+            value.to_string().cyan().bold(),
+            suffix.bright_black()
+        )
     });
 }
 
 /// Animate chart data appearing progressively
 pub fn chart_build(data: &str, duration_secs: f64) {
     use crate::charts::sparkline;
+    use crossterm::{
+        cursor::{Hide, MoveToColumn, Show},
+        terminal::{Clear, ClearType},
+        ExecutableCommand,
+    };
     use std::io::{stdout, Write};
     use std::thread;
     use std::time::{Duration, Instant};
-    use crossterm::{cursor::{Hide, Show, MoveToColumn}, terminal::{Clear, ClearType}, ExecutableCommand};
 
     let points: Vec<&str> = data.split(',').collect();
     if points.is_empty() {
@@ -111,7 +136,9 @@ pub fn chart_build(data: &str, duration_secs: f64) {
         }
 
         let progress = elapsed.as_secs_f64() / duration_secs;
-        let show_count = ((points.len() as f64 * progress) as usize).max(1).min(points.len());
+        let show_count = ((points.len() as f64 * progress) as usize)
+            .max(1)
+            .min(points.len());
 
         let partial_data: String = points[..show_count].join(",");
 
@@ -147,7 +174,11 @@ fn render_sparkline_inline(data: &str) -> String {
 
     let min = values.iter().cloned().fold(f64::INFINITY, f64::min);
     let max = values.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-    let range = if (max - min).abs() < f64::EPSILON { 1.0 } else { max - min };
+    let range = if (max - min).abs() < f64::EPSILON {
+        1.0
+    } else {
+        max - min
+    };
 
     values
         .iter()
@@ -161,10 +192,14 @@ fn render_sparkline_inline(data: &str) -> String {
 
 /// Animate bar chart bars growing
 pub fn bars_build(data: &str, duration_secs: f64) {
+    use crossterm::{
+        cursor::{Hide, MoveTo, Show},
+        terminal::{Clear, ClearType},
+        ExecutableCommand,
+    };
     use std::io::{stdout, Write};
     use std::thread;
     use std::time::{Duration, Instant};
-    use crossterm::{cursor::{Hide, Show, MoveTo}, terminal::{Clear, ClearType}, ExecutableCommand};
 
     // Parse data: "Label:Value,Label:Value"
     let items: Vec<(&str, f64)> = data
@@ -212,7 +247,8 @@ pub fn bars_build(data: &str, duration_secs: f64) {
             let filled = ((current_val / max_val) * bar_width as f64) as usize;
             let bar = "█".repeat(filled);
 
-            print!("{:>8} {} {:.0}",
+            print!(
+                "{:>8} {} {:.0}",
                 label.bright_black(),
                 bar.cyan(),
                 current_val

@@ -1,15 +1,16 @@
+use crossterm::terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{
     cursor::{Hide, MoveTo, Show},
     event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     execute,
     style::{Color, Print, ResetColor, SetForegroundColor, Stylize},
 };
-use crossterm::terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen};
-use std::{borrow::Cow,
+use std::{
+    borrow::Cow,
     collections::HashSet,
     fs,
     io::{self, IsTerminal, Write},
-    path::{Path, PathBuf}
+    path::{Path, PathBuf},
 };
 
 // --- Constants and Icons ---
@@ -173,13 +174,12 @@ impl FilePicker {
         // Filter items based on current filter string
         if !self.filter.is_empty() {
             let filter_lower = self.filter.to_lowercase();
-            self.items.retain(|item| {
-                item.file_name().to_lowercase().contains(&filter_lower)
-            });
+            self.items
+                .retain(|item| item.file_name().to_lowercase().contains(&filter_lower));
         }
 
         if self.items.is_empty() && !self.filter.is_empty() {
-             self.error_message = Some(format!("No matches for \"{}\"", self.filter));
+            self.error_message = Some(format!("No matches for \"{}\"", self.filter));
         } else if self.items.is_empty() {
             self.error_message = Some("Current directory is empty or inaccessible.".to_string());
         }
@@ -253,7 +253,12 @@ impl FilePicker {
                     KeyCode::Char(c) => {
                         if key_event.modifiers.contains(KeyModifiers::CONTROL) {
                             match c {
-                                'c' => break Err(io::Error::new(io::ErrorKind::Interrupted, "Cancelled by user")),
+                                'c' => {
+                                    break Err(io::Error::new(
+                                        io::ErrorKind::Interrupted,
+                                        "Cancelled by user",
+                                    ))
+                                }
                                 _ => {}
                             }
                         } else {
@@ -315,7 +320,9 @@ impl FilePicker {
 
         // Calculate visible items range
         let start_row_for_items = 3 + (if self.error_message.is_some() { 1 } else { 0 });
-        let max_items_display = self.height.unwrap_or(rows as usize - start_row_for_items - 3); // 3 for path, filter, and help
+        let max_items_display = self
+            .height
+            .unwrap_or(rows as usize - start_row_for_items - 3); // 3 for path, filter, and help
 
         let mut start_index = 0;
         if self.selected_index >= max_items_display {
@@ -328,8 +335,16 @@ impl FilePicker {
             let actual_idx = start_index + i;
             let is_selected = actual_idx == self.selected_index;
 
-            let icon = if item.is_dir { ICON_DIRECTORY } else { ICON_FILE };
-            let selector = if is_selected { ICON_SELECTED } else { ICON_UNSELECTED };
+            let icon = if item.is_dir {
+                ICON_DIRECTORY
+            } else {
+                ICON_FILE
+            };
+            let selector = if is_selected {
+                ICON_SELECTED
+            } else {
+                ICON_UNSELECTED
+            };
 
             let item_name = item.file_name();
 

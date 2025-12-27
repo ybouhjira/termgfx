@@ -30,10 +30,7 @@ fn test_gauge_basic() {
 
 #[test]
 fn test_gauge_zero() {
-    termgfx()
-        .args(["gauge", "0"])
-        .assert()
-        .success();
+    termgfx().args(["gauge", "0"]).assert().success();
 }
 
 #[test]
@@ -106,10 +103,7 @@ fn test_gauge_animated() {
 
 #[test]
 fn test_gauge_missing_value() {
-    termgfx()
-        .args(["gauge"])
-        .assert()
-        .failure();
+    termgfx().args(["gauge"]).assert().failure();
 }
 
 #[test]

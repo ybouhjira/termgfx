@@ -1,7 +1,7 @@
-use std::process::{Command, Stdio};
 use std::io::Write;
-use std::time::Duration;
+use std::process::{Command, Stdio};
 use std::thread;
+use std::time::Duration;
 
 fn create_test_config() -> String {
     serde_json::json!({
@@ -29,7 +29,8 @@ fn create_test_config() -> String {
                 "prompt": "Review your choices"
             }
         ]
-    }).to_string()
+    })
+    .to_string()
 }
 
 #[test]
@@ -72,7 +73,7 @@ fn test_wizard_inline_steps_input_and_select() {
 
 #[test]
 fn test_wizard_multiselect() {
-    let output = Command::new("cargo")
+    let mut output = Command::new("cargo")
         .args([
             "run",
             "--",
@@ -89,7 +90,7 @@ fn test_wizard_multiselect() {
         .expect("Failed to spawn wizard");
 
     // Simulate: Space (select Email), Down, Space (select SMS), Enter
-    if let Some(mut stdin) = output.stdin {
+    if let Some(mut stdin) = output.stdin.take() {
         thread::sleep(Duration::from_millis(500));
         stdin.write_all(b" ").ok(); // Space
         thread::sleep(Duration::from_millis(100));
@@ -100,7 +101,9 @@ fn test_wizard_multiselect() {
         stdin.write_all(b"\n").ok(); // Enter
     }
 
-    let result = output.wait_with_output().expect("Failed to wait for wizard");
+    let result = output
+        .wait_with_output()
+        .expect("Failed to wait for wizard");
     let stdout = String::from_utf8_lossy(&result.stdout);
 
     assert!(stdout.contains("\"features\""));
@@ -108,7 +111,7 @@ fn test_wizard_multiselect() {
 
 #[test]
 fn test_wizard_confirm_step() {
-    let output = Command::new("cargo")
+    let mut output = Command::new("cargo")
         .args([
             "run",
             "--",
@@ -125,12 +128,14 @@ fn test_wizard_confirm_step() {
         .expect("Failed to spawn wizard");
 
     // Simulate: y (yes)
-    if let Some(mut stdin) = output.stdin {
+    if let Some(mut stdin) = output.stdin.take() {
         thread::sleep(Duration::from_millis(500));
         stdin.write_all(b"y").ok();
     }
 
-    let result = output.wait_with_output().expect("Failed to wait for wizard");
+    let result = output
+        .wait_with_output()
+        .expect("Failed to wait for wizard");
     let stdout = String::from_utf8_lossy(&result.stdout);
 
     assert!(stdout.contains("\"agree\""));
@@ -139,7 +144,7 @@ fn test_wizard_confirm_step() {
 
 #[test]
 fn test_wizard_env_output() {
-    let output = Command::new("cargo")
+    let mut output = Command::new("cargo")
         .args([
             "run",
             "--",
@@ -156,12 +161,14 @@ fn test_wizard_env_output() {
         .expect("Failed to spawn wizard");
 
     // Type "testuser" and press Enter
-    if let Some(mut stdin) = output.stdin {
+    if let Some(mut stdin) = output.stdin.take() {
         thread::sleep(Duration::from_millis(500));
         stdin.write_all(b"testuser\n").ok();
     }
 
-    let result = output.wait_with_output().expect("Failed to wait for wizard");
+    let result = output
+        .wait_with_output()
+        .expect("Failed to wait for wizard");
     let stdout = String::from_utf8_lossy(&result.stdout);
 
     // ENV format should be USERNAME=testuser
@@ -171,7 +178,7 @@ fn test_wizard_env_output() {
 
 #[test]
 fn test_wizard_with_title() {
-    let output = Command::new("cargo")
+    let mut output = Command::new("cargo")
         .args([
             "run",
             "--",
@@ -190,12 +197,14 @@ fn test_wizard_with_title() {
         .expect("Failed to spawn wizard");
 
     // Type "John" and press Enter
-    if let Some(mut stdin) = output.stdin {
+    if let Some(mut stdin) = output.stdin.take() {
         thread::sleep(Duration::from_millis(500));
         stdin.write_all(b"John\n").ok();
     }
 
-    let result = output.wait_with_output().expect("Failed to wait for wizard");
+    let result = output
+        .wait_with_output()
+        .expect("Failed to wait for wizard");
     assert!(result.status.success());
 }
 
@@ -204,7 +213,7 @@ fn test_wizard_progress_indicator() {
     // This test verifies that the wizard shows "Step X/Y" progress
     // We can't easily test the interactive display, but we can ensure
     // the wizard processes multiple steps correctly
-    let output = Command::new("cargo")
+    let mut output = Command::new("cargo")
         .args([
             "run",
             "--",
@@ -225,7 +234,7 @@ fn test_wizard_progress_indicator() {
         .expect("Failed to spawn wizard");
 
     // Complete all three steps
-    if let Some(mut stdin) = output.stdin {
+    if let Some(mut stdin) = output.stdin.take() {
         thread::sleep(Duration::from_millis(500));
         stdin.write_all(b"value1\n").ok();
         thread::sleep(Duration::from_millis(300));
@@ -234,7 +243,9 @@ fn test_wizard_progress_indicator() {
         stdin.write_all(b"value3\n").ok();
     }
 
-    let result = output.wait_with_output().expect("Failed to wait for wizard");
+    let result = output
+        .wait_with_output()
+        .expect("Failed to wait for wizard");
     let stdout = String::from_utf8_lossy(&result.stdout);
 
     // All three steps should be in output
@@ -259,13 +270,8 @@ fn test_wizard_no_steps_error() {
 fn test_wizard_invalid_step_format() {
     let output = Command::new("cargo")
         .args([
-            "run",
-            "--",
-            "wizard",
-            "--step",
-            "invalid", // Missing format
-            "--output",
-            "json",
+            "run", "--", "wizard", "--step", "invalid", // Missing format
+            "--output", "json",
         ])
         .output()
         .expect("Failed to run wizard");

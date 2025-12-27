@@ -35,9 +35,12 @@ fn test_heatmap_with_labels() {
     termgfx()
         .args([
             "heatmap",
-            "--data", "10,20,30;40,50,60",
-            "--x-labels", "A,B,C",
-            "--y-labels", "Row1,Row2",
+            "--data",
+            "10,20,30;40,50,60",
+            "--x-labels",
+            "A,B,C",
+            "--y-labels",
+            "Row1,Row2",
         ])
         .assert()
         .success()
@@ -48,11 +51,7 @@ fn test_heatmap_with_labels() {
 #[test]
 fn test_heatmap_custom_colors() {
     termgfx()
-        .args([
-            "heatmap",
-            "--data", "1,2,3;4,5,6",
-            "--colors", "green-red",
-        ])
+        .args(["heatmap", "--data", "1,2,3;4,5,6", "--colors", "green-red"])
         .assert()
         .success()
         .stdout(predicate::str::is_empty().not());
@@ -77,8 +76,10 @@ fn test_heatmap_styles() {
         termgfx()
             .args([
                 "heatmap",
-                "--data", "1,5,9;2,6,10;3,7,11",
-                "--colors", scheme,
+                "--data",
+                "1,5,9;2,6,10;3,7,11",
+                "--colors",
+                scheme,
             ])
             .assert()
             .success()
@@ -90,11 +91,7 @@ fn test_heatmap_styles() {
 fn test_heatmap_animated() {
     // In non-TTY mode, animation should just show final result
     termgfx()
-        .args([
-            "heatmap",
-            "--data", "1,2;3,4",
-            "--animate",
-        ])
+        .args(["heatmap", "--data", "1,2;3,4", "--animate"])
         .assert()
         .success()
         .stdout(predicate::str::is_empty().not());
@@ -133,8 +130,10 @@ fn test_heatmap_with_title() {
     termgfx()
         .args([
             "heatmap",
-            "--data", "1,2,3;4,5,6",
-            "--title", "Temperature Map",
+            "--data",
+            "1,2,3;4,5,6",
+            "--title",
+            "Temperature Map",
         ])
         .assert()
         .success()
@@ -143,10 +142,7 @@ fn test_heatmap_with_title() {
 
 #[test]
 fn test_heatmap_empty_data() {
-    termgfx()
-        .args(["heatmap", "--data", ""])
-        .assert()
-        .failure();
+    termgfx().args(["heatmap", "--data", ""]).assert().failure();
 }
 
 #[test]

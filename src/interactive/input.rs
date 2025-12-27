@@ -79,7 +79,10 @@ fn run_input(prompt: &str, placeholder: Option<&str>, password: bool) -> io::Res
                     modifiers: KeyModifiers::CONTROL,
                     ..
                 } => {
-                    break Err(io::Error::new(io::ErrorKind::Interrupted, "Cancelled by user"));
+                    break Err(io::Error::new(
+                        io::ErrorKind::Interrupted,
+                        "Cancelled by user",
+                    ));
                 }
 
                 // Backspace - delete character

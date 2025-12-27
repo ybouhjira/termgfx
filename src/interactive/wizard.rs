@@ -204,11 +204,7 @@ impl Wizard {
         }
 
         // Progress indicator
-        let progress_text = format!(
-            "Step {}/{}",
-            self.current_step + 1,
-            self.steps.len()
-        );
+        let progress_text = format!("Step {}/{}", self.current_step + 1, self.steps.len());
         execute!(
             stdout,
             SetForegroundColor(Color::DarkGrey),
@@ -227,9 +223,12 @@ impl Wizard {
         step: &WizardStep,
     ) -> io::Result<Option<String>> {
         match &step.step_type {
-            StepType::Input => {
-                self.input_step(stdout, &step.prompt, step.password, step.placeholder.as_deref())
-            }
+            StepType::Input => self.input_step(
+                stdout,
+                &step.prompt,
+                step.password,
+                step.placeholder.as_deref(),
+            ),
             StepType::Select => {
                 if step.options.is_empty() {
                     return Err(io::Error::new(

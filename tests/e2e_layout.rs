@@ -44,7 +44,11 @@ fn test_join_align_center() {
 #[test]
 fn test_join_align_right() {
     let mut cmd = Command::cargo_bin("termgfx").unwrap();
-    cmd.arg("join").arg("A").arg("B").arg("--align").arg("right");
+    cmd.arg("join")
+        .arg("A")
+        .arg("B")
+        .arg("--align")
+        .arg("right");
 
     cmd.assert().success();
 }

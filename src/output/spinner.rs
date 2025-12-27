@@ -1,13 +1,13 @@
 use crossterm::{
-    cursor::{Hide, Show, MoveToColumn},
+    cursor::{Hide, MoveToColumn, Show},
     terminal::{Clear, ClearType},
     ExecutableCommand,
 };
 use std::io::{stdout, IsTerminal, Write};
-use std::thread;
-use std::time::{Duration, Instant};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::thread;
+use std::time::{Duration, Instant};
 
 /// Get spinner frames for different styles
 fn get_spinner_frames(style: &str) -> Vec<&'static str> {
@@ -16,7 +16,9 @@ fn get_spinner_frames(style: &str) -> Vec<&'static str> {
         "line" => vec!["|", "/", "-", "\\"],
         "arc" => vec!["◜", "◠", "◝", "◞", "◡", "◟"],
         "bouncing" => vec!["⠁", "⠂", "⠄", "⠂"],
-        "clock" => vec!["🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛"],
+        "clock" => vec![
+            "🕐", "🕑", "🕒", "🕓", "🕔", "🕕", "🕖", "🕗", "🕘", "🕙", "🕚", "🕛",
+        ],
         "circle" => vec!["◐", "◓", "◑", "◒"],
         "bounce" => vec!["⠁", "⠂", "⠄", "⡀", "⢀", "⠠", "⠐", "⠈"],
         "moon" => vec!["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"],
@@ -41,7 +43,8 @@ pub fn render(message: &str, style: &str, duration: Option<u64>) {
     // Set up Ctrl+C handler
     ctrlc::set_handler(move || {
         r.store(false, Ordering::SeqCst);
-    }).expect("Error setting Ctrl-C handler");
+    })
+    .expect("Error setting Ctrl-C handler");
 
     let mut stdout = stdout();
 

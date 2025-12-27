@@ -106,7 +106,10 @@ pub fn play(input: &str, speed: f64) {
 
     println!("▶️  Playing recording: {}", input);
     println!("Speed: {}x", speed);
-    println!("Duration: {:.2}s", recording.events.last().map(|e| e.time).unwrap_or(0.0));
+    println!(
+        "Duration: {:.2}s",
+        recording.events.last().map(|e| e.time).unwrap_or(0.0)
+    );
     println!("\n{}", "=".repeat(recording.width as usize));
 
     thread::sleep(Duration::from_millis(500));
@@ -142,10 +145,7 @@ pub fn export(input: &str, format: &str, output: &str) {
             // Try to use external tools for GIF export
             if Command::new("agg").output().is_ok() {
                 println!("🎬 Exporting to GIF using 'agg'...");
-                let status = Command::new("agg")
-                    .arg(input)
-                    .arg(output)
-                    .status();
+                let status = Command::new("agg").arg(input).arg(output).status();
 
                 match status {
                     Ok(s) if s.success() => {
@@ -160,17 +160,12 @@ pub fn export(input: &str, format: &str, output: &str) {
                 println!("🎬 Exporting to GIF using 'vhs'...");
                 println!("💡 Note: vhs requires a .tape file. Creating one...");
 
-                let tape_content = format!(
-                    "Output {}\nPlayback {}\nSleep 1s",
-                    output, input
-                );
+                let tape_content = format!("Output {}\nPlayback {}\nSleep 1s", output, input);
 
                 let tape_file = input.replace(".recording", ".tape");
                 fs::write(&tape_file, tape_content).expect("Failed to write tape file");
 
-                let status = Command::new("vhs")
-                    .arg(&tape_file)
-                    .status();
+                let status = Command::new("vhs").arg(&tape_file).status();
 
                 match status {
                     Ok(s) if s.success() => {

@@ -300,10 +300,7 @@ fn test_typewriter_with_speed() {
 
 #[test]
 fn test_typewriter_empty_message() {
-    termgfx()
-        .args(["typewriter", ""])
-        .assert()
-        .success();
+    termgfx().args(["typewriter", ""]).assert().success();
 }
 
 // ============================================================================

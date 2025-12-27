@@ -66,7 +66,8 @@ impl BorderStyle {
                 t_right: '├',
                 t_left: '┤',
             },
-            _ => BorderStyle { // "single" or default
+            _ => BorderStyle {
+                // "single" or default
                 horizontal: '─',
                 vertical: '│',
                 top_left: '┌',
@@ -87,12 +88,17 @@ impl BorderStyle {
 fn parse_layout(layout_str: &str) -> Result<Layout, String> {
     let parts: Vec<&str> = layout_str.split('x').collect();
     if parts.len() != 2 {
-        return Err(format!("Invalid layout format: '{}'. Expected format: NxM (e.g., 2x2, 3x1)", layout_str));
+        return Err(format!(
+            "Invalid layout format: '{}'. Expected format: NxM (e.g., 2x2, 3x1)",
+            layout_str
+        ));
     }
 
-    let rows = parts[0].parse::<usize>()
+    let rows = parts[0]
+        .parse::<usize>()
         .map_err(|_| format!("Invalid row count in layout: '{}'", parts[0]))?;
-    let cols = parts[1].parse::<usize>()
+    let cols = parts[1]
+        .parse::<usize>()
         .map_err(|_| format!("Invalid column count in layout: '{}'", parts[1]))?;
 
     if rows == 0 || cols == 0 {
@@ -118,14 +124,27 @@ fn parse_panels(panels_str: &str) -> Result<Vec<Panel>, String> {
         }
 
         if colon_pos >= chars.len() {
-            return Err(format!("Invalid panel definition at position {}: missing ':'", current_pos));
+            return Err(format!(
+                "Invalid panel definition at position {}: missing ':'",
+                current_pos
+            ));
         }
 
-        let panel_type: String = chars[current_pos..colon_pos].iter().collect::<String>().trim().to_string();
+        let panel_type: String = chars[current_pos..colon_pos]
+            .iter()
+            .collect::<String>()
+            .trim()
+            .to_string();
 
         // Validate panel type
-        if !matches!(panel_type.as_str(), "box" | "progress" | "sparkline" | "gauge" | "text") {
-            return Err(format!("Unknown panel type: '{}'. Valid types: box, progress, sparkline, gauge, text", panel_type));
+        if !matches!(
+            panel_type.as_str(),
+            "box" | "progress" | "sparkline" | "gauge" | "text"
+        ) {
+            return Err(format!(
+                "Unknown panel type: '{}'. Valid types: box, progress, sparkline, gauge, text",
+                panel_type
+            ));
         }
 
         // Find content end: next panel type or end of string
@@ -150,7 +169,10 @@ fn parse_panels(panels_str: &str) -> Result<Vec<Panel>, String> {
                     }
                     if word_end < chars.len() && chars[word_end] == ':' {
                         let next_type: String = chars[j..word_end].iter().collect();
-                        if matches!(next_type.as_str(), "box" | "progress" | "sparkline" | "gauge" | "text") {
+                        if matches!(
+                            next_type.as_str(),
+                            "box" | "progress" | "sparkline" | "gauge" | "text"
+                        ) {
                             content_end = i;
                             break;
                         }
@@ -168,7 +190,11 @@ fn parse_panels(panels_str: &str) -> Result<Vec<Panel>, String> {
             }
         }
 
-        let content: String = chars[content_start..content_end].iter().collect::<String>().trim().to_string();
+        let content: String = chars[content_start..content_end]
+            .iter()
+            .collect::<String>()
+            .trim()
+            .to_string();
 
         panels.push(Panel {
             panel_type,
@@ -190,8 +216,7 @@ fn load_config(config_path: &str) -> Result<DashboardConfig, String> {
     let content = fs::read_to_string(config_path)
         .map_err(|e| format!("Failed to read config file '{}': {}", config_path, e))?;
 
-    serde_json::from_str(&content)
-        .map_err(|e| format!("Failed to parse config file: {}", e))
+    serde_json::from_str(&content).map_err(|e| format!("Failed to parse config file: {}", e))
 }
 
 /// Render a single panel content
@@ -247,8 +272,13 @@ fn render_panel_content(panel: &Panel, width: usize, height: usize) -> Vec<Strin
         "sparkline" => {
             // Support both semicolon (preferred) and comma as delimiters
             // Semicolon is cleaner since commas are used as panel separators
-            let delimiter = if panel.content.contains(';') { ';' } else { ',' };
-            let values: Vec<f64> = panel.content
+            let delimiter = if panel.content.contains(';') {
+                ';'
+            } else {
+                ','
+            };
+            let values: Vec<f64> = panel
+                .content
                 .split(delimiter)
                 .filter_map(|s| s.trim().parse().ok())
                 .collect();
@@ -343,7 +373,11 @@ fn generate_sparkline(values: &[f64], max_width: usize) -> String {
     let mut result = String::new();
     let display_values: Vec<f64> = if values.len() > max_width {
         // Sample values to fit width
-        values.iter().step_by(values.len() / max_width).cloned().collect()
+        values
+            .iter()
+            .step_by(values.len() / max_width)
+            .cloned()
+            .collect()
     } else {
         values.to_vec()
     };
@@ -464,7 +498,10 @@ pub fn render(
                 let panel_idx = row * layout.cols + col;
                 let panel = &config.panels[panel_idx];
                 let content_lines = render_panel_content(panel, panel_width, panel_height);
-                let line = content_lines.get(line_idx).cloned().unwrap_or_else(|| " ".repeat(panel_width));
+                let line = content_lines
+                    .get(line_idx)
+                    .cloned()
+                    .unwrap_or_else(|| " ".repeat(panel_width));
                 output.push_str(&line);
                 output.push(border.vertical);
             }

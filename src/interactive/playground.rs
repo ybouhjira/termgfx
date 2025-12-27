@@ -609,11 +609,7 @@ fn render_progress_preview(stdout: &mut io::Stdout, params: &ProgressParams) -> 
     for _ in filled..width {
         execute!(stdout, Print("░"))?;
     }
-    execute!(
-        stdout,
-        ResetColor,
-        Print(format!(" {}%\n", params.percent))
-    )?;
+    execute!(stdout, ResetColor, Print(format!(" {}%\n", params.percent)))?;
 
     Ok(())
 }
@@ -649,10 +645,7 @@ fn render_gauge_preview(stdout: &mut io::Stdout, params: &GaugeParams) -> io::Re
     Ok(())
 }
 
-fn render_sparkline_preview(
-    stdout: &mut io::Stdout,
-    params: &SparklineParams,
-) -> io::Result<()> {
+fn render_sparkline_preview(stdout: &mut io::Stdout, params: &SparklineParams) -> io::Result<()> {
     // Parse data and render mini chart
     let values: Vec<f64> = params
         .data
@@ -679,7 +672,10 @@ fn render_sparkline_preview(
         } else {
             spark_chars.len() / 2
         };
-        execute!(stdout, Print(spark_chars[normalized.min(spark_chars.len() - 1)]))?;
+        execute!(
+            stdout,
+            Print(spark_chars[normalized.min(spark_chars.len() - 1)])
+        )?;
     }
 
     execute!(stdout, ResetColor, Print("\n"))?;

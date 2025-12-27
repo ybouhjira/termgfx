@@ -205,7 +205,10 @@ pub fn render_animated(
 }
 
 fn parse_inline_data(headers_str: &str, rows_str: &str) -> (Vec<String>, Vec<Vec<String>>) {
-    let headers: Vec<String> = headers_str.split(',').map(|h| h.trim().to_string()).collect();
+    let headers: Vec<String> = headers_str
+        .split(',')
+        .map(|h| h.trim().to_string())
+        .collect();
 
     let rows: Vec<Vec<String>> = rows_str
         .split('|')

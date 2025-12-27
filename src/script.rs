@@ -1,9 +1,9 @@
+use crate::charts;
+use crate::output;
 use std::fs;
 use std::io::{stdout, IsTerminal};
 use std::thread;
 use std::time::Duration;
-use crate::output;
-use crate::charts;
 
 #[derive(Debug, Clone)]
 pub struct ScriptCommand {
@@ -76,21 +76,32 @@ fn parse_command_line(line: &str) -> Option<ScriptCommand> {
         i += 1;
     }
 
-    Some(ScriptCommand { command, args, options })
+    Some(ScriptCommand {
+        command,
+        args,
+        options,
+    })
 }
 
 fn get_option(options: &[(String, String)], key: &str) -> Option<String> {
-    options.iter()
+    options
+        .iter()
         .find(|(k, _)| k == key)
         .map(|(_, v)| v.clone())
 }
 
 fn parse_duration(duration_str: &str) -> Duration {
     if duration_str.ends_with("ms") {
-        let ms = duration_str.trim_end_matches("ms").parse::<u64>().unwrap_or(1000);
+        let ms = duration_str
+            .trim_end_matches("ms")
+            .parse::<u64>()
+            .unwrap_or(1000);
         Duration::from_millis(ms)
     } else if duration_str.ends_with('s') {
-        let s = duration_str.trim_end_matches('s').parse::<u64>().unwrap_or(1);
+        let s = duration_str
+            .trim_end_matches('s')
+            .parse::<u64>()
+            .unwrap_or(1);
         Duration::from_secs(s)
     } else {
         // Default to seconds
@@ -116,7 +127,8 @@ fn execute_command(cmd: &ScriptCommand) {
         "box" => {
             let message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("");
             let style = get_option(&cmd.options, "style").unwrap_or_else(|| "info".to_string());
-            let border = get_option(&cmd.options, "border").unwrap_or_else(|| "rounded".to_string());
+            let border =
+                get_option(&cmd.options, "border").unwrap_or_else(|| "rounded".to_string());
             let emoji = get_option(&cmd.options, "emoji");
             output::styled_box::render(message, &style, &border, emoji.as_deref());
         }
@@ -199,8 +211,8 @@ fn execute_command(cmd: &ScriptCommand) {
 }
 
 pub fn run_script_file(path: &str) -> Result<(), String> {
-    let content = fs::read_to_string(path)
-        .map_err(|e| format!("Failed to read script file: {}", e))?;
+    let content =
+        fs::read_to_string(path).map_err(|e| format!("Failed to read script file: {}", e))?;
 
     let commands = parse_script(&content);
     execute_script(commands);

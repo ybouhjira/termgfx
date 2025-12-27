@@ -33,7 +33,12 @@ pub fn render(file1: &str, file2: &str, unified: bool, context: Option<usize>) {
 }
 
 /// Render unified diff format
-fn render_unified(diff: &TextDiff<'_, '_, '_, str>, file1: &str, file2: &str, context: Option<usize>) {
+fn render_unified(
+    diff: &TextDiff<'_, '_, '_, str>,
+    file1: &str,
+    file2: &str,
+    context: Option<usize>,
+) {
     // Header
     println!("{} {}", "───".bright_cyan(), file1.bright_cyan().bold());
     println!("{} {}", "+++".bright_cyan(), file2.bright_cyan().bold());
@@ -54,7 +59,10 @@ fn render_unified(diff: &TextDiff<'_, '_, '_, str>, file1: &str, file2: &str, co
                     ChangeTag::Equal => (" ", Style::new().dimmed()),
                 };
 
-                let line_num = change.old_index().unwrap_or(change.new_index().unwrap_or(0)) + 1;
+                let line_num = change
+                    .old_index()
+                    .unwrap_or(change.new_index().unwrap_or(0))
+                    + 1;
                 print!(
                     "{} ",
                     format!("{:>4}", line_num).style(Style::new().dimmed())
@@ -73,7 +81,9 @@ fn render_unified(diff: &TextDiff<'_, '_, '_, str>, file1: &str, file2: &str, co
 /// Render side-by-side diff format
 fn render_side_by_side(diff: &TextDiff<'_, '_, '_, str>, file1: &str, file2: &str) {
     // Get terminal width
-    let term_width = termion::terminal_size().map(|(w, _)| w as usize).unwrap_or(120);
+    let term_width = termion::terminal_size()
+        .map(|(w, _)| w as usize)
+        .unwrap_or(120);
     let separator = " │ ";
     let line_num_width = 4;
     let available_width = term_width.saturating_sub(separator.len() + (line_num_width * 2) + 4);

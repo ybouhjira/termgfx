@@ -119,14 +119,20 @@ pub fn list_palettes() {
 
     for (idx, palette) in palettes.iter().enumerate() {
         let number_text = format!("{}.", idx + 1);
-        println!("  {}  {}  {}",
+        println!(
+            "  {}  {}  {}",
             number_text.bright_black(),
             palette.name.bright_yellow().bold(),
-            palette.description.bright_black());
+            palette.description.bright_black()
+        );
 
         // Show color preview
         for color in &palette.colors {
-            println!("     ● {}  {}", color.name.bright_white(), color.hex.bright_black());
+            println!(
+                "     ● {}  {}",
+                color.name.bright_white(),
+                color.hex.bright_black()
+            );
         }
         println!();
     }
@@ -135,7 +141,11 @@ pub fn list_palettes() {
 /// Display a palette with visual swatches
 pub fn show_palette(palette: &Palette) {
     println!();
-    println!("  {} {}", "🎨".bright_cyan(), palette.name.bright_yellow().bold());
+    println!(
+        "  {} {}",
+        "🎨".bright_cyan(),
+        palette.name.bright_yellow().bold()
+    );
     println!("  {}", palette.description.bright_black());
     println!();
 
@@ -194,7 +204,11 @@ mod tests {
     fn test_all_palettes_have_colors() {
         let palettes = get_all_palettes();
         for palette in palettes {
-            assert!(!palette.colors.is_empty(), "Palette {} has no colors", palette.name);
+            assert!(
+                !palette.colors.is_empty(),
+                "Palette {} has no colors",
+                palette.name
+            );
         }
     }
 
@@ -222,7 +236,11 @@ mod tests {
 
         for palette in palettes {
             let found = get_palette(&palette.name);
-            assert!(found.is_some(), "Palette {} should be findable", palette.name);
+            assert!(
+                found.is_some(),
+                "Palette {} should be findable",
+                palette.name
+            );
         }
     }
 }

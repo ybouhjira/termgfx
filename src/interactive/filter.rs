@@ -16,7 +16,12 @@ pub struct FuzzyFilter {
 }
 
 impl FuzzyFilter {
-    pub fn new(items: Vec<String>, prompt: Option<String>, multi: bool, height: Option<usize>) -> Self {
+    pub fn new(
+        items: Vec<String>,
+        prompt: Option<String>,
+        multi: bool,
+        height: Option<usize>,
+    ) -> Self {
         Self {
             items,
             prompt: prompt.unwrap_or_else(|| "Filter:".to_string()),
@@ -147,7 +152,11 @@ impl FuzzyFilter {
             let is_selected = selected_items.contains(original_idx);
 
             let prefix = if self.multi {
-                if is_selected { "[x]" } else { "[ ]" }
+                if is_selected {
+                    "[x]"
+                } else {
+                    "[ ]"
+                }
             } else {
                 " "
             };
@@ -156,7 +165,11 @@ impl FuzzyFilter {
 
             execute!(
                 stdout,
-                SetForegroundColor(if is_current { Color::Green } else { Color::Reset }),
+                SetForegroundColor(if is_current {
+                    Color::Green
+                } else {
+                    Color::Reset
+                }),
                 Print(format!("{} {} {}\n", indicator, prefix, item)),
                 ResetColor
             )?;
