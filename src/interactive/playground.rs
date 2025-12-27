@@ -228,7 +228,11 @@ impl PlaygroundApp {
                 2 => self.gauge_params.style = value,
                 _ => {}
             },
-            ComponentPage::Sparkline => if idx == 0 { self.sparkline_params.data = value },
+            ComponentPage::Sparkline => {
+                if idx == 0 {
+                    self.sparkline_params.data = value
+                }
+            }
         }
     }
 

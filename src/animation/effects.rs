@@ -107,7 +107,6 @@ pub fn counter(from: i64, to: i64, duration_secs: f64, prefix: &str, suffix: &st
 
 /// Animate chart data appearing progressively
 pub fn chart_build(data: &str, duration_secs: f64) {
-    
     use crossterm::{
         cursor::{Hide, MoveToColumn, Show},
         terminal::{Clear, ClearType},

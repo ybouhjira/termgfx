@@ -255,7 +255,7 @@ impl FilePicker {
                                 break Err(io::Error::new(
                                     io::ErrorKind::Interrupted,
                                     "Cancelled by user",
-                                ))
+                                ));
                             }
                         } else {
                             self.filter.push(c);

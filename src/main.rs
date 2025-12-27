@@ -1228,7 +1228,9 @@ fn main() {
             interactive::playground::render();
         }
         Commands::Style { style_command } => match style_command {
-            Some(StyleCommands::Preview { preset: Some(preset_name) }) => {
+            Some(StyleCommands::Preview {
+                preset: Some(preset_name),
+            }) => {
                 output::style::render_preset_preview(&preset_name);
             }
             Some(StyleCommands::Preview { preset: None }) => {

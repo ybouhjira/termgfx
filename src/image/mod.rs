@@ -375,8 +375,6 @@ mod tests {
 
     #[test]
     fn test_sixel_output_format() {
-        
-
         // Create a small test image
         let img = DynamicImage::ImageRgba8(image::RgbaImage::from_fn(4, 6, |x, y| {
             if (x + y) % 2 == 0 {
