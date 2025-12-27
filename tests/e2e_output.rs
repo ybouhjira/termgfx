@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -276,31 +277,42 @@ fn test_spinner_moon_style() {
 }
 
 // ============================================================================
-// TYPEWRITER COMMAND TESTS
+// ANIMATE COMMAND TESTS (typewriter effect)
 // ============================================================================
 
 #[test]
-fn test_typewriter_basic() {
+fn test_animate_typewriter_basic() {
     // In non-TTY mode, prints full message immediately
     termgfx()
-        .args(["typewriter", "Hello World"])
+        .args(["animate", "-t", "typewriter", "--text", "Hello World"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Hello World"));
 }
 
 #[test]
-fn test_typewriter_with_speed() {
+fn test_animate_typewriter_with_speed() {
     termgfx()
-        .args(["typewriter", "Fast text", "--speed", "10"])
+        .args([
+            "animate",
+            "-t",
+            "typewriter",
+            "--text",
+            "Fast text",
+            "--speed",
+            "100",
+        ])
         .assert()
         .success()
         .stdout(predicate::str::contains("Fast text"));
 }
 
 #[test]
-fn test_typewriter_empty_message() {
-    termgfx().args(["typewriter", ""]).assert().success();
+fn test_animate_progress_basic() {
+    termgfx()
+        .args(["animate", "-t", "progress", "-D", "0.1"])
+        .assert()
+        .success();
 }
 
 // ============================================================================

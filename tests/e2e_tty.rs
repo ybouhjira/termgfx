@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use rexpect::spawn;
 use std::time::Duration;
 
@@ -70,14 +71,17 @@ fn test_spinner_line_style_tty() {
 }
 
 // ============================================================================
-// TYPEWRITER TTY TESTS
-// These work because typewriter auto-completes
+// ANIMATE TYPEWRITER TTY TESTS
+// These work because typewriter animation auto-completes
 // ============================================================================
 
 #[test]
-fn test_typewriter_message_tty() {
+fn test_animate_typewriter_message_tty() {
     let mut p = spawn(
-        &format!("{} typewriter 'Hello World!' --speed 5", termgfx_bin()),
+        &format!(
+            "{} animate -t typewriter --text 'Hello World!' --speed 100",
+            termgfx_bin()
+        ),
         Some(TIMEOUT),
     )
     .unwrap();
@@ -86,9 +90,12 @@ fn test_typewriter_message_tty() {
 }
 
 #[test]
-fn test_typewriter_fast_tty() {
+fn test_animate_typewriter_fast_tty() {
     let mut p = spawn(
-        &format!("{} typewriter 'Quick test' --speed 1", termgfx_bin()),
+        &format!(
+            "{} animate -t typewriter --text 'Quick test' --speed 200",
+            termgfx_bin()
+        ),
         Some(TIMEOUT),
     )
     .unwrap();
@@ -268,19 +275,6 @@ fn test_select_shows_options_tty() {
     // Should show at least one option
     p.exp_string("apple").unwrap();
     // Cancel with Escape
-    p.send("\x1b").unwrap();
-    wait();
-}
-
-#[test]
-fn test_choose_shows_options_tty() {
-    let mut p = spawn(
-        &format!("{} choose 'Select:' one two three", termgfx_bin()),
-        Some(3000),
-    )
-    .unwrap();
-    p.exp_string("Select").unwrap();
-    p.exp_string("one").unwrap();
     p.send("\x1b").unwrap();
     wait();
 }

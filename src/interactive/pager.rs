@@ -5,7 +5,7 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, Read, Write};
 
 pub struct Pager {
     lines: Vec<String>,
@@ -43,9 +43,7 @@ impl Pager {
             if let Event::Key(key) = event::read()? {
                 match key.code {
                     KeyCode::Up | KeyCode::Char('k') => {
-                        if scroll_offset > 0 {
-                            scroll_offset -= 1;
-                        }
+                        scroll_offset = scroll_offset.saturating_sub(1);
                     }
                     KeyCode::Down | KeyCode::Char('j') => {
                         if scroll_offset + available_rows < self.lines.len() {

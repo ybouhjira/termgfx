@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 
@@ -88,12 +89,12 @@ fn test_spinner_help() {
 }
 
 #[test]
-fn test_typewriter_help() {
+fn test_animate_help() {
     termgfx()
-        .args(["typewriter", "--help"])
+        .args(["animate", "--help"])
         .assert()
         .success()
-        .stdout(predicate::str::is_match("(?i)message").unwrap())
+        .stdout(predicate::str::is_match("(?i)typewriter").unwrap())
         .stdout(predicate::str::is_match("(?i)speed").unwrap());
 }
 

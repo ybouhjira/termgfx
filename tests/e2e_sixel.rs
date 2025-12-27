@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 
 const TEST_IMAGE: &str = "docs/gifs/box.gif";

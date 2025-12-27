@@ -153,6 +153,7 @@ impl Default for TableOptions {
     }
 }
 
+#[allow(dead_code)]
 pub fn render(
     headers_str: Option<&str>,
     rows_str: Option<&str>,

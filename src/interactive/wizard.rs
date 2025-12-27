@@ -120,8 +120,7 @@ impl Wizard {
     pub fn run(&mut self, output_format: &str) -> io::Result<String> {
         // Check for interactive terminal
         if !std::io::stdin().is_terminal() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "Wizard requires an interactive terminal (TTY)",
             ));
         }
@@ -417,9 +416,7 @@ impl Wizard {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
                 match code {
                     KeyCode::Up => {
-                        if selected_idx > 0 {
-                            selected_idx -= 1;
-                        }
+                        selected_idx = selected_idx.saturating_sub(1);
                     }
                     KeyCode::Down => {
                         if selected_idx < options.len() - 1 {
@@ -507,7 +504,7 @@ impl Wizard {
             ResetColor
         )?;
 
-        for (idx, step) in self.steps.iter().enumerate() {
+        for step in self.steps.iter() {
             if matches!(step.step_type, StepType::Summary) {
                 continue;
             }
@@ -543,7 +540,7 @@ impl Wizard {
         Ok(())
     }
 
-    fn wait_for_confirmation(&self, stdout: &mut io::Stdout) -> io::Result<bool> {
+    fn wait_for_confirmation(&self, _stdout: &mut io::Stdout) -> io::Result<bool> {
         loop {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
                 match code {

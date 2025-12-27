@@ -173,6 +173,7 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     print!("\x1bP0;0;0q\"1;1;{};{}", width, height);
 
     // Emit Palette
+    #[allow(clippy::needless_range_loop)]
     for i in 0..216 {
         if used_colors[i] {
             let r_idx = i / 36;
@@ -192,6 +193,7 @@ fn render_sixel(img: &DynamicImage, term_width: usize, _term_height: usize) -> a
     for y in (0..height).step_by(6) {
         let rows_in_band = std::cmp::min(6, height - y);
 
+        #[allow(clippy::needless_range_loop)]
         for color_idx in 0..216 {
             if !used_colors[color_idx] {
                 continue;
@@ -373,7 +375,7 @@ mod tests {
 
     #[test]
     fn test_sixel_output_format() {
-        use std::io::Write;
+        
 
         // Create a small test image
         let img = DynamicImage::ImageRgba8(image::RgbaImage::from_fn(4, 6, |x, y| {

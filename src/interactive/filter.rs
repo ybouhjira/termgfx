@@ -2,7 +2,7 @@ use crossterm::{
     cursor::{Hide, MoveTo, Show},
     event::{self, Event, KeyCode, KeyEvent},
     execute,
-    style::{Color, Print, ResetColor, SetForegroundColor, Stylize},
+    style::{Color, Print, ResetColor, SetForegroundColor},
     terminal::{self, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::collections::HashSet;
@@ -33,8 +33,7 @@ impl FuzzyFilter {
     pub fn render(&self) -> io::Result<Vec<String>> {
         // Check for interactive terminal
         if !std::io::stdin().is_terminal() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
+            return Err(io::Error::other(
                 "Filter requires an interactive terminal (TTY)",
             ));
         }
@@ -58,9 +57,7 @@ impl FuzzyFilter {
             if let Event::Key(KeyEvent { code, .. }) = event::read()? {
                 match code {
                     KeyCode::Up | KeyCode::Char('k') if !matches.is_empty() => {
-                        if selected_idx > 0 {
-                            selected_idx -= 1;
-                        }
+                        selected_idx = selected_idx.saturating_sub(1);
                     }
                     KeyCode::Down | KeyCode::Char('j') if !matches.is_empty() => {
                         if selected_idx < matches.len() - 1 {
@@ -191,7 +188,7 @@ impl FuzzyFilter {
 pub fn render(prompt: Option<String>, multi: bool, height: Option<usize>) {
     // Read from stdin
     let stdin = io::stdin();
-    let items: Vec<String> = stdin.lock().lines().filter_map(|l| l.ok()).collect();
+    let items: Vec<String> = stdin.lock().lines().map_while(Result::ok).collect();
 
     if items.is_empty() {
         eprintln!("Error: No input provided");

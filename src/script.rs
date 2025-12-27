@@ -119,13 +119,13 @@ pub fn execute_script(commands: Vec<ScriptCommand>) {
 fn execute_command(cmd: &ScriptCommand) {
     match cmd.command.as_str() {
         "banner" => {
-            let title = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("Banner");
+            let title = cmd.args.first().map(|s| s.as_str()).unwrap_or("Banner");
             let gradient = get_option(&cmd.options, "gradient");
             output::banner::render(title, gradient.as_deref());
         }
 
         "box" => {
-            let message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("");
+            let message = cmd.args.first().map(|s| s.as_str()).unwrap_or("");
             let style = get_option(&cmd.options, "style").unwrap_or_else(|| "info".to_string());
             let border =
                 get_option(&cmd.options, "border").unwrap_or_else(|| "rounded".to_string());
@@ -134,7 +134,7 @@ fn execute_command(cmd: &ScriptCommand) {
         }
 
         "progress" => {
-            let percent = if let Some(arg) = cmd.args.get(0) {
+            let percent = if let Some(arg) = cmd.args.first() {
                 if arg.contains('-') {
                     // Range format: 0-100
                     let parts: Vec<&str> = arg.split('-').collect();
@@ -178,14 +178,14 @@ fn execute_command(cmd: &ScriptCommand) {
         }
 
         "spinner" => {
-            let _message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("Loading...");
+            let _message = cmd.args.first().map(|s| s.as_str()).unwrap_or("Loading...");
             let _style = get_option(&cmd.options, "style").unwrap_or_else(|| "dots".to_string());
             // Note: Spinner runs indefinitely with Ctrl+C, not suitable for scripts
             eprintln!("Note: spinner command not supported in scripts (runs indefinitely)");
         }
 
         "typewriter" => {
-            let message = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("");
+            let message = cmd.args.first().map(|s| s.as_str()).unwrap_or("");
             let speed = get_option(&cmd.options, "speed")
                 .and_then(|s| s.parse::<u64>().ok())
                 .unwrap_or(50);
@@ -193,14 +193,14 @@ fn execute_command(cmd: &ScriptCommand) {
         }
 
         "wait" => {
-            if let Some(duration_str) = cmd.args.get(0) {
+            if let Some(duration_str) = cmd.args.first() {
                 let duration = parse_duration(duration_str);
                 thread::sleep(duration);
             }
         }
 
         "sparkline" => {
-            let data = cmd.args.get(0).map(|s| s.as_str()).unwrap_or("1,2,3,4,5");
+            let data = cmd.args.first().map(|s| s.as_str()).unwrap_or("1,2,3,4,5");
             charts::sparkline::render(data);
         }
 

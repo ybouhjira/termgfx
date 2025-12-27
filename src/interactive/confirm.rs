@@ -37,8 +37,7 @@ pub fn render(prompt: &str, default: &str, style: &str) {
 fn show_confirm_prompt(prompt: &str, default: bool, style: &str) -> io::Result<bool> {
     // Check for interactive terminal
     if !std::io::stdin().is_terminal() {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        return Err(io::Error::other(
             "Confirm requires an interactive terminal (TTY)",
         ));
     }

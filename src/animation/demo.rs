@@ -8,7 +8,7 @@ use std::thread;
 use std::time::Duration;
 
 use crate::animation::effects;
-use crate::charts::{bar, pie, pie::PieChart, sparkline};
+use crate::charts::{bar, pie::PieChart, sparkline};
 use crate::output::{banner, progress, styled_box};
 
 fn wait(secs: f64) {
@@ -227,9 +227,8 @@ fn demo_tui() {
         format!("Gauge: {}%", "75").yellow()
     );
     println!(
-        "  {}  {}  {}  {}  {}",
+        "  {}  Hello World!  {}  {}  {}",
         "│".cyan(),
-        "Hello World!",
         " ".repeat(7),
         "│".cyan(),
         "████████░░░░".green()

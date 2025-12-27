@@ -10,11 +10,13 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 /// Core animation engine that handles frame timing and terminal control
+#[allow(dead_code)]
 pub struct Animator {
     running: Arc<AtomicBool>,
     frame_delay: Duration,
 }
 
+#[allow(dead_code)]
 impl Animator {
     pub fn new(frame_delay_ms: u64) -> Self {
         let running = Arc::new(AtomicBool::new(true));

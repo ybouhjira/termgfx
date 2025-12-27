@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use predicates::prelude::*;
 use std::fs;
@@ -251,7 +252,7 @@ fn test_dashboard_from_config_file() {
   ]
 }"#;
 
-    let mut config_file = NamedTempFile::new().unwrap();
+    let config_file = NamedTempFile::new().unwrap();
     fs::write(config_file.path(), config_content).unwrap();
 
     termgfx()
@@ -277,7 +278,7 @@ fn test_dashboard_config_override_panels() {
   ]
 }"#;
 
-    let mut config_file = NamedTempFile::new().unwrap();
+    let config_file = NamedTempFile::new().unwrap();
     fs::write(config_file.path(), config_content).unwrap();
 
     // CLI panels should override config panels
@@ -343,7 +344,7 @@ fn test_dashboard_missing_config_file() {
 
 #[test]
 fn test_dashboard_invalid_json_config() {
-    let mut config_file = NamedTempFile::new().unwrap();
+    let config_file = NamedTempFile::new().unwrap();
     fs::write(config_file.path(), "{ invalid json }").unwrap();
 
     termgfx()

@@ -129,7 +129,7 @@ pub fn render_animated(title: &str, gradient: Option<&str>, animate: bool, anima
     let subtitle = parts.get(1).map(|s| s.trim());
     let padding = 4;
     let title_width = UnicodeWidthStr::width(main_title);
-    let subtitle_width = subtitle.map(|s| UnicodeWidthStr::width(s)).unwrap_or(0);
+    let subtitle_width = subtitle.map(UnicodeWidthStr::width).unwrap_or(0);
     let min_content_width = title_width.max(subtitle_width) + padding + 2;
     let banner_width = if term_width > min_content_width {
         term_width.min(100)
@@ -225,6 +225,7 @@ fn print_animated(text: &str, animate: bool, delay: Duration, stdout: &mut std::
     }
 }
 
+#[allow(dead_code)]
 fn render_banner_line(
     text: &str,
     width: usize,
@@ -247,6 +248,7 @@ fn render_banner_line(
     println!("{}", apply_gradient(&line, gradient, position));
 }
 
+#[allow(clippy::too_many_arguments)]
 fn render_banner_line_animated(
     text: &str,
     width: usize,

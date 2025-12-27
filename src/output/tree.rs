@@ -110,6 +110,7 @@ fn render_json_tree(value: &Value, prefix: &str, _is_last: bool, depth: usize, c
 }
 
 /// Render a tree from inline data format: "root>child1,child2>grandchild"
+#[allow(dead_code)]
 fn render_inline_tree(data: &str) {
     render_inline_tree_animated(data, false, 500);
 }
@@ -170,6 +171,7 @@ fn render_inline_tree_animated(data: &str, animate: bool, animation_time_ms: u64
 }
 
 /// Main render function - handles all tree types
+#[allow(dead_code)]
 pub fn render(data: Option<&str>, path: Option<&str>) {
     render_animated(data, path, false, 500);
 }
@@ -205,7 +207,7 @@ pub fn render_animated(
             std::process::exit(1);
         }
 
-        match serde_json::from_str::<Value>(&buffer.trim()) {
+        match serde_json::from_str::<Value>(buffer.trim()) {
             Ok(json) => {
                 println!("{} {}", "📁".bright_cyan(), "root".bright_cyan().bold());
                 render_json_tree(&json, "", true, 0, &chars);

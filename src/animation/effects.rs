@@ -107,7 +107,7 @@ pub fn counter(from: i64, to: i64, duration_secs: f64, prefix: &str, suffix: &st
 
 /// Animate chart data appearing progressively
 pub fn chart_build(data: &str, duration_secs: f64) {
-    use crate::charts::sparkline;
+    
     use crossterm::{
         cursor::{Hide, MoveToColumn, Show},
         terminal::{Clear, ClearType},
@@ -269,6 +269,7 @@ pub fn bars_build(data: &str, duration_secs: f64) {
 }
 
 /// Run an animation effect by name
+#[allow(clippy::too_many_arguments)]
 pub fn run(
     effect_type: &str,
     text: Option<&str>,

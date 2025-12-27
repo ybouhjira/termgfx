@@ -143,9 +143,11 @@ pub fn render_animated(
 
     for (idx, line) in lines.iter().enumerate() {
         let mut content = String::new();
-        if idx == 0 && emoji_str.is_some() {
-            content.push_str(emoji_str.unwrap());
-            content.push(' ');
+        if idx == 0 {
+            if let Some(emoji) = emoji_str {
+                content.push_str(emoji);
+                content.push(' ');
+            }
         }
         content.push_str(line);
         let content_width = UnicodeWidthStr::width(content.as_str());

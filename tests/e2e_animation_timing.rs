@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use assert_cmd::Command;
 use std::time::{Duration, Instant};
 

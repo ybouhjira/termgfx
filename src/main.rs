@@ -1228,12 +1228,11 @@ fn main() {
             interactive::playground::render();
         }
         Commands::Style { style_command } => match style_command {
-            Some(StyleCommands::Preview { preset }) => {
-                if let Some(preset_name) = preset {
-                    output::style::render_preset_preview(&preset_name);
-                } else {
-                    output::style::render_all_preview();
-                }
+            Some(StyleCommands::Preview { preset: Some(preset_name) }) => {
+                output::style::render_preset_preview(&preset_name);
+            }
+            Some(StyleCommands::Preview { preset: None }) => {
+                output::style::render_all_preview();
             }
             Some(StyleCommands::List) => {
                 output::style::render_style_list();
@@ -1241,32 +1240,6 @@ fn main() {
             None => {
                 output::style::render_all_preview();
             }
-        },
-        Commands::Palette { palette_command } => match palette_command {
-            Some(PaletteCommands::List) | None => {
-                output::palette::list_palettes();
-            }
-            Some(PaletteCommands::Show { name }) => {
-                let palette_name = name.as_deref().unwrap_or("default");
-                match output::palette::get_palette(palette_name) {
-                    Some(palette) => output::palette::show_palette(&palette),
-                    None => {
-                        eprintln!("Error: Palette '{}' not found", palette_name);
-                        eprintln!("Use 'termgfx palette list' to see available palettes");
-                        std::process::exit(1);
-                    }
-                }
-            }
-            Some(PaletteCommands::Export { name }) => match output::palette::get_palette(&name) {
-                Some(palette) => {
-                    println!("{}", output::palette::export_palette(&palette));
-                }
-                None => {
-                    eprintln!("Error: Palette '{}' not found", name);
-                    eprintln!("Use 'termgfx palette list' to see available palettes");
-                    std::process::exit(1);
-                }
-            },
         },
         Commands::Palette { palette_command } => match palette_command {
             Some(PaletteCommands::List) | None => {

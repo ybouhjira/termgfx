@@ -103,7 +103,7 @@ pub fn render_all_preview() {
     // Display each preset
     for (idx, preset) in presets.iter().enumerate() {
         if idx > 0 {
-            let _ = writeln!(stdout, "");
+            let _ = writeln!(stdout);
         }
 
         let _ = writeln!(
@@ -113,7 +113,7 @@ pub fn render_all_preview() {
             preset.name.to_uppercase(),
             preset.description
         );
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
 
         // Sample box
         let _ = write!(stdout, "  {}", render_sample_box(preset));
@@ -193,7 +193,7 @@ pub fn render_preset_preview(preset_name: &str) {
 
         // Extended preview
         let _ = writeln!(stdout, "Box Styles:");
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
 
         // Single border
         let _ = writeln!(stdout, "╭─────────────────────────────────────╮");
@@ -203,7 +203,7 @@ pub fn render_preset_preview(preset_name: &str) {
             preset.name
         );
         let _ = writeln!(stdout, "╰─────────────────────────────────────╯");
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
 
         // Double border
         let _ = writeln!(stdout, "╔═════════════════════════════════════╗");
@@ -213,7 +213,7 @@ pub fn render_preset_preview(preset_name: &str) {
             preset.name
         );
         let _ = writeln!(stdout, "╚═════════════════════════════════════╝");
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
 
         // Heavy border
         let _ = writeln!(stdout, "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
@@ -223,14 +223,14 @@ pub fn render_preset_preview(preset_name: &str) {
             preset.name
         );
         let _ = writeln!(stdout, "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
 
         // Color showcase
         let _ = writeln!(stdout, "Color Showcase:");
         let _ = writeln!(stdout, "  Text Color:   Cyan colored text");
         let _ = writeln!(stdout, "  Accent Color: Green colored text");
         let _ = writeln!(stdout, "  Border Color: Yellow colored text");
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
 
         // Component preview
         let _ = writeln!(stdout, "Component Examples:");
@@ -238,7 +238,7 @@ pub fn render_preset_preview(preset_name: &str) {
         let _ = writeln!(stdout, "  Chart:     {}", render_sample_chart(&preset));
         let _ = writeln!(stdout, "  Sparkline: {}", render_sample_sparkline(&preset));
         let _ = writeln!(stdout, "  Table:     {}", render_sample_table(&preset));
-        let _ = writeln!(stdout, "");
+        let _ = writeln!(stdout);
     } else {
         eprintln!("Error: Unknown style preset '{}'", preset_name);
         eprintln!(

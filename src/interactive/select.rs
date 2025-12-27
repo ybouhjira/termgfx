@@ -34,8 +34,7 @@ pub fn render(prompt: &str, options: &[String], multi: bool) {
 fn run_select(prompt: &str, options: &[String], multi: bool) -> io::Result<Vec<String>> {
     // Check for interactive terminal
     if !std::io::stdin().is_terminal() {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
+        return Err(io::Error::other(
             "Select requires an interactive terminal (TTY)",
         ));
     }
@@ -63,9 +62,7 @@ fn run_select(prompt: &str, options: &[String], multi: bool) -> io::Result<Vec<S
         if let Event::Key(KeyEvent { code, .. }) = event::read()? {
             match code {
                 KeyCode::Up | KeyCode::Char('k') => {
-                    if selected_idx > 0 {
-                        selected_idx -= 1;
-                    }
+                    selected_idx = selected_idx.saturating_sub(1);
                 }
                 KeyCode::Down | KeyCode::Char('j') => {
                     if selected_idx < options.len() - 1 {

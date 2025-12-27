@@ -1,5 +1,5 @@
 use crossterm::{
-    cursor::{Hide, MoveTo, MoveToColumn, Show},
+    cursor::{Hide, MoveTo, Show},
     terminal::{Clear, ClearType},
     ExecutableCommand,
 };
@@ -139,7 +139,7 @@ impl<'a> PieChart<'a> {
         // Legend has 1 empty line + 1 line per segment
         let total_output_lines = 18 + 1 + total_segments;
 
-        for (i, segment) in full_segments.into_iter().enumerate() {
+        for segment in full_segments.into_iter() {
             if !running.load(Ordering::SeqCst) {
                 break;
             }
