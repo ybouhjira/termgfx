@@ -614,6 +614,26 @@ enum Commands {
         #[command(subcommand)]
         palette_command: Option<PaletteCommands>,
     },
+    /// Display a checklist with checkboxes and optional data columns
+    ///
+    /// Example: termgfx checklist --items "Task A:done:2h,Task B:pending:1h" --columns "Duration"
+    #[command(
+        after_help = "Status values: done/complete/yes/true/1/✓ for checked, anything else for unchecked\nOutput formats: text (default), json"
+    )]
+    Checklist {
+        /// Items in format "Label:status:col1:col2,..." (status: done/pending)
+        #[arg(short, long)]
+        items: String,
+        /// Column headers (comma-separated)
+        #[arg(short, long)]
+        columns: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+        /// Hide stats summary
+        #[arg(long)]
+        no_stats: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1269,5 +1289,13 @@ fn main() {
                 }
             },
         },
+        Commands::Checklist {
+            items,
+            columns,
+            json,
+            no_stats,
+        } => {
+            output::checklist::render(&items, columns.as_deref(), json, !no_stats);
+        }
     }
 }

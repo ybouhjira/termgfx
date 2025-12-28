@@ -1,4 +1,5 @@
 pub mod banner;
+pub mod checklist;
 pub mod dashboard;
 pub mod diff;
 pub mod gauge;
