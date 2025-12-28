@@ -188,8 +188,7 @@ mod tty_tests {
 
         p.exp_string("CONFIRM DELETE")
             .expect("Custom title not found");
-        p.exp_string("Delete all data")
-            .expect("Message not found");
+        p.exp_string("Delete all data").expect("Message not found");
         p.exp_string("$").expect("Command did not complete");
     }
 }

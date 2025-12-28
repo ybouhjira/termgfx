@@ -80,13 +80,7 @@ fn test_stats_arrow_separator() {
 #[test]
 fn test_stats_items_flag() {
     termgfx()
-        .args([
-            "stats",
-            "--items",
-            "Files:1,234",
-            "--items",
-            "Size:45 MB",
-        ])
+        .args(["stats", "--items", "Files:1,234", "--items", "Size:45 MB"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Files"))

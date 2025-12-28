@@ -1,7 +1,6 @@
 use owo_colors::OwoColorize;
 use serde::{Deserialize, Serialize};
 use std::io::{self, Write};
-use unicode_width::UnicodeWidthStr;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatItem {
@@ -17,12 +16,12 @@ pub struct StatsOutput {
 /// Separator styles for stats bar
 #[derive(Debug, Clone, Copy)]
 pub enum Separator {
-    Pipe,      // │
-    Dot,       // •
-    Slash,     // /
-    Bar,       // |
-    Diamond,   // ◆
-    Arrow,     // →
+    Pipe,    // │
+    Dot,     // •
+    Slash,   // /
+    Bar,     // |
+    Diamond, // ◆
+    Arrow,   // →
 }
 
 impl Separator {

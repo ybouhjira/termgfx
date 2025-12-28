@@ -32,11 +32,7 @@ fn parse_items(items_str: &str) -> Vec<ChecklistItem> {
                 status.as_str(),
                 "done" | "complete" | "completed" | "yes" | "true" | "1" | "✓" | "✔" | "☑"
             );
-            let columns: Vec<String> = parts
-                .iter()
-                .skip(2)
-                .map(|s| s.trim().to_string())
-                .collect();
+            let columns: Vec<String> = parts.iter().skip(2).map(|s| s.trim().to_string()).collect();
             ChecklistItem {
                 label,
                 checked,
@@ -121,7 +117,10 @@ fn render_stats(completed: usize, total: usize) {
 
     println!();
 
-    let stats_text = format!("Stats: {}/{} completed ({:.0}%)", completed, total, percentage);
+    let stats_text = format!(
+        "Stats: {}/{} completed ({:.0}%)",
+        completed, total, percentage
+    );
 
     if percentage == 100.0 {
         println!("{}", stats_text.green().bold());
