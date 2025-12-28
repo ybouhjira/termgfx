@@ -1,7 +1,7 @@
 //! Main application state and event loop for TermGFX Studio
 
 use crossterm::{
-    event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
+    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -46,6 +46,10 @@ pub struct StudioApp {
     pub running: bool,
     pub show_help: bool,
     pub status_message: Option<(String, std::time::Instant)>,
+    /// Last computed layout areas for mouse hit testing
+    pub last_areas: Option<super::layout::StudioAreas>,
+    /// Scroll offset for sidebar component list
+    pub sidebar_scroll: usize,
 }
 
 impl StudioApp {
@@ -74,6 +78,8 @@ impl StudioApp {
             running: true,
             show_help: false,
             status_message: None,
+            last_areas: None,
+            sidebar_scroll: 0,
         }
     }
 
@@ -178,28 +184,7 @@ impl StudioApp {
                 };
             }
             KeyCode::Char('c') => {
-                // Copy command to clipboard
-                if let Some(component) = self.current_component() {
-                    let cmd = component.generate_command(&self.param_values);
-                    // Try to copy to clipboard using pbcopy on macOS or xclip on Linux
-                    let copy_result = std::process::Command::new("pbcopy")
-                        .stdin(std::process::Stdio::piped())
-                        .spawn()
-                        .or_else(|_| {
-                            std::process::Command::new("xclip")
-                                .args(["-selection", "clipboard"])
-                                .stdin(std::process::Stdio::piped())
-                                .spawn()
-                        });
-
-                    if let Ok(mut child) = copy_result {
-                        if let Some(stdin) = child.stdin.as_mut() {
-                            let _ = stdin.write_all(cmd.as_bytes());
-                        }
-                        let _ = child.wait();
-                        self.set_status("✓ Command copied to clipboard!");
-                    }
-                }
+                self.copy_command_to_clipboard();
             }
             KeyCode::Char('r') => {
                 // Reset current component parameters to defaults
@@ -456,6 +441,136 @@ impl StudioApp {
             }
         }
     }
+
+    /// Handle mouse events
+    pub fn handle_mouse(&mut self, event: crossterm::event::MouseEvent) {
+        let Some(areas) = self.last_areas else {
+            return;
+        };
+
+        let x = event.column;
+        let y = event.row;
+
+        match event.kind {
+            MouseEventKind::Down(MouseButton::Left) => {
+                // Check which panel was clicked
+                if Self::point_in_rect(x, y, areas.sidebar) {
+                    self.focused_panel = FocusedPanel::Sidebar;
+                    // Calculate which component was clicked
+                    let inner_y = y.saturating_sub(areas.sidebar.y + 1); // Account for border
+                    let mut item_index = 0;
+                    let mut current_category = "";
+
+                    for (idx, component) in self.components.iter().enumerate() {
+                        // Skip category headers in click detection
+                        if component.category != current_category {
+                            current_category = component.category;
+                            if item_index == inner_y as usize {
+                                // Clicked on category header, ignore
+                                return;
+                            }
+                            item_index += 1;
+                        }
+
+                        if item_index == inner_y as usize {
+                            if idx != self.selected_component {
+                                self.selected_component = idx;
+                                self.update_param_values();
+                            }
+                            return;
+                        }
+                        item_index += 1;
+                    }
+                } else if Self::point_in_rect(x, y, areas.params) {
+                    self.focused_panel = FocusedPanel::Params;
+                    // Calculate which parameter was clicked
+                    let inner_y = y.saturating_sub(areas.params.y + 1);
+                    let param_count = self.current_component()
+                        .map(|c| c.params.len())
+                        .unwrap_or(0);
+
+                    if (inner_y as usize) < param_count {
+                        self.selected_param = inner_y as usize;
+                    }
+                } else if Self::point_in_rect(x, y, areas.preview) {
+                    self.focused_panel = FocusedPanel::Preview;
+                } else if Self::point_in_rect(x, y, areas.command) {
+                    // Check if clicked on Copy button area (roughly in the help text)
+                    // The command panel shows: [c] Copy   [Enter] Run   [?] Help   [q] Quit
+                    let inner_x = x.saturating_sub(areas.command.x + 1);
+                    if inner_x < 10 {
+                        // Clicked near [c] Copy - trigger copy
+                        self.copy_command_to_clipboard();
+                    }
+                }
+            }
+            MouseEventKind::ScrollUp => {
+                match self.focused_panel {
+                    FocusedPanel::Sidebar => {
+                        if self.selected_component > 0 {
+                            self.selected_component -= 1;
+                            self.update_param_values();
+                        }
+                    }
+                    FocusedPanel::Params => {
+                        if self.selected_param > 0 {
+                            self.selected_param -= 1;
+                        }
+                    }
+                    FocusedPanel::Preview => {}
+                }
+            }
+            MouseEventKind::ScrollDown => {
+                match self.focused_panel {
+                    FocusedPanel::Sidebar => {
+                        if self.selected_component < self.components.len() - 1 {
+                            self.selected_component += 1;
+                            self.update_param_values();
+                        }
+                    }
+                    FocusedPanel::Params => {
+                        let param_count = self.current_component()
+                            .map(|c| c.params.len())
+                            .unwrap_or(0);
+                        if self.selected_param < param_count.saturating_sub(1) {
+                            self.selected_param += 1;
+                        }
+                    }
+                    FocusedPanel::Preview => {}
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// Check if a point is inside a rectangle
+    fn point_in_rect(x: u16, y: u16, rect: Rect) -> bool {
+        x >= rect.x && x < rect.x + rect.width && y >= rect.y && y < rect.y + rect.height
+    }
+
+    /// Copy command to clipboard (extracted for reuse)
+    fn copy_command_to_clipboard(&mut self) {
+        if let Some(component) = self.current_component() {
+            let cmd = component.generate_command(&self.param_values);
+            let copy_result = std::process::Command::new("pbcopy")
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .or_else(|_| {
+                    std::process::Command::new("xclip")
+                        .args(["-selection", "clipboard"])
+                        .stdin(std::process::Stdio::piped())
+                        .spawn()
+                });
+
+            if let Ok(mut child) = copy_result {
+                if let Some(stdin) = child.stdin.as_mut() {
+                    let _ = stdin.write_all(cmd.as_bytes());
+                }
+                let _ = child.wait();
+                self.set_status("✓ Command copied to clipboard!");
+            }
+        }
+    }
 }
 
 impl Default for StudioApp {
@@ -473,10 +588,10 @@ pub fn run_studio() -> io::Result<()> {
         ));
     }
 
-    // Setup terminal
+    // Setup terminal with mouse support
     enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen)?;
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
@@ -491,6 +606,7 @@ pub fn run_studio() -> io::Result<()> {
         // Render
         terminal.draw(|frame| {
             let areas = app.layout.split(frame.area());
+            app.last_areas = Some(areas); // Store for mouse hit testing
             ui::render(frame, &app, areas);
 
             // Render help overlay if visible
@@ -506,15 +622,17 @@ pub fn run_studio() -> io::Result<()> {
 
         // Handle events
         if event::poll(std::time::Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
-                app.handle_key(key);
+            match event::read()? {
+                Event::Key(key) => app.handle_key(key),
+                Event::Mouse(mouse) => app.handle_mouse(mouse),
+                _ => {}
             }
         }
     }
 
-    // Cleanup
+    // Cleanup with mouse capture disabled
     disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
+    execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
 
     Ok(())
 }
@@ -605,5 +723,27 @@ mod tests {
         let default_message = app.param_values.get("message");
         assert!(default_message.is_some());
         assert_eq!(default_message.unwrap(), "Hello World!");
+    }
+
+    #[test]
+    fn test_point_in_rect() {
+        let rect = Rect::new(10, 10, 20, 10);
+
+        // Inside
+        assert!(StudioApp::point_in_rect(15, 15, rect));
+        assert!(StudioApp::point_in_rect(10, 10, rect)); // Top-left corner
+
+        // Outside
+        assert!(!StudioApp::point_in_rect(5, 15, rect));   // Left
+        assert!(!StudioApp::point_in_rect(35, 15, rect));  // Right
+        assert!(!StudioApp::point_in_rect(15, 5, rect));   // Above
+        assert!(!StudioApp::point_in_rect(15, 25, rect));  // Below
+    }
+
+    #[test]
+    fn test_mouse_fields_initialized() {
+        let app = StudioApp::new();
+        assert!(app.last_areas.is_none());
+        assert_eq!(app.sidebar_scroll, 0);
     }
 }

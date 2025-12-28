@@ -116,6 +116,23 @@ fn test_studio_help_shows_slider_control() {
 }
 
 // ============================================================================
+// Mouse support tests (Issue #107)
+// ============================================================================
+
+#[test]
+fn test_studio_help_shows_mouse_support() {
+    // Issue #107: Verify mouse support is documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Mouse"))
+        .stdout(predicate::str::contains("Click"))
+        .stdout(predicate::str::contains("Scroll"));
+}
+
+// ============================================================================
 // studio interactive tests (require TTY - skipped in CI)
 // ============================================================================
 
