@@ -703,6 +703,41 @@ enum Commands {
         #[command(subcommand)]
         export_command: ExportCommands,
     },
+    /// Preview data before performing actions
+    ///
+    /// Example: termgfx preview --title "Files to delete" --items "file1.txt,file2.txt"
+    #[command(
+        after_help = "Styles: info, success, warning, danger\nBorders: single, double, rounded, thick, ascii"
+    )]
+    Preview {
+        /// Title for the preview pane
+        #[arg(short, long, default_value = "Preview")]
+        title: String,
+        /// Items to preview (comma-separated)
+        #[arg(short, long)]
+        items: String,
+        /// Action button label
+        #[arg(short, long, default_value = "Confirm")]
+        action: String,
+        /// Cancel button label
+        #[arg(long, default_value = "Cancel")]
+        cancel: String,
+        /// Style: info, success, warning, danger
+        #[arg(short, long, default_value = "info")]
+        style: String,
+        /// Border style: single, double, rounded, thick, ascii
+        #[arg(short, long, default_value = "rounded")]
+        border: String,
+        /// Maximum items to display (rest are truncated)
+        #[arg(long, default_value = "20")]
+        max_items: usize,
+        /// Column headers for tabular data (comma-separated)
+        #[arg(long)]
+        columns: Option<String>,
+        /// Hide item numbers
+        #[arg(long)]
+        no_numbers: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1659,6 +1694,41 @@ fn main() {
                         }
                     }
                 }
+            }
+        }
+        Commands::Preview {
+            title,
+            items,
+            action,
+            cancel,
+            style,
+            border,
+            max_items,
+            columns,
+            no_numbers,
+        } => {
+            let items_list: Vec<String> = items.split(',').map(|s| s.trim().to_string()).collect();
+
+            let config = output::preview::PreviewConfig {
+                title,
+                action,
+                cancel_label: cancel,
+                style,
+                border,
+                max_items,
+                show_numbers: !no_numbers,
+            };
+
+            if let Some(cols) = columns {
+                // Parse as tabular data: each item is "col1|col2|col3"
+                let column_names: Vec<String> = cols.split(',').map(|s| s.trim().to_string()).collect();
+                let rows: Vec<Vec<String>> = items_list
+                    .iter()
+                    .map(|item| item.split('|').map(|s| s.trim().to_string()).collect())
+                    .collect();
+                output::preview::render_with_columns(&rows, &column_names, &config);
+            } else {
+                output::preview::render(&items_list, &config);
             }
         }
     }

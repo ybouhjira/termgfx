@@ -7,6 +7,7 @@ pub mod heatmap;
 pub mod layout;
 pub mod notification;
 pub mod palette;
+pub mod preview;
 pub mod progress;
 pub mod record;
 pub mod spinner;
