@@ -3,6 +3,7 @@ use clap::{Parser, Subcommand};
 mod animation;
 mod charts;
 mod design;
+mod export;
 mod image;
 mod interactive;
 mod output;
@@ -691,6 +692,78 @@ enum Commands {
         /// Disable color coding
         #[arg(long)]
         no_color: bool,
+    },
+    /// Export terminal graphics to SVG format
+    ///
+    /// Example: termgfx export box "Hello" --style success -o hello.svg
+    #[command(
+        after_help = "Formats: svg\nComponents: box, progress, bar-chart, pie-chart"
+    )]
+    Export {
+        #[command(subcommand)]
+        export_command: ExportCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum ExportCommands {
+    /// Export a styled box to SVG
+    Box {
+        /// Message to display in the box
+        message: String,
+        /// Style: info, success, warning, danger
+        #[arg(short, long, default_value = "info")]
+        style: String,
+        /// Output file (stdout if not specified)
+        #[arg(short, long)]
+        output: Option<String>,
+        /// SVG width
+        #[arg(long, default_value = "400")]
+        width: u32,
+        /// SVG height
+        #[arg(long, default_value = "100")]
+        height: u32,
+        /// Background color
+        #[arg(long, default_value = "#1e1e1e")]
+        background: String,
+    },
+    /// Export a progress bar to SVG
+    Progress {
+        /// Progress percentage (0-100)
+        percent: f32,
+        /// Style: info, success, warning, danger
+        #[arg(short, long, default_value = "success")]
+        style: String,
+        /// Output file (stdout if not specified)
+        #[arg(short, long)]
+        output: Option<String>,
+        /// SVG width
+        #[arg(long, default_value = "400")]
+        width: u32,
+        /// SVG height
+        #[arg(long, default_value = "60")]
+        height: u32,
+        /// Background color
+        #[arg(long, default_value = "#1e1e1e")]
+        background: String,
+    },
+    /// Export a bar chart to SVG
+    BarChart {
+        /// Data in "Label:Value,Label:Value" format
+        #[arg(short, long)]
+        data: String,
+        /// Output file (stdout if not specified)
+        #[arg(short, long)]
+        output: Option<String>,
+        /// SVG width
+        #[arg(long, default_value = "600")]
+        width: u32,
+        /// SVG height
+        #[arg(long, default_value = "400")]
+        height: u32,
+        /// Background color
+        #[arg(long, default_value = "#ffffff")]
+        background: String,
     },
 }
 
@@ -1465,6 +1538,128 @@ fn main() {
                 json,
                 no_color,
             );
+        }
+        Commands::Export { export_command } => {
+            use export::{svg::SvgBuilder, ExportConfig, ExportFormat};
+            use std::fs::File;
+            use std::io::{self, Write};
+
+            match export_command {
+                ExportCommands::Box {
+                    message,
+                    style,
+                    output,
+                    width,
+                    height,
+                    background,
+                } => {
+                    let config = ExportConfig {
+                        format: ExportFormat::SVG,
+                        width,
+                        height,
+                        scale: 1.0,
+                        background,
+                        font_size: 16,
+                    };
+                    let mut builder = SvgBuilder::new(config);
+                    builder.add_box(20.0, 20.0, (width - 40) as f32, (height - 40) as f32, &message, &style);
+
+                    let svg = builder.build();
+                    match output {
+                        Some(path) => {
+                            let mut file = File::create(&path).expect("Failed to create output file");
+                            file.write_all(svg.as_bytes()).expect("Failed to write SVG");
+                            eprintln!("Exported to: {}", path);
+                        }
+                        None => {
+                            io::stdout().write_all(svg.as_bytes()).expect("Failed to write to stdout");
+                        }
+                    }
+                }
+                ExportCommands::Progress {
+                    percent,
+                    style,
+                    output,
+                    width,
+                    height,
+                    background,
+                } => {
+                    let config = ExportConfig {
+                        format: ExportFormat::SVG,
+                        width,
+                        height,
+                        scale: 1.0,
+                        background,
+                        font_size: 14,
+                    };
+                    let mut builder = SvgBuilder::new(config);
+                    builder.add_progress_bar(20.0, 15.0, (width - 40) as f32, 30.0, percent.clamp(0.0, 100.0), &style);
+
+                    let svg = builder.build();
+                    match output {
+                        Some(path) => {
+                            let mut file = File::create(&path).expect("Failed to create output file");
+                            file.write_all(svg.as_bytes()).expect("Failed to write SVG");
+                            eprintln!("Exported to: {}", path);
+                        }
+                        None => {
+                            io::stdout().write_all(svg.as_bytes()).expect("Failed to write to stdout");
+                        }
+                    }
+                }
+                ExportCommands::BarChart {
+                    data,
+                    output,
+                    width,
+                    height,
+                    background,
+                } => {
+                    // Parse data: "Label:Value,Label:Value"
+                    let values: Vec<(String, f32)> = data
+                        .split(',')
+                        .filter_map(|pair| {
+                            let parts: Vec<&str> = pair.split(':').collect();
+                            if parts.len() == 2 {
+                                let label = parts[0].trim().to_string();
+                                let value = parts[1].trim().parse::<f32>().ok()?;
+                                Some((label, value))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect();
+
+                    if values.is_empty() {
+                        eprintln!("Error: No valid data points. Use format: Label:Value,Label:Value");
+                        std::process::exit(1);
+                    }
+
+                    let max_value = values.iter().map(|(_, v)| *v).fold(0.0f32, f32::max);
+
+                    let config = ExportConfig {
+                        format: ExportFormat::SVG,
+                        width,
+                        height,
+                        scale: 1.0,
+                        background,
+                        font_size: 12,
+                    };
+                    let mut builder = SvgBuilder::new(config);
+                    builder.add_bar_chart(50.0, 50.0, &values, max_value * 1.1);
+
+                    let svg = builder.build();
+                    match output {
+                        Some(path) => {
+                            let mut file = File::create(&path).expect("Failed to create output file");
+                            file.write_all(svg.as_bytes()).expect("Failed to write SVG");
+                            eprintln!("Exported to: {}", path);
+                        }
+                        None => {
+                            io::stdout().write_all(svg.as_bytes()).expect("Failed to write to stdout");
+                        }
+                    }
+                }
+            }
         }
     }
 }
