@@ -135,8 +135,12 @@ pub fn render(items: &[String], config: &PreviewConfig) {
     let truncated = total_items > config.max_items;
 
     // Build header text with count
-    let header_text = format!("📋 {}: {} ({})", config.title, total_items,
-        if total_items == 1 { "item" } else { "items" });
+    let header_text = format!(
+        "📋 {}: {} ({})",
+        config.title,
+        total_items,
+        if total_items == 1 { "item" } else { "items" }
+    );
 
     // Calculate max width from items and header
     let max_item_width = display_items
@@ -213,16 +217,13 @@ pub fn render(items: &[String], config: &PreviewConfig) {
         let right_padding = total_padding - padding;
 
         println!(
-            "{}",
-            format!(
-                "{}{}{}{:>width$}{}",
-                borders.vertical.style(color_style),
-                " ".repeat(padding),
-                content,
-                "",
-                borders.vertical.style(color_style),
-                width = right_padding
-            )
+            "{}{}{}{:>width$}{}",
+            borders.vertical.style(color_style),
+            " ".repeat(padding),
+            content,
+            "",
+            borders.vertical.style(color_style),
+            width = right_padding
         );
     }
 
@@ -234,16 +235,13 @@ pub fn render(items: &[String], config: &PreviewConfig) {
         let right_padding = total_padding - padding;
 
         println!(
-            "{}",
-            format!(
-                "{}{}{}{:>width$}{}",
-                borders.vertical.style(color_style),
-                " ".repeat(padding),
-                more_text.dimmed(),
-                "",
-                borders.vertical.style(color_style),
-                width = right_padding
-            )
+            "{}{}{}{:>width$}{}",
+            borders.vertical.style(color_style),
+            " ".repeat(padding),
+            more_text.dimmed(),
+            "",
+            borders.vertical.style(color_style),
+            width = right_padding
         );
     }
 
@@ -301,11 +299,7 @@ pub fn render(items: &[String], config: &PreviewConfig) {
 }
 
 /// Render preview with column data (for tabular display)
-pub fn render_with_columns(
-    items: &[Vec<String>],
-    columns: &[String],
-    config: &PreviewConfig,
-) {
+pub fn render_with_columns(items: &[Vec<String>], columns: &[String], config: &PreviewConfig) {
     let borders = BorderChars::get(&config.border);
     let color_style = get_style(&config.style);
     let padding = 2;
@@ -326,12 +320,16 @@ pub fn render_with_columns(
     }
 
     // Calculate total width
-    let header_text = format!("📋 {}: {} ({})", config.title, total_items,
-        if total_items == 1 { "item" } else { "items" });
+    let header_text = format!(
+        "📋 {}: {} ({})",
+        config.title,
+        total_items,
+        if total_items == 1 { "item" } else { "items" }
+    );
     let header_width = UnicodeWidthStr::width(header_text.as_str());
 
-    let row_content_width: usize = col_widths.iter().sum::<usize>()
-        + (columns.len().saturating_sub(1)) * column_sep.len();
+    let row_content_width: usize =
+        col_widths.iter().sum::<usize>() + (columns.len().saturating_sub(1)) * column_sep.len();
 
     let action_button = format!("[{}]", config.action);
     let cancel_button = format!("[{}]", config.cancel_label);
@@ -385,7 +383,13 @@ pub fn render_with_columns(
     let col_header: String = columns
         .iter()
         .enumerate()
-        .map(|(i, c)| format!("{:width$}", c, width = col_widths.get(i).copied().unwrap_or(0)))
+        .map(|(i, c)| {
+            format!(
+                "{:width$}",
+                c,
+                width = col_widths.get(i).copied().unwrap_or(0)
+            )
+        })
         .collect::<Vec<_>>()
         .join(column_sep);
     let col_header_width = UnicodeWidthStr::width(col_header.as_str());
@@ -406,7 +410,13 @@ pub fn render_with_columns(
         let row_content: String = row
             .iter()
             .enumerate()
-            .map(|(i, cell)| format!("{:width$}", cell, width = col_widths.get(i).copied().unwrap_or(0)))
+            .map(|(i, cell)| {
+                format!(
+                    "{:width$}",
+                    cell,
+                    width = col_widths.get(i).copied().unwrap_or(0)
+                )
+            })
             .collect::<Vec<_>>()
             .join(column_sep);
         let row_width = UnicodeWidthStr::width(row_content.as_str());
@@ -514,10 +524,7 @@ mod tests {
 
     #[test]
     fn test_render_simple() {
-        let items = vec![
-            "file1.txt".to_string(),
-            "file2.txt".to_string(),
-        ];
+        let items = vec!["file1.txt".to_string(), "file2.txt".to_string()];
         let config = PreviewConfig::default();
         render(&items, &config);
     }

@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 /// Parameter type for component configuration
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum ParamType {
     String,
     Number { min: f64, max: f64 },
@@ -14,6 +15,7 @@ pub enum ParamType {
 
 /// A single parameter definition
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ParamDef {
     pub name: &'static str,
     pub param_type: ParamType,
@@ -23,6 +25,7 @@ pub struct ParamDef {
 
 /// Component definition with all metadata
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct ComponentDef {
     pub name: &'static str,
     pub description: &'static str,
@@ -82,7 +85,9 @@ pub fn get_all_components() -> Vec<ComponentDef> {
                 },
                 ParamDef {
                     name: "border",
-                    param_type: ParamType::Enum(vec!["rounded", "single", "double", "thick", "ascii"]),
+                    param_type: ParamType::Enum(vec![
+                        "rounded", "single", "double", "thick", "ascii",
+                    ]),
                     default: "rounded",
                     description: "Border style",
                 },
@@ -101,7 +106,10 @@ pub fn get_all_components() -> Vec<ComponentDef> {
             params: vec![
                 ParamDef {
                     name: "percent",
-                    param_type: ParamType::Number { min: 0.0, max: 100.0 },
+                    param_type: ParamType::Number {
+                        min: 0.0,
+                        max: 100.0,
+                    },
                     default: "50",
                     description: "Progress percentage (0-100)",
                 },
@@ -120,7 +128,10 @@ pub fn get_all_components() -> Vec<ComponentDef> {
             params: vec![
                 ParamDef {
                     name: "value",
-                    param_type: ParamType::Number { min: 0.0, max: 100.0 },
+                    param_type: ParamType::Number {
+                        min: 0.0,
+                        max: 100.0,
+                    },
                     default: "75",
                     description: "Gauge value (0-100)",
                 },
@@ -176,13 +187,18 @@ pub fn get_all_components() -> Vec<ComponentDef> {
                 },
                 ParamDef {
                     name: "style",
-                    param_type: ParamType::Enum(vec!["dots", "line", "arc", "bouncing", "clock", "circle", "bounce", "moon"]),
+                    param_type: ParamType::Enum(vec![
+                        "dots", "line", "arc", "bouncing", "clock", "circle", "bounce", "moon",
+                    ]),
                     default: "dots",
                     description: "Spinner animation style",
                 },
                 ParamDef {
                     name: "duration",
-                    param_type: ParamType::Number { min: 1.0, max: 60.0 },
+                    param_type: ParamType::Number {
+                        min: 1.0,
+                        max: 60.0,
+                    },
                     default: "3",
                     description: "Duration in seconds",
                 },
@@ -193,40 +209,34 @@ pub fn get_all_components() -> Vec<ComponentDef> {
             name: "sparkline",
             description: "Inline mini charts",
             category: "Charts",
-            params: vec![
-                ParamDef {
-                    name: "data",
-                    param_type: ParamType::Data,
-                    default: "1,4,2,8,5,7,3,9,6",
-                    description: "Comma-separated numeric values",
-                },
-            ],
+            params: vec![ParamDef {
+                name: "data",
+                param_type: ParamType::Data,
+                default: "1,4,2,8,5,7,3,9,6",
+                description: "Comma-separated numeric values",
+            }],
         },
         ComponentDef {
             name: "chart bar",
             description: "Horizontal bar charts",
             category: "Charts",
-            params: vec![
-                ParamDef {
-                    name: "data",
-                    param_type: ParamType::Data,
-                    default: "Sales:100,Costs:60,Profit:40",
-                    description: "Label:value pairs",
-                },
-            ],
+            params: vec![ParamDef {
+                name: "data",
+                param_type: ParamType::Data,
+                default: "Sales:100,Costs:60,Profit:40",
+                description: "Label:value pairs",
+            }],
         },
         ComponentDef {
             name: "chart pie",
             description: "ASCII pie charts",
             category: "Charts",
-            params: vec![
-                ParamDef {
-                    name: "data",
-                    param_type: ParamType::Data,
-                    default: "A:40,B:30,C:20,D:10",
-                    description: "Label:value pairs",
-                },
-            ],
+            params: vec![ParamDef {
+                name: "data",
+                param_type: ParamType::Data,
+                default: "A:40,B:30,C:20,D:10",
+                description: "Label:value pairs",
+            }],
         },
         // DATA category
         ComponentDef {
@@ -258,14 +268,12 @@ pub fn get_all_components() -> Vec<ComponentDef> {
             name: "tree",
             description: "Tree structure display",
             category: "Data",
-            params: vec![
-                ParamDef {
-                    name: "structure",
-                    param_type: ParamType::String,
-                    default: "root>child1,child2>leaf1,leaf2",
-                    description: "Tree structure (> for children, , for siblings)",
-                },
-            ],
+            params: vec![ParamDef {
+                name: "structure",
+                param_type: ParamType::String,
+                default: "root>child1,child2>leaf1,leaf2",
+                description: "Tree structure (> for children, , for siblings)",
+            }],
         },
         // INTERACTIVE category
         ComponentDef {
@@ -347,6 +355,7 @@ pub fn get_all_components() -> Vec<ComponentDef> {
 }
 
 /// Get components grouped by category
+#[allow(dead_code)]
 pub fn get_components_by_category() -> Vec<(&'static str, Vec<ComponentDef>)> {
     let components = get_all_components();
     let mut categories: Vec<(&'static str, Vec<ComponentDef>)> = vec![

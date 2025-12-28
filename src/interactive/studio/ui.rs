@@ -39,12 +39,10 @@ fn render_sidebar(frame: &mut Frame, app: &StudioApp, area: Rect) {
         // Add category header if changed
         if component.category != current_category {
             current_category = component.category;
-            let header = ListItem::new(Line::from(vec![
-                Span::styled(
-                    format!(" {} ", component.category.to_uppercase()),
-                    Style::default().fg(Color::Yellow).bold(),
-                ),
-            ]));
+            let header = ListItem::new(Line::from(vec![Span::styled(
+                format!(" {} ", component.category.to_uppercase()),
+                Style::default().fg(Color::Yellow).bold(),
+            )]));
             items.push(header);
         }
 
@@ -55,7 +53,11 @@ fn render_sidebar(frame: &mut Frame, app: &StudioApp, area: Rect) {
             Style::default()
         };
 
-        let marker = if idx == app.selected_component { "▶ " } else { "  " };
+        let marker = if idx == app.selected_component {
+            "▶ "
+        } else {
+            "  "
+        };
         let item = ListItem::new(Line::from(vec![
             Span::styled(marker, style),
             Span::styled(component.name, style),
@@ -99,7 +101,11 @@ fn render_params(frame: &mut Frame, app: &StudioApp, area: Rect) {
                 Style::default().fg(Color::DarkGray)
             };
 
-            let value = app.param_values.get(param.name).map(|s| s.as_str()).unwrap_or(param.default);
+            let value = app
+                .param_values
+                .get(param.name)
+                .map(|s| s.as_str())
+                .unwrap_or(param.default);
             let display_value = if is_editing {
                 format!("{}█", app.edit_buffer)
             } else {
@@ -125,10 +131,16 @@ fn render_params(frame: &mut Frame, app: &StudioApp, area: Rect) {
 
             let line = Line::from(vec![
                 Span::styled(marker, marker_style),
-                Span::styled(format!("{:12}", param.name), Style::default().fg(Color::Cyan)),
+                Span::styled(
+                    format!("{:12}", param.name),
+                    Style::default().fg(Color::Cyan),
+                ),
                 Span::raw(": "),
                 Span::styled(format!("{:20}", display_value), value_style),
-                Span::styled(format!(" ({})", type_hint), Style::default().fg(Color::DarkGray)),
+                Span::styled(
+                    format!(" ({})", type_hint),
+                    Style::default().fg(Color::DarkGray),
+                ),
             ]);
             lines.push(line);
         }
@@ -157,21 +169,29 @@ fn render_preview(frame: &mut Frame, app: &StudioApp, area: Rect) {
 
     if let Some(component) = app.components.get(app.selected_component) {
         let preview_text = generate_preview(component, &app.param_values);
-        let paragraph = Paragraph::new(preview_text)
-            .wrap(Wrap { trim: false });
+        let paragraph = Paragraph::new(preview_text).wrap(Wrap { trim: false });
         frame.render_widget(paragraph, inner);
     }
 }
 
 /// Generate preview text for a component
-fn generate_preview(component: &ComponentDef, values: &HashMap<String, String>) -> Vec<Line<'static>> {
+fn generate_preview(
+    component: &ComponentDef,
+    values: &HashMap<String, String>,
+) -> Vec<Line<'static>> {
     let mut lines = Vec::new();
 
     match component.name {
         "box" => {
-            let message = values.get("message").map(|s| s.as_str()).unwrap_or("Hello World!");
+            let message = values
+                .get("message")
+                .map(|s| s.as_str())
+                .unwrap_or("Hello World!");
             let style = values.get("style").map(|s| s.as_str()).unwrap_or("info");
-            let border = values.get("border").map(|s| s.as_str()).unwrap_or("rounded");
+            let border = values
+                .get("border")
+                .map(|s| s.as_str())
+                .unwrap_or("rounded");
             let emoji = values.get("emoji").map(|s| s.as_str()).unwrap_or("");
 
             let (tl, tr, bl, br, h, v) = match border {
@@ -209,10 +229,14 @@ fn generate_preview(component: &ComponentDef, values: &HashMap<String, String>) 
             )));
         }
         "progress" => {
-            let percent: u8 = values.get("percent")
+            let percent: u8 = values
+                .get("percent")
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(50);
-            let style = values.get("style").map(|s| s.as_str()).unwrap_or("gradient");
+            let style = values
+                .get("style")
+                .map(|s| s.as_str())
+                .unwrap_or("gradient");
 
             let width = 30;
             let filled = (width * percent as usize) / 100;
@@ -230,10 +254,14 @@ fn generate_preview(component: &ComponentDef, values: &HashMap<String, String>) 
                 percent
             );
 
-            lines.push(Line::from(Span::styled(bar, Style::default().fg(Color::Green))));
+            lines.push(Line::from(Span::styled(
+                bar,
+                Style::default().fg(Color::Green),
+            )));
         }
         "gauge" => {
-            let value: f64 = values.get("value")
+            let value: f64 = values
+                .get("value")
                 .and_then(|s| s.parse().ok())
                 .unwrap_or(75.0);
             let label = values.get("label").map(|s| s.as_str()).unwrap_or("CPU");
@@ -245,11 +273,17 @@ fn generate_preview(component: &ComponentDef, values: &HashMap<String, String>) 
                 .map(|i| if i < filled { "●" } else { "○" })
                 .collect();
 
-            lines.push(Line::from(Span::styled(gauge, Style::default().fg(Color::Cyan))));
+            lines.push(Line::from(Span::styled(
+                gauge,
+                Style::default().fg(Color::Cyan),
+            )));
             lines.push(Line::from(format!("{}: {:.0}%", label, value)));
         }
         "sparkline" => {
-            let data = values.get("data").map(|s| s.as_str()).unwrap_or("1,4,2,8,5,7");
+            let data = values
+                .get("data")
+                .map(|s| s.as_str())
+                .unwrap_or("1,4,2,8,5,7");
             let values: Vec<f64> = data
                 .split(',')
                 .filter_map(|s| s.trim().parse().ok())
@@ -269,7 +303,10 @@ fn generate_preview(component: &ComponentDef, values: &HashMap<String, String>) 
                     })
                     .collect();
 
-                lines.push(Line::from(Span::styled(spark, Style::default().fg(Color::Green))));
+                lines.push(Line::from(Span::styled(
+                    spark,
+                    Style::default().fg(Color::Green),
+                )));
             }
         }
         _ => {

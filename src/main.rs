@@ -624,7 +624,7 @@ enum Commands {
     ///
     /// Example: termgfx studio
     #[command(
-        after_help = "Navigation:\n  Tab/Shift+Tab  Cycle panels (Sidebar → Params → Preview)\n  1/2/3          Jump to panel (Sidebar/Params/Preview)\n  ↑/↓ j/k        Navigate items\n  h/←  l/→       Move between panels\n\nEditing:\n  Enter          Edit parameter\n  Space          Toggle bool / cycle enum values\n  r              Reset parameters to defaults\n  Esc            Cancel edit\n\nActions:\n  c              Copy command to clipboard\n  ?              Show Help overlay\n  q/Esc          Quit\n\nMouse:\n  Click          Select component/parameter/panel\n  Scroll         Navigate lists\n\nPanels:\n  Sidebar        Browse all components by category\n  Params         Edit component parameters\n  Preview        See live component preview\n  Command        Generated CLI command"
+        after_help = "Navigation:\n  Tab/Shift+Tab  Cycle panels (Sidebar → Params → Preview)\n  1/2/3          Jump to panel (Sidebar/Params/Preview)\n  ↑/↓ j/k        Navigate items\n  h/←  l/→       Move between panels\n\nEditing:\n  Enter          Edit parameter\n  Space          Toggle bool / cycle enum values\n  r              Reset parameters to defaults\n  Esc            Cancel edit\n\nResizing:\n  Ctrl+←/→       Resize sidebar width\n  Ctrl+↑/↓       Resize params panel height\n  Shift+R        Reset layout to defaults\n  Drag divider   Mouse drag to resize\n\nActions:\n  c              Copy command to clipboard\n  ?              Show Help overlay\n  q/Esc          Quit\n\nMouse:\n  Click          Select component/parameter/panel\n  Scroll         Navigate lists\n  Drag           Resize panels (on dividers)\n\nPanels:\n  Sidebar        Browse all components by category\n  Params         Edit component parameters\n  Preview        See live component preview\n  Command        Generated CLI command"
     )]
     Studio,
     /// Preview and manage style presets
@@ -703,9 +703,7 @@ enum Commands {
     /// Export terminal graphics to SVG format
     ///
     /// Example: termgfx export box "Hello" --style success -o hello.svg
-    #[command(
-        after_help = "Formats: svg\nComponents: box, progress, bar-chart, pie-chart"
-    )]
+    #[command(after_help = "Formats: svg\nComponents: box, progress, bar-chart, pie-chart")]
     Export {
         #[command(subcommand)]
         export_command: ExportCommands,
@@ -1542,9 +1540,7 @@ fn main() {
                 Some(ThemeCommands::List) | None => {
                     println!(
                         "{}",
-                        "Available Theme Presets"
-                            .bold()
-                            .truecolor(88, 166, 255)
+                        "Available Theme Presets".bold().truecolor(88, 166, 255)
                     );
                     println!("{}", "━".repeat(50).truecolor(100, 100, 100));
                     println!();
@@ -1648,17 +1644,27 @@ fn main() {
                         font_size: 16,
                     };
                     let mut builder = SvgBuilder::new(config);
-                    builder.add_box(20.0, 20.0, (width - 40) as f32, (height - 40) as f32, &message, &style);
+                    builder.add_box(
+                        20.0,
+                        20.0,
+                        (width - 40) as f32,
+                        (height - 40) as f32,
+                        &message,
+                        &style,
+                    );
 
                     let svg = builder.build();
                     match output {
                         Some(path) => {
-                            let mut file = File::create(&path).expect("Failed to create output file");
+                            let mut file =
+                                File::create(&path).expect("Failed to create output file");
                             file.write_all(svg.as_bytes()).expect("Failed to write SVG");
                             eprintln!("Exported to: {}", path);
                         }
                         None => {
-                            io::stdout().write_all(svg.as_bytes()).expect("Failed to write to stdout");
+                            io::stdout()
+                                .write_all(svg.as_bytes())
+                                .expect("Failed to write to stdout");
                         }
                     }
                 }
@@ -1679,17 +1685,27 @@ fn main() {
                         font_size: 14,
                     };
                     let mut builder = SvgBuilder::new(config);
-                    builder.add_progress_bar(20.0, 15.0, (width - 40) as f32, 30.0, percent.clamp(0.0, 100.0), &style);
+                    builder.add_progress_bar(
+                        20.0,
+                        15.0,
+                        (width - 40) as f32,
+                        30.0,
+                        percent.clamp(0.0, 100.0),
+                        &style,
+                    );
 
                     let svg = builder.build();
                     match output {
                         Some(path) => {
-                            let mut file = File::create(&path).expect("Failed to create output file");
+                            let mut file =
+                                File::create(&path).expect("Failed to create output file");
                             file.write_all(svg.as_bytes()).expect("Failed to write SVG");
                             eprintln!("Exported to: {}", path);
                         }
                         None => {
-                            io::stdout().write_all(svg.as_bytes()).expect("Failed to write to stdout");
+                            io::stdout()
+                                .write_all(svg.as_bytes())
+                                .expect("Failed to write to stdout");
                         }
                     }
                 }
@@ -1716,7 +1732,9 @@ fn main() {
                         .collect();
 
                     if values.is_empty() {
-                        eprintln!("Error: No valid data points. Use format: Label:Value,Label:Value");
+                        eprintln!(
+                            "Error: No valid data points. Use format: Label:Value,Label:Value"
+                        );
                         std::process::exit(1);
                     }
 
@@ -1736,12 +1754,15 @@ fn main() {
                     let svg = builder.build();
                     match output {
                         Some(path) => {
-                            let mut file = File::create(&path).expect("Failed to create output file");
+                            let mut file =
+                                File::create(&path).expect("Failed to create output file");
                             file.write_all(svg.as_bytes()).expect("Failed to write SVG");
                             eprintln!("Exported to: {}", path);
                         }
                         None => {
-                            io::stdout().write_all(svg.as_bytes()).expect("Failed to write to stdout");
+                            io::stdout()
+                                .write_all(svg.as_bytes())
+                                .expect("Failed to write to stdout");
                         }
                     }
                 }
@@ -1772,7 +1793,8 @@ fn main() {
 
             if let Some(cols) = columns {
                 // Parse as tabular data: each item is "col1|col2|col3"
-                let column_names: Vec<String> = cols.split(',').map(|s| s.trim().to_string()).collect();
+                let column_names: Vec<String> =
+                    cols.split(',').map(|s| s.trim().to_string()).collect();
                 let rows: Vec<Vec<String>> = items_list
                     .iter()
                     .map(|item| item.split('|').map(|s| s.trim().to_string()).collect())
@@ -1859,10 +1881,7 @@ fn render_theme_preview(theme: &design::theme::Theme) {
             .bold()
             .truecolor(pr, pg, pb)
     );
-    println!(
-        "  {}",
-        theme.description.truecolor(150, 150, 150)
-    );
+    println!("  {}", theme.description.truecolor(150, 150, 150));
     println!();
 
     // Color swatches

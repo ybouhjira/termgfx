@@ -19,7 +19,9 @@ fn test_regex_filter_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Filter entries using regex patterns"))
+        .stdout(predicate::str::contains(
+            "Filter entries using regex patterns",
+        ))
         .stdout(predicate::str::contains("--pattern"))
         .stdout(predicate::str::contains("--items"));
 }

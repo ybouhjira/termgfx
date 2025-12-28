@@ -22,6 +22,7 @@ pub struct DropdownState {
     pub hover_index: usize,
 }
 
+#[allow(dead_code)]
 impl DropdownState {
     pub fn new(selected_index: usize) -> Self {
         Self {
@@ -61,12 +62,14 @@ impl DropdownState {
 }
 
 /// Dropdown widget for selecting from a list of options
+#[allow(dead_code)]
 pub struct Dropdown<'a> {
     options: &'a [&'a str],
     label: &'a str,
     focused: bool,
 }
 
+#[allow(dead_code)]
 impl<'a> Dropdown<'a> {
     pub fn new(options: &'a [&'a str], label: &'a str) -> Self {
         Self {
@@ -139,7 +142,12 @@ impl<'a> StatefulWidget for Dropdown<'a> {
             block.render(menu_area, buf);
 
             // Render options
-            let inner = Rect::new(menu_area.x + 1, menu_area.y + 1, menu_width - 2, menu_height);
+            let inner = Rect::new(
+                menu_area.x + 1,
+                menu_area.y + 1,
+                menu_width - 2,
+                menu_height,
+            );
             for (i, option) in self.options.iter().enumerate().take(menu_height as usize) {
                 let y = inner.y + i as u16;
                 let is_hover = i == state.hover_index;
@@ -154,7 +162,12 @@ impl<'a> StatefulWidget for Dropdown<'a> {
                 };
 
                 let marker = if is_selected { "◀" } else { " " };
-                let text = format!(" {:<width$}{}", option, marker, width = (inner.width - 2) as usize);
+                let text = format!(
+                    " {:<width$}{}",
+                    option,
+                    marker,
+                    width = (inner.width - 2) as usize
+                );
                 buf.set_string(inner.x, y, &text, style);
             }
         }
@@ -174,6 +187,7 @@ pub struct SliderState {
     pub step: f64,
 }
 
+#[allow(dead_code)]
 impl SliderState {
     pub fn new(value: f64, min: f64, max: f64) -> Self {
         Self {
@@ -206,12 +220,14 @@ impl SliderState {
 }
 
 /// Slider widget for adjusting numeric values
+#[allow(dead_code)]
 pub struct Slider<'a> {
     label: &'a str,
     focused: bool,
     width: u16,
 }
 
+#[allow(dead_code)]
 impl<'a> Slider<'a> {
     pub fn new(label: &'a str) -> Self {
         Self {
@@ -267,7 +283,7 @@ impl<'a> StatefulWidget for Slider<'a> {
         } else {
             Style::default().fg(Color::White)
         };
-        buf.set_string(slider_x, area.y, &format!("[{}] ", value_str), value_style);
+        buf.set_string(slider_x, area.y, format!("[{}] ", value_str), value_style);
 
         // Render track
         let track_x = slider_x + value_width + 3;
@@ -288,7 +304,12 @@ impl<'a> StatefulWidget for Slider<'a> {
 
         buf.set_string(track_x, area.y, &filled_chars, filled_style);
         buf.set_string(track_x + filled_width, area.y, "●", knob_style);
-        buf.set_string(track_x + filled_width + 1, area.y, &empty_chars, empty_style);
+        buf.set_string(
+            track_x + filled_width + 1,
+            area.y,
+            &empty_chars,
+            empty_style,
+        );
     }
 }
 
@@ -302,6 +323,7 @@ pub struct ToggleState {
     pub is_on: bool,
 }
 
+#[allow(dead_code)]
 impl ToggleState {
     pub fn new(is_on: bool) -> Self {
         Self { is_on }
@@ -313,11 +335,13 @@ impl ToggleState {
 }
 
 /// Toggle widget for boolean values
+#[allow(dead_code)]
 pub struct Toggle<'a> {
     label: &'a str,
     focused: bool,
 }
 
+#[allow(dead_code)]
 impl<'a> Toggle<'a> {
     pub fn new(label: &'a str) -> Self {
         Self {
