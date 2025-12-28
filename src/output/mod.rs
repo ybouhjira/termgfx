@@ -10,6 +10,7 @@ pub mod palette;
 pub mod progress;
 pub mod record;
 pub mod spinner;
+pub mod stats;
 pub mod style;
 pub mod styled_box;
 pub mod table;
