@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 
 mod animation;
 mod charts;
+mod design;
 mod image;
 mod interactive;
 mod output;
