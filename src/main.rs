@@ -738,6 +738,44 @@ enum Commands {
         #[arg(long)]
         no_numbers: bool,
     },
+    /// Filter entries using regex patterns
+    ///
+    /// Example: termgfx regex-filter --pattern "\.log$" --items "app.log,config.json,error.log"
+    #[command(
+        after_help = "Common patterns:\n  \\.log$     - Files ending in .log\n  error|warn - Lines with error or warn\n  ^test_     - Lines starting with test_"
+    )]
+    RegexFilter {
+        /// Regex pattern to match
+        #[arg(short, long)]
+        pattern: String,
+        /// Items to filter (comma-separated)
+        #[arg(short, long)]
+        items: String,
+        /// Action button label
+        #[arg(short, long, default_value = "Apply")]
+        action: String,
+        /// Cancel button label
+        #[arg(long, default_value = "Cancel")]
+        cancel: String,
+        /// Border style: single, double, rounded, thick, ascii
+        #[arg(short, long, default_value = "rounded")]
+        border: String,
+        /// Maximum items to display
+        #[arg(long, default_value = "20")]
+        max_items: usize,
+        /// Hide non-matching entries
+        #[arg(long)]
+        hide_non_matches: bool,
+        /// Case-insensitive matching
+        #[arg(short = 'I', long)]
+        case_insensitive: bool,
+        /// Invert match (show non-matching entries)
+        #[arg(short = 'v', long)]
+        invert: bool,
+        /// Output only matching items (for piping)
+        #[arg(long)]
+        quiet: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1729,6 +1767,49 @@ fn main() {
                 output::preview::render_with_columns(&rows, &column_names, &config);
             } else {
                 output::preview::render(&items_list, &config);
+            }
+        }
+        Commands::RegexFilter {
+            pattern,
+            items,
+            action,
+            cancel,
+            border,
+            max_items,
+            hide_non_matches,
+            case_insensitive,
+            invert,
+            quiet,
+        } => {
+            let items_list: Vec<String> = items.split(',').map(|s| s.trim().to_string()).collect();
+
+            let config = output::regex_filter::RegexFilterConfig {
+                pattern,
+                action,
+                cancel_label: cancel,
+                border,
+                max_items,
+                show_non_matches: !hide_non_matches,
+                case_insensitive,
+                invert,
+            };
+
+            if quiet {
+                match output::regex_filter::render_matches_only(&items_list, &config) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                }
+            } else {
+                match output::regex_filter::render(&items_list, &config) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                }
             }
         }
     }
