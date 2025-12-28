@@ -33,7 +33,7 @@ pub struct StudioApp {
     pub layout: StudioLayout,
     pub running: bool,
     pub show_help: bool,
-    pub copied_message: Option<String>,
+    pub status_message: Option<(String, std::time::Instant)>,
 }
 
 impl StudioApp {
@@ -60,7 +60,21 @@ impl StudioApp {
             layout: StudioLayout::default(),
             running: true,
             show_help: false,
-            copied_message: None,
+            status_message: None,
+        }
+    }
+
+    /// Set a status message with auto-clear timer
+    pub fn set_status(&mut self, message: &str) {
+        self.status_message = Some((message.to_string(), std::time::Instant::now()));
+    }
+
+    /// Clear expired status messages (after 2 seconds)
+    pub fn clear_expired_status(&mut self) {
+        if let Some((_, instant)) = &self.status_message {
+            if instant.elapsed() > std::time::Duration::from_secs(2) {
+                self.status_message = None;
+            }
         }
     }
 
@@ -149,18 +163,39 @@ impl StudioApp {
                 // Copy command to clipboard
                 if let Some(component) = self.current_component() {
                     let cmd = component.generate_command(&self.param_values);
-                    // Try to copy to clipboard using pbcopy on macOS
-                    if let Ok(mut child) = std::process::Command::new("pbcopy")
+                    // Try to copy to clipboard using pbcopy on macOS or xclip on Linux
+                    let copy_result = std::process::Command::new("pbcopy")
                         .stdin(std::process::Stdio::piped())
                         .spawn()
-                    {
+                        .or_else(|_| {
+                            std::process::Command::new("xclip")
+                                .args(["-selection", "clipboard"])
+                                .stdin(std::process::Stdio::piped())
+                                .spawn()
+                        });
+
+                    if let Ok(mut child) = copy_result {
                         if let Some(stdin) = child.stdin.as_mut() {
                             let _ = stdin.write_all(cmd.as_bytes());
                         }
                         let _ = child.wait();
-                        self.copied_message = Some("Copied!".to_string());
+                        self.set_status("✓ Command copied to clipboard!");
                     }
                 }
+            }
+            KeyCode::Char('r') => {
+                // Reset current component parameters to defaults
+                self.update_param_values();
+                self.set_status("✓ Parameters reset to defaults");
+            }
+            KeyCode::Char('1') => {
+                self.focused_panel = FocusedPanel::Sidebar;
+            }
+            KeyCode::Char('2') => {
+                self.focused_panel = FocusedPanel::Params;
+            }
+            KeyCode::Char('3') => {
+                self.focused_panel = FocusedPanel::Preview;
             }
             _ => {
                 // Panel-specific navigation
@@ -291,10 +326,23 @@ pub fn run_studio() -> io::Result<()> {
 
     // Main loop
     while app.running {
+        // Clear expired status messages
+        app.clear_expired_status();
+
         // Render
         terminal.draw(|frame| {
             let areas = app.layout.split(frame.area());
             ui::render(frame, &app, areas);
+
+            // Render help overlay if visible
+            if app.show_help {
+                ui::render_help_overlay(frame);
+            }
+
+            // Render status message if any
+            if let Some((msg, _)) = &app.status_message {
+                ui::render_status_message(frame, msg);
+            }
         })?;
 
         // Handle events
@@ -302,11 +350,6 @@ pub fn run_studio() -> io::Result<()> {
             if let Event::Key(key) = event::read()? {
                 app.handle_key(key);
             }
-        }
-
-        // Clear copied message after a short time
-        if app.copied_message.is_some() {
-            app.copied_message = None;
         }
     }
 
@@ -345,5 +388,63 @@ mod tests {
         let component = app.current_component();
         assert!(component.is_some());
         assert_eq!(component.unwrap().name, "box");
+    }
+
+    #[test]
+    fn test_set_status_message() {
+        let mut app = StudioApp::new();
+        assert!(app.status_message.is_none());
+
+        app.set_status("Test status");
+        assert!(app.status_message.is_some());
+        assert_eq!(app.status_message.as_ref().unwrap().0, "Test status");
+    }
+
+    #[test]
+    fn test_show_help_toggle() {
+        let mut app = StudioApp::new();
+        assert!(!app.show_help);
+
+        // Toggle help on
+        app.show_help = true;
+        assert!(app.show_help);
+
+        // Toggle help off
+        app.show_help = false;
+        assert!(!app.show_help);
+    }
+
+    #[test]
+    fn test_panel_jump_keys() {
+        let mut app = StudioApp::new();
+        assert_eq!(app.focused_panel, FocusedPanel::Sidebar);
+
+        // Simulate pressing '2' to jump to Params
+        app.focused_panel = FocusedPanel::Params;
+        assert_eq!(app.focused_panel, FocusedPanel::Params);
+
+        // Simulate pressing '3' to jump to Preview
+        app.focused_panel = FocusedPanel::Preview;
+        assert_eq!(app.focused_panel, FocusedPanel::Preview);
+
+        // Simulate pressing '1' to jump back to Sidebar
+        app.focused_panel = FocusedPanel::Sidebar;
+        assert_eq!(app.focused_panel, FocusedPanel::Sidebar);
+    }
+
+    #[test]
+    fn test_reset_params() {
+        let mut app = StudioApp::new();
+
+        // Modify a parameter
+        app.param_values.insert("message".to_string(), "Modified".to_string());
+
+        // Reset should restore defaults
+        app.update_param_values();
+
+        // Check first component (box) has default message
+        let default_message = app.param_values.get("message");
+        assert!(default_message.is_some());
+        assert_eq!(default_message.unwrap(), "Hello World!");
     }
 }

@@ -61,6 +61,32 @@ fn test_studio_help_shows_keybindings() {
         .stdout(predicate::str::contains("Copy command"));
 }
 
+#[test]
+fn test_studio_help_shows_keyboard_shortcuts() {
+    // Issue #109: Verify keyboard shortcuts are documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("?"))
+        .stdout(predicate::str::contains("Help"))
+        .stdout(predicate::str::contains("r"))
+        .stdout(predicate::str::contains("Reset"));
+}
+
+#[test]
+fn test_studio_help_shows_panel_jump_keys() {
+    // Issue #109: Verify 1/2/3 panel jump keys are documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("1/2/3"))
+        .stdout(predicate::str::contains("Jump to panel"));
+}
+
 // ============================================================================
 // studio interactive tests (require TTY - skipped in CI)
 // ============================================================================
