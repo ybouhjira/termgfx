@@ -1,5 +1,8 @@
 //! Export functionality for termgfx output to SVG and PNG formats
 
+#![allow(dead_code)]
+#![allow(clippy::upper_case_acronyms)]
+
 pub mod svg;
 
 /// Supported export formats

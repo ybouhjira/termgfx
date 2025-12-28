@@ -28,6 +28,7 @@ impl SvgBuilder {
     }
 
     /// Add a rectangle to the SVG
+    #[allow(clippy::too_many_arguments)]
     pub fn add_rect(&mut self, x: f32, y: f32, width: f32, height: f32, fill: &str, stroke: &str, stroke_width: f32) {
         let svg_line = format!(
             r#"  <rect x="{}" y="{}" width="{}" height="{}" fill="{}" stroke="{}" stroke-width="{}"/>"#,
