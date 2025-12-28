@@ -1,10 +1,12 @@
 //! Theme system for termgfx - built-in presets and customizable themes
 
+#![allow(dead_code)]
+
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
-use std::fs;
 use std::env;
-use anyhow::{Result, Context};
+use std::fs;
+use std::path::Path;
 
 /// Color configuration for a theme
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,8 +70,15 @@ pub enum ThemePreset {
 
 impl ThemePreset {
     pub fn all() -> Vec<ThemePreset> {
-        vec![ThemePreset::Dark, ThemePreset::Light, ThemePreset::Nord, ThemePreset::Dracula,
-             ThemePreset::Monokai, ThemePreset::Solarized, ThemePreset::Gruvbox]
+        vec![
+            ThemePreset::Dark,
+            ThemePreset::Light,
+            ThemePreset::Nord,
+            ThemePreset::Dracula,
+            ThemePreset::Monokai,
+            ThemePreset::Solarized,
+            ThemePreset::Gruvbox,
+        ]
     }
 
     pub fn from_str(s: &str) -> Option<Self> {
@@ -113,7 +122,9 @@ impl Theme {
 
     pub fn from_env() -> Self {
         let theme_name = env::var("TERMGFX_THEME").unwrap_or_default();
-        ThemePreset::from_str(&theme_name).map(Self::load_preset).unwrap_or_else(Self::dark)
+        ThemePreset::from_str(&theme_name)
+            .map(Self::load_preset)
+            .unwrap_or_else(Self::dark)
     }
 
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self> {
@@ -128,11 +139,25 @@ impl Theme {
     }
 
     fn default_spacing() -> Spacing {
-        Spacing { xs: 2, sm: 4, md: 8, lg: 16, xl: 24, xxl: 32 }
+        Spacing {
+            xs: 2,
+            sm: 4,
+            md: 8,
+            lg: 16,
+            xl: 24,
+            xxl: 32,
+        }
     }
 
     fn default_typography() -> Typography {
-        Typography { small: 8, base: 12, large: 16, extra_large: 20, heading1: 32, heading2: 24 }
+        Typography {
+            small: 8,
+            base: 12,
+            large: 16,
+            extra_large: 20,
+            heading1: 32,
+            heading2: 24,
+        }
     }
 
     pub fn dark() -> Self {
