@@ -22,14 +22,27 @@ impl SvgBuilder {
     pub fn add_text(&mut self, x: f32, y: f32, text: &str, color: &str, font_size: u32) {
         let svg_line = format!(
             r#"  <text x="{}" y="{}" font-family="monospace" font-size="{}" fill="{}">{}</text>"#,
-            x, y, font_size, color, escape_xml(text)
+            x,
+            y,
+            font_size,
+            color,
+            escape_xml(text)
         );
         self.content.push(svg_line);
     }
 
     /// Add a rectangle to the SVG
     #[allow(clippy::too_many_arguments)]
-    pub fn add_rect(&mut self, x: f32, y: f32, width: f32, height: f32, fill: &str, stroke: &str, stroke_width: f32) {
+    pub fn add_rect(
+        &mut self,
+        x: f32,
+        y: f32,
+        width: f32,
+        height: f32,
+        fill: &str,
+        stroke: &str,
+        stroke_width: f32,
+    ) {
         let svg_line = format!(
             r#"  <rect x="{}" y="{}" width="{}" height="{}" fill="{}" stroke="{}" stroke-width="{}"/>"#,
             x, y, width, height, fill, stroke, stroke_width
@@ -38,7 +51,15 @@ impl SvgBuilder {
     }
 
     /// Add a line to the SVG
-    pub fn add_line(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, stroke: &str, stroke_width: f32) {
+    pub fn add_line(
+        &mut self,
+        x1: f32,
+        y1: f32,
+        x2: f32,
+        y2: f32,
+        stroke: &str,
+        stroke_width: f32,
+    ) {
         let svg_line = format!(
             r#"  <line x1="{}" y1="{}" x2="{}" y2="{}" stroke="{}" stroke-width="{}"/>"#,
             x1, y1, x2, y2, stroke, stroke_width
@@ -94,7 +115,15 @@ impl SvgBuilder {
     }
 
     /// Add a progress bar
-    pub fn add_progress_bar(&mut self, x: f32, y: f32, width: f32, height: f32, percent: f32, style: &str) {
+    pub fn add_progress_bar(
+        &mut self,
+        x: f32,
+        y: f32,
+        width: f32,
+        height: f32,
+        percent: f32,
+        style: &str,
+    ) {
         let (color, _) = get_style_colors(style);
 
         // Background bar

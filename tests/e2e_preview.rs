@@ -19,7 +19,9 @@ fn test_preview_help() {
         .arg("--help")
         .assert()
         .success()
-        .stdout(predicate::str::contains("Preview data before performing actions"))
+        .stdout(predicate::str::contains(
+            "Preview data before performing actions",
+        ))
         .stdout(predicate::str::contains("--title"))
         .stdout(predicate::str::contains("--items"))
         .stdout(predicate::str::contains("--action"));
@@ -253,7 +255,10 @@ fn test_preview_no_numbers() {
 
 #[test]
 fn test_preview_truncation() {
-    let items = (1..=30).map(|i| format!("item{}", i)).collect::<Vec<_>>().join(",");
+    let items = (1..=30)
+        .map(|i| format!("item{}", i))
+        .collect::<Vec<_>>()
+        .join(",");
     cmd()
         .arg("preview")
         .arg("--items")
@@ -267,7 +272,10 @@ fn test_preview_truncation() {
 
 #[test]
 fn test_preview_custom_max_items() {
-    let items = (1..=10).map(|i| format!("f{}.txt", i)).collect::<Vec<_>>().join(",");
+    let items = (1..=10)
+        .map(|i| format!("f{}.txt", i))
+        .collect::<Vec<_>>()
+        .join(",");
     cmd()
         .arg("preview")
         .arg("--items")

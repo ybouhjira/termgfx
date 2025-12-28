@@ -143,11 +143,49 @@ fn test_studio_help_shows_mouse_support() {
 #[test]
 fn test_studio_no_tty_error() {
     // When run without a TTY, studio should fail with a helpful message
+    cmd().arg("studio").assert().failure().stderr(
+        predicate::str::contains("interactive terminal").or(predicate::str::contains("TTY")),
+    );
+}
+
+// ============================================================================
+// Resizable panes tests (Issue #108)
+// ============================================================================
+
+#[test]
+fn test_studio_help_shows_resize_controls() {
+    // Issue #108: Verify resize controls are documented
     cmd()
         .arg("studio")
+        .arg("--help")
         .assert()
-        .failure()
-        .stderr(predicate::str::contains("interactive terminal").or(predicate::str::contains("TTY")));
+        .success()
+        .stdout(predicate::str::contains("Resizing"))
+        .stdout(predicate::str::contains("Ctrl"))
+        .stdout(predicate::str::contains("Drag"));
+}
+
+#[test]
+fn test_studio_help_shows_layout_reset() {
+    // Issue #108: Verify layout reset is documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Reset layout"));
+}
+
+#[test]
+fn test_studio_help_shows_divider_drag() {
+    // Issue #108: Verify divider drag is documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Drag divider"))
+        .stdout(predicate::str::contains("Resize panels"));
 }
 
 // ============================================================================

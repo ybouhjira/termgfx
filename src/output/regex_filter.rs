@@ -280,7 +280,10 @@ pub fn render(items: &[String], config: &RegexFilterConfig) -> Result<FilterResu
 
     // Show truncation for matches
     if truncated_matches {
-        let more_text = format!("  ... and {} more matches", result.matches.len() - config.max_items);
+        let more_text = format!(
+            "  ... and {} more matches",
+            result.matches.len() - config.max_items
+        );
         let more_width = UnicodeWidthStr::width(more_text.as_str());
         let total_padding = box_width.saturating_sub(more_width);
         let right_padding = total_padding.saturating_sub(padding);
@@ -451,10 +454,7 @@ mod tests {
 
     #[test]
     fn test_render_basic() {
-        let items = vec![
-            "app.log".to_string(),
-            "config.json".to_string(),
-        ];
+        let items = vec!["app.log".to_string(), "config.json".to_string()];
         let config = RegexFilterConfig {
             pattern: r"\.log$".to_string(),
             ..Default::default()

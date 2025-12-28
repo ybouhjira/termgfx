@@ -326,7 +326,9 @@ fn test_svg_has_correct_xml_declaration() {
         .arg("Test")
         .assert()
         .success()
-        .stdout(predicate::str::starts_with("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
+        .stdout(predicate::str::starts_with(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+        ));
 }
 
 #[test]
@@ -337,7 +339,9 @@ fn test_svg_has_proper_namespace() {
         .arg("Test")
         .assert()
         .success()
-        .stdout(predicate::str::contains("xmlns=\"http://www.w3.org/2000/svg\""));
+        .stdout(predicate::str::contains(
+            "xmlns=\"http://www.w3.org/2000/svg\"",
+        ));
 }
 
 #[test]

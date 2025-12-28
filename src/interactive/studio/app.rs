@@ -1,7 +1,10 @@
 //! Main application state and event loop for TermGFX Studio
 
 use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEventKind},
+    event::{
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
+        MouseButton, MouseEventKind,
+    },
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -9,13 +12,14 @@ use ratatui::prelude::*;
 use std::collections::HashMap;
 use std::io::{self, IsTerminal, Write};
 
-use super::layout::StudioLayout;
+use super::layout::{DragState, StudioLayout};
 use super::registry::{get_all_components, ComponentDef, ParamType};
 use super::ui;
 use super::widgets::{DropdownState, SliderState, ToggleState};
 
 /// Widget editing mode
 #[derive(Debug, Clone, PartialEq)]
+#[allow(dead_code)]
 pub enum WidgetMode {
     None,
     TextEdit,
@@ -49,6 +53,7 @@ pub struct StudioApp {
     /// Last computed layout areas for mouse hit testing
     pub last_areas: Option<super::layout::StudioAreas>,
     /// Scroll offset for sidebar component list
+    #[allow(dead_code)]
     pub sidebar_scroll: usize,
 }
 
@@ -105,8 +110,15 @@ impl StudioApp {
     /// Update param values when component changes
     fn update_param_values(&mut self) {
         self.param_values.clear();
-        let params: Vec<_> = self.components.get(self.selected_component)
-            .map(|c| c.params.iter().map(|p| (p.name.to_string(), p.default.to_string())).collect())
+        let params: Vec<_> = self
+            .components
+            .get(self.selected_component)
+            .map(|c| {
+                c.params
+                    .iter()
+                    .map(|p| (p.name.to_string(), p.default.to_string()))
+                    .collect()
+            })
             .unwrap_or_default();
         for (name, default) in params {
             self.param_values.insert(name, default);
@@ -138,10 +150,8 @@ impl StudioApp {
                     // Save the edited value
                     if let Some(component) = self.current_component() {
                         if let Some(param) = component.params.get(self.selected_param) {
-                            self.param_values.insert(
-                                param.name.to_string(),
-                                self.edit_buffer.clone(),
-                            );
+                            self.param_values
+                                .insert(param.name.to_string(), self.edit_buffer.clone());
                         }
                     }
                     self.editing = false;
@@ -200,6 +210,24 @@ impl StudioApp {
             KeyCode::Char('3') => {
                 self.focused_panel = FocusedPanel::Preview;
             }
+            // Ctrl+Arrow for resizing panels
+            KeyCode::Left if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.layout.shrink_sidebar();
+            }
+            KeyCode::Right if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.layout.grow_sidebar();
+            }
+            KeyCode::Up if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.layout.shrink_params();
+            }
+            KeyCode::Down if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.layout.grow_params();
+            }
+            // Double-press 'r' to reset layout (single 'r' resets params)
+            KeyCode::Char('R') => {
+                self.layout.reset();
+                self.set_status("✓ Layout reset to defaults");
+            }
             _ => {
                 // Panel-specific navigation
                 match self.focused_panel {
@@ -233,7 +261,8 @@ impl StudioApp {
     }
 
     fn handle_params_key(&mut self, code: KeyCode) {
-        let param_count = self.current_component()
+        let param_count = self
+            .current_component()
             .map(|c| c.params.len())
             .unwrap_or(0);
 
@@ -261,26 +290,24 @@ impl StudioApp {
                     if let Some(param) = component.params.get(self.selected_param) {
                         match &param.param_type {
                             ParamType::Bool => {
-                                let current = self.param_values
+                                let current = self
+                                    .param_values
                                     .get(param.name)
                                     .map(|s| s == "true")
                                     .unwrap_or(false);
-                                self.param_values.insert(
-                                    param.name.to_string(),
-                                    (!current).to_string(),
-                                );
+                                self.param_values
+                                    .insert(param.name.to_string(), (!current).to_string());
                             }
                             ParamType::Enum(options) => {
-                                let current = self.param_values
+                                let current = self
+                                    .param_values
                                     .get(param.name)
                                     .map(|s| s.as_str())
                                     .unwrap_or(param.default);
                                 let idx = options.iter().position(|&o| o == current).unwrap_or(0);
                                 let next_idx = (idx + 1) % options.len();
-                                self.param_values.insert(
-                                    param.name.to_string(),
-                                    options[next_idx].to_string(),
-                                );
+                                self.param_values
+                                    .insert(param.name.to_string(), options[next_idx].to_string());
                             }
                             _ => {}
                         }
@@ -303,7 +330,9 @@ impl StudioApp {
             }
 
             WidgetMode::Dropdown(state) => {
-                let options_len = self.components.get(self.selected_component)
+                let options_len = self
+                    .components
+                    .get(self.selected_component)
                     .and_then(|c| c.params.get(self.selected_param))
                     .map(|p| match &p.param_type {
                         ParamType::Enum(opts) => opts.len(),
@@ -322,7 +351,9 @@ impl StudioApp {
                     }
                     KeyCode::Enter => {
                         // Get the selected option and save it
-                        let option = self.components.get(self.selected_component)
+                        let option = self
+                            .components
+                            .get(self.selected_component)
                             .and_then(|c| c.params.get(self.selected_param))
                             .and_then(|p| match &p.param_type {
                                 ParamType::Enum(opts) => opts.get(state.hover_index).copied(),
@@ -330,10 +361,13 @@ impl StudioApp {
                             });
 
                         if let Some(opt) = option {
-                            if let Some(param) = self.components.get(self.selected_component)
+                            if let Some(param) = self
+                                .components
+                                .get(self.selected_component)
                                 .and_then(|c| c.params.get(self.selected_param))
                             {
-                                self.param_values.insert(param.name.to_string(), opt.to_string());
+                                self.param_values
+                                    .insert(param.name.to_string(), opt.to_string());
                             }
                         }
                         self.widget_mode = WidgetMode::None;
@@ -352,25 +386,25 @@ impl StudioApp {
                     KeyCode::Left | KeyCode::Char('h') => {
                         state.decrement();
                         // Update param value
-                        if let Some(param) = self.components.get(self.selected_component)
+                        if let Some(param) = self
+                            .components
+                            .get(self.selected_component)
                             .and_then(|c| c.params.get(self.selected_param))
                         {
-                            self.param_values.insert(
-                                param.name.to_string(),
-                                format!("{:.0}", state.value),
-                            );
+                            self.param_values
+                                .insert(param.name.to_string(), format!("{:.0}", state.value));
                         }
                         true
                     }
                     KeyCode::Right | KeyCode::Char('l') => {
                         state.increment();
-                        if let Some(param) = self.components.get(self.selected_component)
+                        if let Some(param) = self
+                            .components
+                            .get(self.selected_component)
                             .and_then(|c| c.params.get(self.selected_param))
                         {
-                            self.param_values.insert(
-                                param.name.to_string(),
-                                format!("{:.0}", state.value),
-                            );
+                            self.param_values
+                                .insert(param.name.to_string(), format!("{:.0}", state.value));
                         }
                         true
                     }
@@ -382,43 +416,50 @@ impl StudioApp {
                 }
             }
 
-            WidgetMode::Toggle(state) => {
-                match code {
-                    KeyCode::Char(' ') | KeyCode::Enter => {
-                        state.toggle();
-                        if let Some(param) = self.components.get(self.selected_component)
-                            .and_then(|c| c.params.get(self.selected_param))
-                        {
-                            self.param_values.insert(
-                                param.name.to_string(),
-                                state.is_on.to_string(),
-                            );
-                        }
-                        self.widget_mode = WidgetMode::None;
-                        true
+            WidgetMode::Toggle(state) => match code {
+                KeyCode::Char(' ') | KeyCode::Enter => {
+                    state.toggle();
+                    if let Some(param) = self
+                        .components
+                        .get(self.selected_component)
+                        .and_then(|c| c.params.get(self.selected_param))
+                    {
+                        self.param_values
+                            .insert(param.name.to_string(), state.is_on.to_string());
                     }
-                    KeyCode::Esc => {
-                        self.widget_mode = WidgetMode::None;
-                        true
-                    }
-                    _ => true,
+                    self.widget_mode = WidgetMode::None;
+                    true
                 }
-            }
+                KeyCode::Esc => {
+                    self.widget_mode = WidgetMode::None;
+                    true
+                }
+                _ => true,
+            },
         }
     }
 
     /// Start appropriate widget mode for current parameter
     pub fn start_widget_for_current_param(&mut self) {
-        let param_info = self.components.get(self.selected_component)
+        let param_info = self
+            .components
+            .get(self.selected_component)
             .and_then(|c| c.params.get(self.selected_param))
-            .map(|p| (p.name.to_string(), p.param_type.clone(), p.default.to_string()));
+            .map(|p| {
+                (
+                    p.name.to_string(),
+                    p.param_type.clone(),
+                    p.default.to_string(),
+                )
+            });
 
         if let Some((name, param_type, default)) = param_info {
             let current_value = self.param_values.get(&name).cloned().unwrap_or(default);
 
             match param_type {
                 ParamType::Enum(options) => {
-                    let selected_idx = options.iter()
+                    let selected_idx = options
+                        .iter()
                         .position(|&o| o == current_value)
                         .unwrap_or(0);
                     let mut state = DropdownState::new(selected_idx);
@@ -453,6 +494,20 @@ impl StudioApp {
 
         match event.kind {
             MouseEventKind::Down(MouseButton::Left) => {
+                // Check if clicking on a divider to start drag
+                if self
+                    .layout
+                    .is_on_sidebar_divider(x, areas.sidebar_divider_x)
+                {
+                    self.layout.drag_state = DragState::SidebarDivider;
+                    return;
+                }
+                if self.layout.is_on_params_divider(y, areas.params_divider_y)
+                    && x > areas.sidebar_divider_x
+                {
+                    self.layout.drag_state = DragState::ParamsDivider;
+                    return;
+                }
                 // Check which panel was clicked
                 if Self::point_in_rect(x, y, areas.sidebar) {
                     self.focused_panel = FocusedPanel::Sidebar;
@@ -485,7 +540,8 @@ impl StudioApp {
                     self.focused_panel = FocusedPanel::Params;
                     // Calculate which parameter was clicked
                     let inner_y = y.saturating_sub(areas.params.y + 1);
-                    let param_count = self.current_component()
+                    let param_count = self
+                        .current_component()
                         .map(|c| c.params.len())
                         .unwrap_or(0);
 
@@ -504,39 +560,58 @@ impl StudioApp {
                     }
                 }
             }
-            MouseEventKind::ScrollUp => {
-                match self.focused_panel {
-                    FocusedPanel::Sidebar => {
-                        if self.selected_component > 0 {
-                            self.selected_component -= 1;
-                            self.update_param_values();
-                        }
+            MouseEventKind::ScrollUp => match self.focused_panel {
+                FocusedPanel::Sidebar => {
+                    if self.selected_component > 0 {
+                        self.selected_component -= 1;
+                        self.update_param_values();
                     }
-                    FocusedPanel::Params => {
-                        if self.selected_param > 0 {
-                            self.selected_param -= 1;
-                        }
+                }
+                FocusedPanel::Params => {
+                    if self.selected_param > 0 {
+                        self.selected_param -= 1;
                     }
-                    FocusedPanel::Preview => {}
+                }
+                FocusedPanel::Preview => {}
+            },
+            MouseEventKind::ScrollDown => match self.focused_panel {
+                FocusedPanel::Sidebar => {
+                    if self.selected_component < self.components.len() - 1 {
+                        self.selected_component += 1;
+                        self.update_param_values();
+                    }
+                }
+                FocusedPanel::Params => {
+                    let param_count = self
+                        .current_component()
+                        .map(|c| c.params.len())
+                        .unwrap_or(0);
+                    if self.selected_param < param_count.saturating_sub(1) {
+                        self.selected_param += 1;
+                    }
+                }
+                FocusedPanel::Preview => {}
+            },
+            MouseEventKind::Drag(MouseButton::Left) => {
+                // Handle drag for resizing
+                match self.layout.drag_state {
+                    DragState::SidebarDivider => {
+                        self.layout.set_sidebar_width(x);
+                    }
+                    DragState::ParamsDivider => {
+                        // Calculate content area for ratio
+                        let content_top = areas.params.y;
+                        let content_height = areas.params.height + areas.preview.height;
+                        self.layout
+                            .set_params_height_from_y(y, content_top, content_height);
+                    }
+                    DragState::None => {}
                 }
             }
-            MouseEventKind::ScrollDown => {
-                match self.focused_panel {
-                    FocusedPanel::Sidebar => {
-                        if self.selected_component < self.components.len() - 1 {
-                            self.selected_component += 1;
-                            self.update_param_values();
-                        }
-                    }
-                    FocusedPanel::Params => {
-                        let param_count = self.current_component()
-                            .map(|c| c.params.len())
-                            .unwrap_or(0);
-                        if self.selected_param < param_count.saturating_sub(1) {
-                            self.selected_param += 1;
-                        }
-                    }
-                    FocusedPanel::Preview => {}
+            MouseEventKind::Up(MouseButton::Left) => {
+                // End drag
+                if self.layout.drag_state != DragState::None {
+                    self.layout.drag_state = DragState::None;
                 }
             }
             _ => {}
@@ -632,7 +707,11 @@ pub fn run_studio() -> io::Result<()> {
 
     // Cleanup with mouse capture disabled
     disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
 
     Ok(())
 }
@@ -714,7 +793,8 @@ mod tests {
         let mut app = StudioApp::new();
 
         // Modify a parameter
-        app.param_values.insert("message".to_string(), "Modified".to_string());
+        app.param_values
+            .insert("message".to_string(), "Modified".to_string());
 
         // Reset should restore defaults
         app.update_param_values();
@@ -734,10 +814,10 @@ mod tests {
         assert!(StudioApp::point_in_rect(10, 10, rect)); // Top-left corner
 
         // Outside
-        assert!(!StudioApp::point_in_rect(5, 15, rect));   // Left
-        assert!(!StudioApp::point_in_rect(35, 15, rect));  // Right
-        assert!(!StudioApp::point_in_rect(15, 5, rect));   // Above
-        assert!(!StudioApp::point_in_rect(15, 25, rect));  // Below
+        assert!(!StudioApp::point_in_rect(5, 15, rect)); // Left
+        assert!(!StudioApp::point_in_rect(35, 15, rect)); // Right
+        assert!(!StudioApp::point_in_rect(15, 5, rect)); // Above
+        assert!(!StudioApp::point_in_rect(15, 25, rect)); // Below
     }
 
     #[test]
@@ -745,5 +825,48 @@ mod tests {
         let app = StudioApp::new();
         assert!(app.last_areas.is_none());
         assert_eq!(app.sidebar_scroll, 0);
+    }
+
+    #[test]
+    fn test_layout_resize_keyboard() {
+        let mut app = StudioApp::new();
+        let initial_sidebar = app.layout.sidebar_width;
+        let initial_params = app.layout.params_ratio;
+
+        // Grow sidebar
+        app.layout.grow_sidebar();
+        assert!(app.layout.sidebar_width > initial_sidebar);
+
+        // Shrink sidebar
+        app.layout.shrink_sidebar();
+        app.layout.shrink_sidebar();
+        assert!(app.layout.sidebar_width < initial_sidebar);
+
+        // Grow params
+        app.layout.grow_params();
+        assert!(app.layout.params_ratio > initial_params);
+
+        // Shrink params
+        app.layout.shrink_params();
+        app.layout.shrink_params();
+        assert!(app.layout.params_ratio < initial_params);
+    }
+
+    #[test]
+    fn test_layout_reset() {
+        let mut app = StudioApp::new();
+        app.layout.sidebar_width = 35;
+        app.layout.params_ratio = 0.5;
+
+        app.layout.reset();
+
+        assert_eq!(app.layout.sidebar_width, 20);
+        assert!((app.layout.params_ratio - 0.25).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_drag_state_tracking() {
+        let app = StudioApp::new();
+        assert_eq!(app.layout.drag_state, DragState::None);
     }
 }
