@@ -72,6 +72,28 @@ enum Commands {
         #[arg(long, help = "Show a demo of this command")]
         demo: bool,
     },
+    /// Display a danger zone box for destructive operations
+    ///
+    /// Example: termgfx danger-zone "This will delete all data!"
+    #[command(
+        after_help = "Use for: delete confirmations, reset operations, destructive actions\nBorders: single, double, rounded, thick"
+    )]
+    DangerZone {
+        /// The warning message to display
+        message: String,
+        /// Custom title (default: "⚠️  DANGER ZONE")
+        #[arg(short, long)]
+        title: Option<String>,
+        /// Border style: single, double, rounded, thick
+        #[arg(short, long, default_value = "double")]
+        border: String,
+        /// Animate the box drawing
+        #[arg(short, long)]
+        animate: bool,
+        /// Total animation duration in ms (default: 500)
+        #[arg(long, default_value = "500")]
+        animation_time: u64,
+    },
     /// Display a styled banner with gradient colors
     ///
     /// Example: termgfx banner "Welcome" --gradient cyan-purple
@@ -776,6 +798,21 @@ fn main() {
                 &style,
                 &border,
                 emoji.as_deref(),
+                animate,
+                animation_time,
+            );
+        }
+        Commands::DangerZone {
+            message,
+            title,
+            border,
+            animate,
+            animation_time,
+        } => {
+            output::styled_box::render_danger_zone(
+                &message,
+                title.as_deref(),
+                &border,
                 animate,
                 animation_time,
             );

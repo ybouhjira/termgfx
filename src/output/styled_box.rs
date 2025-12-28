@@ -13,6 +13,8 @@ struct BorderChars {
     bottom_right: &'static str,
     horizontal: &'static str,
     vertical: &'static str,
+    header_left: &'static str,
+    header_right: &'static str,
 }
 
 impl BorderChars {
@@ -25,6 +27,8 @@ impl BorderChars {
                 bottom_right: "┘",
                 horizontal: "─",
                 vertical: "│",
+                header_left: "├",
+                header_right: "┤",
             },
             "double" => BorderChars {
                 top_left: "╔",
@@ -33,6 +37,8 @@ impl BorderChars {
                 bottom_right: "╝",
                 horizontal: "═",
                 vertical: "║",
+                header_left: "╠",
+                header_right: "╣",
             },
             "rounded" => BorderChars {
                 top_left: "╭",
@@ -41,6 +47,8 @@ impl BorderChars {
                 bottom_right: "╯",
                 horizontal: "─",
                 vertical: "│",
+                header_left: "├",
+                header_right: "┤",
             },
             "heavy" | "thick" => BorderChars {
                 top_left: "┏",
@@ -49,6 +57,8 @@ impl BorderChars {
                 bottom_right: "┛",
                 horizontal: "━",
                 vertical: "┃",
+                header_left: "┣",
+                header_right: "┫",
             },
             "ascii" => BorderChars {
                 top_left: "+",
@@ -57,6 +67,8 @@ impl BorderChars {
                 bottom_right: "+",
                 horizontal: "-",
                 vertical: "|",
+                header_left: "+",
+                header_right: "+",
             },
             _ => BorderChars::get("rounded"),
         }
@@ -90,6 +102,100 @@ fn get_default_emoji(style_name: &str) -> Option<&'static str> {
 /// Render a styled box with the given message
 pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
     render_animated(message, style, border, emoji, false, 500);
+}
+
+/// Render a danger zone box with header
+/// This creates a prominent warning box for destructive operations
+pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, animate: bool, animation_time_ms: u64) {
+    let borders = BorderChars::get(border);
+    let danger_style = Style::new().bright_red().bold();
+    let header_style = Style::new().on_bright_red().white().bold();
+    let title_text = title.unwrap_or("⚠️  DANGER ZONE");
+
+    let lines: Vec<&str> = message.lines().collect();
+    let padding = 2;
+
+    // Calculate widths
+    let title_width = UnicodeWidthStr::width(title_text);
+    let max_content_width = lines.iter()
+        .map(|l| UnicodeWidthStr::width(*l))
+        .max()
+        .unwrap_or(0);
+    let max_width = title_width.max(max_content_width);
+    let box_width = max_width + (padding * 2);
+
+    // Calculate delay
+    let total_elements = lines.len() + 4; // title + header separator + content lines + borders
+    let delay = if animate && total_elements > 0 {
+        Duration::from_millis(animation_time_ms / total_elements as u64)
+    } else {
+        Duration::ZERO
+    };
+    let mut stdout = stdout();
+
+    // Top border
+    let top_border = format!(
+        "{}{}{}",
+        borders.top_left,
+        borders.horizontal.repeat(box_width),
+        borders.top_right
+    );
+    println!("{}", top_border.style(danger_style));
+    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+
+    // Title line with background
+    let title_padding = box_width - title_width;
+    let left_pad = title_padding / 2;
+    let right_pad = title_padding - left_pad;
+    let title_line = format!(
+        "{}{}{}{}{}",
+        borders.vertical.style(danger_style),
+        " ".repeat(left_pad).style(header_style),
+        title_text.style(header_style),
+        " ".repeat(right_pad).style(header_style),
+        borders.vertical.style(danger_style)
+    );
+    println!("{}", title_line);
+    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+
+    // Header separator
+    let header_sep = format!(
+        "{}{}{}",
+        borders.header_left,
+        borders.horizontal.repeat(box_width),
+        borders.header_right
+    );
+    println!("{}", header_sep.style(danger_style));
+    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+
+    // Content lines
+    for line in &lines {
+        let content_width = UnicodeWidthStr::width(*line);
+        let total_padding = box_width - content_width;
+        let left_padding = padding;
+        let right_padding = total_padding - left_padding;
+        let formatted_line = format!(
+            "{}{}{}{:width$}{}",
+            borders.vertical,
+            " ".repeat(left_padding),
+            line.bright_red(),
+            "",
+            borders.vertical,
+            width = right_padding
+        );
+        println!("{}", formatted_line.style(danger_style));
+        if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+    }
+
+    // Bottom border
+    let bottom_border = format!(
+        "{}{}{}",
+        borders.bottom_left,
+        borders.horizontal.repeat(box_width),
+        borders.bottom_right
+    );
+    println!("{}", bottom_border.style(danger_style));
+    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
 }
 
 /// Render a styled box with optional animation
