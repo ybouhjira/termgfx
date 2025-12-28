@@ -1,258 +1,311 @@
 #!/bin/bash
-# termgfx Feature Demo - Showcases all 25 commands with animations
-# Run with: ./demo.sh
+# Interactive Demo for TermGFX
+# Showcases all major features
 
-TERMGFX="./target/release/termgfx"
-PAUSE=1.5
+set -e
 
-# Build release version if needed
-if [ ! -f "$TERMGFX" ]; then
-    echo "Building release version..."
-    cargo build --release
-fi
+# Colors
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+MAGENTA='\033[0;35m'
+NC='\033[0m' # No Color
 
 clear
-echo ""
 
-# ============================================================================
-# INTRO
-# ============================================================================
-$TERMGFX banner "TERMGFX DEMO" --gradient cyan-purple --animate
-sleep $PAUSE
+show_header() {
+    clear
+    termgfx banner "TermGFX Demo" --style gradient --font slant 2>/dev/null || echo "=== TermGFX Demo ==="
+    echo ""
+}
 
-$TERMGFX box "25 Commands | 293 Tests | Full Animation Support" --style gradient --border double --animate
-sleep $PAUSE
+press_enter() {
+    echo ""
+    echo -e "${CYAN}Press Enter to continue...${NC}"
+    read -r
+}
 
-# ============================================================================
-# STYLED BOXES
-# ============================================================================
-$TERMGFX box "STYLED BOXES" --style info --border double
-sleep 0.5
+demo_boxes() {
+    show_header
+    echo -e "${GREEN}=== Styled Boxes ===${NC}"
+    echo ""
 
-$TERMGFX box "Info Style" --style info --border rounded --animate
-sleep 0.3
-$TERMGFX box "Success Style" --style success --border rounded --emoji "✅" --animate
-sleep 0.3
-$TERMGFX box "Warning Style" --style warning --border rounded --emoji "⚠️" --animate
-sleep 0.3
-$TERMGFX box "Danger Style" --style danger --border double --emoji "🚨" --animate
-sleep $PAUSE
+    echo "Info style:"
+    termgfx box "Welcome to TermGFX!" --style info
+    echo ""
 
-# ============================================================================
-# BANNERS
-# ============================================================================
-$TERMGFX box "ASCII ART BANNERS" --style info --border double
-sleep 0.5
+    echo "Success style:"
+    termgfx box "Operation completed successfully" --style success
+    echo ""
 
-$TERMGFX banner "HELLO" --animate
-sleep 0.5
-$TERMGFX banner "WORLD" --gradient green-cyan --animate
-sleep $PAUSE
+    echo "Warning style:"
+    termgfx box "Please review before continuing" --style warning
+    echo ""
 
-# ============================================================================
-# PROGRESS BARS
-# ============================================================================
-$TERMGFX box "PROGRESS BARS" --style info --border double
-sleep 0.5
+    echo "Danger style:"
+    termgfx box "This action cannot be undone!" --style danger
+    echo ""
 
-echo "  Gradient style:"
-$TERMGFX progress 75 --style gradient
-echo ""
-echo "  Blocks style:"
-$TERMGFX progress 60 --style blocks
-echo ""
-echo "  Modern style:"
-$TERMGFX progress 85 --style modern
-echo ""
-echo "  Animated progress:"
-$TERMGFX progress 100 --animate --duration 1500
-sleep $PAUSE
+    echo "Different borders:"
+    termgfx box "Rounded border" --border rounded --style info
+    termgfx box "Double border" --border double --style success
 
-# ============================================================================
-# SPINNERS
-# ============================================================================
-$TERMGFX box "SPINNERS" --style info --border double
-sleep 0.5
+    press_enter
+}
 
-echo "  Dots spinner:"
-$TERMGFX spinner "Loading..." --style dots --duration 1
-echo "  Moon spinner:"
-$TERMGFX spinner "Processing..." --style moon --duration 1
-echo "  Line spinner:"
-$TERMGFX spinner "Working..." --style line --duration 1
-sleep $PAUSE
+demo_progress() {
+    show_header
+    echo -e "${GREEN}=== Progress Bars ===${NC}"
+    echo ""
 
-# ============================================================================
-# TYPEWRITER
-# ============================================================================
-$TERMGFX box "TYPEWRITER EFFECT" --style info --border double
-sleep 0.5
+    echo "Animated gradient progress bar:"
+    for i in 0 20 40 60 80 100; do
+        printf "\r"
+        termgfx progress $i --style gradient
+        sleep 0.3
+    done
+    echo ""
+    echo ""
 
-$TERMGFX typewriter "This text appears character by character..." --speed 30
-echo ""
-sleep $PAUSE
+    echo "Block progress bar:"
+    termgfx progress 75 --style blocks
+    echo ""
 
-# ============================================================================
-# SPARKLINES
-# ============================================================================
-$TERMGFX box "SPARKLINES" --style info --border double
-sleep 0.5
+    echo "Classic progress bar:"
+    termgfx progress 60 --style classic
 
-echo "  CPU Usage (animated): "
-$TERMGFX sparkline "10,25,50,75,60,40,80,95,70,45,30,55" --animate
-echo ""
-echo "  Memory Usage: "
-$TERMGFX sparkline "20,20,25,30,35,40,45,50,55,60,65,70"
-echo ""
-sleep $PAUSE
+    press_enter
+}
 
-# ============================================================================
-# CHARTS
-# ============================================================================
-$TERMGFX box "CHARTS" --style info --border double
-sleep 0.5
+demo_charts() {
+    show_header
+    echo -e "${GREEN}=== Charts ===${NC}"
+    echo ""
 
-echo ""
-echo "  Line Chart:"
-$TERMGFX chart line --data "10,25,15,40,30,55,45,70" --title "Weekly Sales"
-echo ""
-sleep 0.5
+    echo "Bar chart:"
+    termgfx chart bar --data "Sales:100,Costs:60,Profit:40,Marketing:25"
+    echo ""
 
-echo "  Bar Chart (animated):"
-$TERMGFX chart bar --data "Mon:20,Tue:35,Wed:25,Thu:45,Fri:30" --animate
-echo ""
-sleep 0.5
+    echo "Sparkline:"
+    termgfx sparkline "10,25,15,40,30,50,45,60,55,70"
+    echo ""
 
-echo "  Pie Chart:"
-$TERMGFX chart pie --data "Chrome:65,Firefox:20,Safari:10,Other:5"
-echo ""
-sleep $PAUSE
+    echo "Pie chart:"
+    termgfx chart pie --data "JavaScript:40,Python:30,Rust:20,Go:10"
 
-# ============================================================================
-# TABLES (NEW!)
-# ============================================================================
-$TERMGFX box "TABLES" --style info --border double
-sleep 0.5
+    press_enter
+}
 
-echo "  Animated table:"
-$TERMGFX table --headers "Name,Role,Status" --rows "Alice,Developer,Active|Bob,Designer,Active|Carol,Manager,Away|Dave,QA,Active" --border rounded --animate
-sleep $PAUSE
+demo_spinners() {
+    show_header
+    echo -e "${GREEN}=== Spinners ===${NC}"
+    echo ""
 
-# ============================================================================
-# TREE (NEW!)
-# ============================================================================
-$TERMGFX box "TREE STRUCTURE" --style info --border double
-sleep 0.5
+    echo "Dots spinner (2s):"
+    termgfx spinner "Loading..." --style dots --duration 2
+    echo ""
 
-echo "  Project tree (animated):"
-$TERMGFX tree "project>src,tests,docs>main.rs,lib.rs>README.md" --animate
-sleep $PAUSE
+    echo "Arc spinner (2s):"
+    termgfx spinner "Processing..." --style arc --duration 2
+    echo ""
 
-# ============================================================================
-# DIFF
-# ============================================================================
-$TERMGFX box "FILE DIFF" --style info --border double
-sleep 0.5
+    echo "Moon spinner (2s):"
+    termgfx spinner "Please wait..." --style moon --duration 2
 
-echo -e "line 1\nline 2\nline 3" > /tmp/file1.txt
-echo -e "line 1\nmodified line\nline 3\nnew line" > /tmp/file2.txt
-$TERMGFX diff /tmp/file1.txt /tmp/file2.txt
-rm /tmp/file1.txt /tmp/file2.txt
-sleep $PAUSE
+    press_enter
+}
 
-# ============================================================================
-# GAUGE (NEW!)
-# ============================================================================
-$TERMGFX box "GAUGES" --style info --border double
-sleep 0.5
+demo_tables() {
+    show_header
+    echo -e "${GREEN}=== Tables ===${NC}"
+    echo ""
 
-echo "  Semicircle gauge (animated):"
-$TERMGFX gauge 75 --label "CPU" --style semicircle --color cyan --animate
-echo ""
-echo "  Full gauge:"
-$TERMGFX gauge 60 --label "Memory" --style full --color green
-echo ""
-echo "  Minimal gauge:"
-$TERMGFX gauge 90 --label "Disk" --style minimal --color yellow
-sleep $PAUSE
+    echo "Basic table:"
+    termgfx table --headers "Name,Language,Stars" --rows "React,JavaScript,200k|Vue,JavaScript,200k|Svelte,JavaScript,70k|Angular,TypeScript,90k"
+    echo ""
 
-# ============================================================================
-# HEATMAP (NEW!)
-# ============================================================================
-$TERMGFX box "HEATMAP" --style info --border double
-sleep 0.5
+    echo "With double border style:"
+    termgfx table --headers "Feature,Status" --rows "Export,Done|Preview,Done|Filter,Done" --border double
 
-echo "  Activity heatmap (animated):"
-$TERMGFX heatmap --data "1,2,3,4,5;2,4,6,8,10;3,6,9,12,15" --x-labels "Mon,Tue,Wed,Thu,Fri" --y-labels "Week1,Week2,Week3" --colors viridis --animate
-sleep $PAUSE
+    press_enter
+}
 
-# ============================================================================
-# TIMELINE (NEW!)
-# ============================================================================
-$TERMGFX box "TIMELINE" --style info --border double
-sleep 0.5
+demo_trees() {
+    show_header
+    echo -e "${GREEN}=== Tree Structures ===${NC}"
+    echo ""
 
-echo "  Project timeline (animated):"
-$TERMGFX timeline --events "2024-01:Planning,2024-03:Development,2024-06:Testing,2024-09:Release" --style arrow --color cyan --animate
-echo ""
-sleep $PAUSE
+    echo "Project structure:"
+    termgfx tree "termgfx>src,tests,docs>main.rs,lib.rs,output>e2e_box.rs,e2e_chart.rs>README.md"
 
-# ============================================================================
-# NOTIFICATIONS (NEW!)
-# ============================================================================
-$TERMGFX box "NOTIFICATIONS" --style info --border double
-sleep 0.5
+    press_enter
+}
 
-$TERMGFX notification "Build completed successfully!" --title "termgfx" --style success --terminal-only
-sleep 0.5
-$TERMGFX notification "Check your test results" --title "CI/CD" --style warning --terminal-only
-sleep 0.5
-$TERMGFX notification "Deployment failed!" --title "Alert" --style error --terminal-only
-sleep $PAUSE
+demo_preview() {
+    show_header
+    echo -e "${GREEN}=== Preview Pane ===${NC}"
+    echo ""
 
-# ============================================================================
-# DASHBOARD (NEW!)
-# ============================================================================
-$TERMGFX box "DASHBOARD" --style info --border double
-sleep 0.5
+    echo "File deletion preview (danger style):"
+    termgfx preview --title "Files to delete" --items "cache.db,temp.log,debug.log" --action "Delete All" --style danger
+    echo ""
 
-echo "  Multi-panel dashboard:"
-$TERMGFX dashboard --layout "2x2" --title "System Monitor" --panels "box:CPU OK,progress:75,sparkline:10,20,30,40,50,gauge:60" --border rounded
-sleep $PAUSE
+    echo "With columns (tabular data):"
+    termgfx preview --title "Log files" --items "access.log|15KB|Jan 15,error.log|3KB|Jan 14,debug.log|128KB|Jan 10" --columns "Name,Size,Date" --action "Clean up"
 
-# ============================================================================
-# ANIMATIONS
-# ============================================================================
-$TERMGFX box "ANIMATION EFFECTS" --style info --border double
-sleep 0.5
+    press_enter
+}
 
-echo "  Counter animation:"
-$TERMGFX animate -t counter --from 0 --to 1000 --prefix "$" -D 1.5
-echo ""
-sleep 0.5
+demo_regex_filter() {
+    show_header
+    echo -e "${GREEN}=== Regex Filter ===${NC}"
+    echo ""
 
-echo "  Progress animation:"
-$TERMGFX animate -t progress -D 1.5
-echo ""
-sleep $PAUSE
+    echo "Filter .log files:"
+    termgfx regex-filter --pattern '\.log$' --items "app.log,config.json,error.log,debug.log,settings.yaml" --action "Select"
+    echo ""
 
-# ============================================================================
-# SCRIPT RUNNER
-# ============================================================================
-$TERMGFX box "SCRIPT RUNNER" --style info --border double
-sleep 0.5
+    echo "Case-insensitive error/warning matching:"
+    termgfx regex-filter --pattern 'error|warn' -I --items "ERROR.log,warning.txt,info.log,config.json" --action "Review"
 
-$TERMGFX script --inline 'box "From script!" style:success
-progress 50
-sparkline 1,2,3,4,5,4,3,2,1'
-sleep $PAUSE
+    press_enter
+}
 
-# ============================================================================
-# FOOTER
-# ============================================================================
-echo ""
-$TERMGFX banner "COMPLETE" --gradient purple-cyan --animate
-$TERMGFX box "25 commands | 293 tests | TTY-aware animations" --style gradient --border double --animate
-echo ""
-echo "  GitHub: https://github.com/ybouhjira/termgfx"
-echo ""
+demo_themes() {
+    show_header
+    echo -e "${GREEN}=== Themes ===${NC}"
+    echo ""
+
+    echo "Available themes:"
+    termgfx theme list
+    echo ""
+
+    echo "Nord theme preview:"
+    termgfx theme preview nord
+
+    press_enter
+}
+
+demo_export() {
+    show_header
+    echo -e "${GREEN}=== SVG Export ===${NC}"
+    echo ""
+
+    echo "Export box to SVG (showing first 10 lines):"
+    termgfx export box "Hello TermGFX!" --style success | head -10
+    echo "..."
+    echo ""
+
+    echo "Export progress bar to SVG:"
+    termgfx export progress 75 --style info | head -10
+    echo "..."
+    echo ""
+
+    echo -e "${YELLOW}Save to file: termgfx export box 'Hello' -o output.svg${NC}"
+
+    press_enter
+}
+
+demo_danger_zone() {
+    show_header
+    echo -e "${GREEN}=== Danger Zone ===${NC}"
+    echo ""
+
+    echo "Warning box for destructive operations:"
+    termgfx danger-zone "This will permanently delete all data.
+Are you sure you want to continue?" --title "DATABASE WIPE"
+
+    press_enter
+}
+
+demo_interactive() {
+    show_header
+    echo -e "${GREEN}=== Interactive Prompts ===${NC}"
+    echo ""
+
+    echo "These require user input - try them yourself!"
+    echo ""
+    echo -e "  ${CYAN}termgfx input \"What's your name?\"${NC}"
+    echo -e "  ${CYAN}termgfx select \"Pick a color\" --options \"Red,Green,Blue\"${NC}"
+    echo -e "  ${CYAN}termgfx confirm \"Continue?\"${NC}"
+    echo -e "  ${CYAN}echo -e 'file1\\nfile2\\nfile3' | termgfx filter${NC}"
+
+    press_enter
+}
+
+show_menu() {
+    show_header
+    echo -e "${MAGENTA}Select a demo to run:${NC}"
+    echo ""
+    echo "  1) Styled Boxes"
+    echo "  2) Progress Bars"
+    echo "  3) Charts (Bar, Pie, Sparkline)"
+    echo "  4) Spinners"
+    echo "  5) Tables"
+    echo "  6) Tree Structures"
+    echo "  7) Preview Pane"
+    echo "  8) Regex Filter"
+    echo "  9) Themes"
+    echo " 10) SVG Export"
+    echo " 11) Danger Zone"
+    echo " 12) Interactive Prompts"
+    echo ""
+    echo "  a) Run ALL demos"
+    echo "  q) Quit"
+    echo ""
+    echo -n "Choice: "
+}
+
+run_all() {
+    demo_boxes
+    demo_progress
+    demo_charts
+    demo_spinners
+    demo_tables
+    demo_trees
+    demo_preview
+    demo_regex_filter
+    demo_themes
+    demo_export
+    demo_danger_zone
+    demo_interactive
+
+    show_header
+    echo -e "${GREEN}Demo complete!${NC}"
+    echo ""
+    termgfx box "Thanks for trying TermGFX!" --style success --border double
+    echo ""
+    echo "Install: cargo install --git https://github.com/ybouhjira/termgfx"
+    echo "Docs:    termgfx --help"
+}
+
+# Main loop
+while true; do
+    show_menu
+    read -r choice
+
+    case $choice in
+        1) demo_boxes ;;
+        2) demo_progress ;;
+        3) demo_charts ;;
+        4) demo_spinners ;;
+        5) demo_tables ;;
+        6) demo_trees ;;
+        7) demo_preview ;;
+        8) demo_regex_filter ;;
+        9) demo_themes ;;
+        10) demo_export ;;
+        11) demo_danger_zone ;;
+        12) demo_interactive ;;
+        a|A) run_all ;;
+        q|Q)
+            clear
+            echo "Goodbye!"
+            exit 0
+            ;;
+        *)
+            echo "Invalid choice"
+            sleep 1
+            ;;
+    esac
+done

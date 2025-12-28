@@ -620,6 +620,13 @@ enum Commands {
         after_help = "Navigate: ← → or h/l for pages, ↑ ↓ or k/j for params\nEdit: Enter to edit param, q/Esc to quit"
     )]
     Playground,
+    /// TermGFX Studio - fullscreen IDE-like component explorer
+    ///
+    /// Example: termgfx studio
+    #[command(
+        after_help = "Navigation:\n  Tab       Cycle panels (Sidebar → Params → Preview)\n  ↑/↓ j/k   Navigate items\n  Enter     Edit parameter\n  Space     Toggle/cycle enum values\n  c         Copy command to clipboard\n  q/Esc     Quit\n\nPanels:\n  Sidebar   Browse all components by category\n  Params    Edit component parameters\n  Preview   See live component preview\n  Command   Generated CLI command"
+    )]
+    Studio,
     /// Preview and manage style presets
     ///
     /// Example: termgfx style preview
@@ -1478,6 +1485,12 @@ fn main() {
         }
         Commands::Playground => {
             interactive::playground::render();
+        }
+        Commands::Studio => {
+            if let Err(e) = interactive::studio::run_studio() {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
         }
         Commands::Style { style_command } => match style_command {
             Some(StyleCommands::Preview {

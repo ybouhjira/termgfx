@@ -106,7 +106,13 @@ pub fn render(message: &str, style: &str, border: &str, emoji: Option<&str>) {
 
 /// Render a danger zone box with header
 /// This creates a prominent warning box for destructive operations
-pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, animate: bool, animation_time_ms: u64) {
+pub fn render_danger_zone(
+    message: &str,
+    title: Option<&str>,
+    border: &str,
+    animate: bool,
+    animation_time_ms: u64,
+) {
     let borders = BorderChars::get(border);
     let danger_style = Style::new().bright_red().bold();
     let header_style = Style::new().on_bright_red().white().bold();
@@ -117,7 +123,8 @@ pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, anim
 
     // Calculate widths
     let title_width = UnicodeWidthStr::width(title_text);
-    let max_content_width = lines.iter()
+    let max_content_width = lines
+        .iter()
         .map(|l| UnicodeWidthStr::width(*l))
         .max()
         .unwrap_or(0);
@@ -141,7 +148,10 @@ pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, anim
         borders.top_right
     );
     println!("{}", top_border.style(danger_style));
-    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+    if animate {
+        stdout.flush().unwrap();
+        thread::sleep(delay);
+    }
 
     // Title line with background
     let title_padding = box_width - title_width;
@@ -156,7 +166,10 @@ pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, anim
         borders.vertical.style(danger_style)
     );
     println!("{}", title_line);
-    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+    if animate {
+        stdout.flush().unwrap();
+        thread::sleep(delay);
+    }
 
     // Header separator
     let header_sep = format!(
@@ -166,7 +179,10 @@ pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, anim
         borders.header_right
     );
     println!("{}", header_sep.style(danger_style));
-    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+    if animate {
+        stdout.flush().unwrap();
+        thread::sleep(delay);
+    }
 
     // Content lines
     for line in &lines {
@@ -184,7 +200,10 @@ pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, anim
             width = right_padding
         );
         println!("{}", formatted_line.style(danger_style));
-        if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+        if animate {
+            stdout.flush().unwrap();
+            thread::sleep(delay);
+        }
     }
 
     // Bottom border
@@ -195,7 +214,10 @@ pub fn render_danger_zone(message: &str, title: Option<&str>, border: &str, anim
         borders.bottom_right
     );
     println!("{}", bottom_border.style(danger_style));
-    if animate { stdout.flush().unwrap(); thread::sleep(delay); }
+    if animate {
+        stdout.flush().unwrap();
+        thread::sleep(delay);
+    }
 }
 
 /// Render a styled box with optional animation

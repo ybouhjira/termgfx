@@ -6,5 +6,6 @@ pub mod input;
 pub mod pager;
 pub mod playground;
 pub mod select;
+pub mod studio;
 pub mod tui;
 pub mod wizard;

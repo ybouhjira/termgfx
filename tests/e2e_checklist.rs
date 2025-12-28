@@ -226,8 +226,10 @@ mod tty_tests {
         let mut p = spawn_bash(Some(10_000)).expect("Failed to spawn bash");
 
         // Force color output
-        p.send_line("FORCE_COLOR=1 ./target/debug/termgfx checklist --items 'Done:done,Pending:pending'")
-            .expect("Failed to send");
+        p.send_line(
+            "FORCE_COLOR=1 ./target/debug/termgfx checklist --items 'Done:done,Pending:pending'",
+        )
+        .expect("Failed to send");
 
         // ANSI escape codes for green (32m) should appear for checked items
         p.exp_regex(r"\x1b\[32m").expect("Green color not found");
