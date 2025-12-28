@@ -12,6 +12,17 @@ use std::io::{self, IsTerminal, Write};
 use super::layout::StudioLayout;
 use super::registry::{get_all_components, ComponentDef, ParamType};
 use super::ui;
+use super::widgets::{DropdownState, SliderState, ToggleState};
+
+/// Widget editing mode
+#[derive(Debug, Clone, PartialEq)]
+pub enum WidgetMode {
+    None,
+    TextEdit,
+    Dropdown(DropdownState),
+    Slider(SliderState),
+    Toggle(ToggleState),
+}
 
 /// Which panel is currently focused
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -30,6 +41,7 @@ pub struct StudioApp {
     pub param_values: HashMap<String, String>,
     pub editing: bool,
     pub edit_buffer: String,
+    pub widget_mode: WidgetMode,
     pub layout: StudioLayout,
     pub running: bool,
     pub show_help: bool,
@@ -57,6 +69,7 @@ impl StudioApp {
             param_values,
             editing: false,
             edit_buffer: String::new(),
+            widget_mode: WidgetMode::None,
             layout: StudioLayout::default(),
             running: true,
             show_help: false,
@@ -98,6 +111,11 @@ impl StudioApp {
     /// Handle key events
     fn handle_key(&mut self, key: event::KeyEvent) {
         if key.kind != KeyEventKind::Press {
+            return;
+        }
+
+        // Handle widget mode interactions
+        if self.handle_widget_key(key.code) {
             return;
         }
 
@@ -249,18 +267,8 @@ impl StudioApp {
                 self.focused_panel = FocusedPanel::Sidebar;
             }
             KeyCode::Enter => {
-                // Start editing the current parameter
-                let param_info = self.components.get(self.selected_component)
-                    .and_then(|c| c.params.get(self.selected_param))
-                    .map(|p| (p.name.to_string(), p.default.to_string()));
-
-                if let Some((name, default)) = param_info {
-                    self.editing = true;
-                    self.edit_buffer = self.param_values
-                        .get(&name)
-                        .cloned()
-                        .unwrap_or(default);
-                }
+                // Start editing with appropriate widget for param type
+                self.start_widget_for_current_param();
             }
             KeyCode::Char(' ') => {
                 // Toggle for bools, cycle for enums
@@ -295,6 +303,157 @@ impl StudioApp {
                 }
             }
             _ => {}
+        }
+    }
+
+    /// Handle widget-specific key events
+    /// Returns true if the key was consumed by a widget
+    fn handle_widget_key(&mut self, code: KeyCode) -> bool {
+        match &mut self.widget_mode {
+            WidgetMode::None => false,
+
+            WidgetMode::TextEdit => {
+                // Text edit is handled by the main editing mode
+                false
+            }
+
+            WidgetMode::Dropdown(state) => {
+                let options_len = self.components.get(self.selected_component)
+                    .and_then(|c| c.params.get(self.selected_param))
+                    .map(|p| match &p.param_type {
+                        ParamType::Enum(opts) => opts.len(),
+                        _ => 0,
+                    })
+                    .unwrap_or(0);
+
+                match code {
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        state.move_up(options_len);
+                        true
+                    }
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        state.move_down(options_len);
+                        true
+                    }
+                    KeyCode::Enter => {
+                        // Get the selected option and save it
+                        let option = self.components.get(self.selected_component)
+                            .and_then(|c| c.params.get(self.selected_param))
+                            .and_then(|p| match &p.param_type {
+                                ParamType::Enum(opts) => opts.get(state.hover_index).copied(),
+                                _ => None,
+                            });
+
+                        if let Some(opt) = option {
+                            if let Some(param) = self.components.get(self.selected_component)
+                                .and_then(|c| c.params.get(self.selected_param))
+                            {
+                                self.param_values.insert(param.name.to_string(), opt.to_string());
+                            }
+                        }
+                        self.widget_mode = WidgetMode::None;
+                        true
+                    }
+                    KeyCode::Esc => {
+                        self.widget_mode = WidgetMode::None;
+                        true
+                    }
+                    _ => true, // Consume other keys when dropdown is open
+                }
+            }
+
+            WidgetMode::Slider(state) => {
+                match code {
+                    KeyCode::Left | KeyCode::Char('h') => {
+                        state.decrement();
+                        // Update param value
+                        if let Some(param) = self.components.get(self.selected_component)
+                            .and_then(|c| c.params.get(self.selected_param))
+                        {
+                            self.param_values.insert(
+                                param.name.to_string(),
+                                format!("{:.0}", state.value),
+                            );
+                        }
+                        true
+                    }
+                    KeyCode::Right | KeyCode::Char('l') => {
+                        state.increment();
+                        if let Some(param) = self.components.get(self.selected_component)
+                            .and_then(|c| c.params.get(self.selected_param))
+                        {
+                            self.param_values.insert(
+                                param.name.to_string(),
+                                format!("{:.0}", state.value),
+                            );
+                        }
+                        true
+                    }
+                    KeyCode::Enter | KeyCode::Esc => {
+                        self.widget_mode = WidgetMode::None;
+                        true
+                    }
+                    _ => true,
+                }
+            }
+
+            WidgetMode::Toggle(state) => {
+                match code {
+                    KeyCode::Char(' ') | KeyCode::Enter => {
+                        state.toggle();
+                        if let Some(param) = self.components.get(self.selected_component)
+                            .and_then(|c| c.params.get(self.selected_param))
+                        {
+                            self.param_values.insert(
+                                param.name.to_string(),
+                                state.is_on.to_string(),
+                            );
+                        }
+                        self.widget_mode = WidgetMode::None;
+                        true
+                    }
+                    KeyCode::Esc => {
+                        self.widget_mode = WidgetMode::None;
+                        true
+                    }
+                    _ => true,
+                }
+            }
+        }
+    }
+
+    /// Start appropriate widget mode for current parameter
+    pub fn start_widget_for_current_param(&mut self) {
+        let param_info = self.components.get(self.selected_component)
+            .and_then(|c| c.params.get(self.selected_param))
+            .map(|p| (p.name.to_string(), p.param_type.clone(), p.default.to_string()));
+
+        if let Some((name, param_type, default)) = param_info {
+            let current_value = self.param_values.get(&name).cloned().unwrap_or(default);
+
+            match param_type {
+                ParamType::Enum(options) => {
+                    let selected_idx = options.iter()
+                        .position(|&o| o == current_value)
+                        .unwrap_or(0);
+                    let mut state = DropdownState::new(selected_idx);
+                    state.is_open = true;
+                    self.widget_mode = WidgetMode::Dropdown(state);
+                }
+                ParamType::Number { min, max } => {
+                    let value = current_value.parse::<f64>().unwrap_or(min);
+                    self.widget_mode = WidgetMode::Slider(SliderState::new(value, min, max));
+                }
+                ParamType::Bool => {
+                    let is_on = current_value == "true";
+                    self.widget_mode = WidgetMode::Toggle(ToggleState::new(is_on));
+                }
+                _ => {
+                    // For String and Data, use text editing
+                    self.editing = true;
+                    self.edit_buffer = current_value;
+                }
+            }
         }
     }
 }
