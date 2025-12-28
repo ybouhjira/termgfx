@@ -656,6 +656,31 @@ enum Commands {
         #[arg(long)]
         no_stats: bool,
     },
+    /// Display a compact stats bar with key-value pairs
+    ///
+    /// Example: termgfx stats "entries:500,size:2.3 MB,modified:2h ago"
+    #[command(
+        after_help = "Separators: pipe (│), dot (•), slash (/), bar (|), diamond (◆), arrow (→)"
+    )]
+    Stats {
+        /// Stats data: "label:value,label:value" or use --items
+        data: Option<String>,
+        /// Individual stat items (alternative to data)
+        #[arg(short, long)]
+        items: Vec<String>,
+        /// Separator style: pipe, dot, slash, bar, diamond, arrow
+        #[arg(short, long, default_value = "pipe")]
+        separator: String,
+        /// Emoji prefix for the stats line
+        #[arg(short, long)]
+        emoji: Option<String>,
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
+        /// Disable color coding
+        #[arg(long)]
+        no_color: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -1333,6 +1358,23 @@ fn main() {
             no_stats,
         } => {
             output::checklist::render(&items, columns.as_deref(), json, !no_stats);
+        }
+        Commands::Stats {
+            data,
+            items,
+            separator,
+            emoji,
+            json,
+            no_color,
+        } => {
+            output::stats::render(
+                data.as_deref(),
+                &items,
+                &separator,
+                emoji.as_deref(),
+                json,
+                no_color,
+            );
         }
     }
 }
