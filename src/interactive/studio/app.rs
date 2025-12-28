@@ -75,6 +75,8 @@ pub struct StudioApp {
     pub naming_favorite: bool,
     /// Buffer for favorite name input
     pub favorite_name_buffer: String,
+    /// Flag indicating storage needs to be saved (batched writes)
+    pub storage_dirty: bool,
 }
 
 impl StudioApp {
@@ -110,7 +112,19 @@ impl StudioApp {
             section_index: 0,
             naming_favorite: false,
             favorite_name_buffer: String::new(),
+            storage_dirty: false,
         }
+    }
+
+    /// Try to save storage if dirty, returning error message if failed
+    pub fn try_save_storage(&mut self) -> Option<String> {
+        if self.storage_dirty {
+            if let Err(e) = self.storage.save() {
+                return Some(format!("Save failed: {}", e));
+            }
+            self.storage_dirty = false;
+        }
+        None
     }
 
     /// Set a status message with auto-clear timer
@@ -137,8 +151,12 @@ impl StudioApp {
         if let Some(component) = self.current_component() {
             self.storage
                 .add_favorite(name, component.name.to_string(), self.param_values.clone());
-            let _ = self.storage.save();
-            self.set_status("★ Favorite saved!");
+            // Save immediately for favorites (important user action)
+            if let Err(e) = self.storage.save() {
+                self.set_status(&format!("⚠ Save failed: {}", e));
+            } else {
+                self.set_status("★ Favorite saved!");
+            }
         }
     }
 
@@ -175,12 +193,13 @@ impl StudioApp {
         }
     }
 
-    /// Add current config to history
+    /// Add current config to history (marks dirty, doesn't save immediately)
     pub fn add_to_history(&mut self) {
         if let Some(component) = self.current_component() {
             self.storage
                 .add_history(component.name.to_string(), self.param_values.clone());
-            let _ = self.storage.save();
+            // Mark dirty for batch save (don't save on every navigation)
+            self.storage_dirty = true;
         }
     }
 
@@ -189,8 +208,12 @@ impl StudioApp {
         if let Some(fav) = self.storage.favorites.get(index) {
             let name = fav.name.clone();
             self.storage.remove_favorite(&name);
-            let _ = self.storage.save();
-            self.set_status("✗ Favorite deleted");
+            // Save immediately for deletes (important user action)
+            if let Err(e) = self.storage.save() {
+                self.set_status(&format!("⚠ Delete failed: {}", e));
+            } else {
+                self.set_status("✗ Favorite deleted");
+            }
         }
     }
 
@@ -910,6 +933,11 @@ pub fn run_studio() -> io::Result<()> {
         }
     }
 
+    // Save any dirty storage before exit
+    if let Some(err_msg) = app.try_save_storage() {
+        eprintln!("Warning: {}", err_msg);
+    }
+
     // Cleanup with mouse capture disabled
     disable_raw_mode()?;
     execute!(
@@ -1073,5 +1101,19 @@ mod tests {
     fn test_drag_state_tracking() {
         let app = StudioApp::new();
         assert_eq!(app.layout.drag_state, DragState::None);
+    }
+
+    #[test]
+    fn test_storage_dirty_flag() {
+        let mut app = StudioApp::new();
+        assert!(!app.storage_dirty);
+
+        // Adding to history should mark dirty
+        app.add_to_history();
+        assert!(app.storage_dirty);
+
+        // Trying to save should clear dirty
+        let _ = app.try_save_storage();
+        assert!(!app.storage_dirty);
     }
 }

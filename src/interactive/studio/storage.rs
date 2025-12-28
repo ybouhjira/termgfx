@@ -8,6 +8,11 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+/// Maximum number of favorites to store
+const MAX_FAVORITES: usize = 100;
+/// Maximum number of history entries to store
+const MAX_HISTORY: usize = 10;
+
 /// A saved favorite configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Favorite {
@@ -58,13 +63,16 @@ impl StudioStorage {
         }
     }
 
-    /// Save storage to disk
+    /// Save storage to disk using atomic write (temp file + rename)
     pub fn save(&self) -> std::io::Result<()> {
         let dir = Self::config_dir();
         fs::create_dir_all(&dir)?;
         let path = Self::storage_path();
+        let temp_path = path.with_extension("json.tmp");
         let content = serde_json::to_string_pretty(self)?;
-        fs::write(path, content)
+        // Write to temp file first, then rename for atomic operation
+        fs::write(&temp_path, content)?;
+        fs::rename(&temp_path, path)
     }
 
     /// Add a favorite
@@ -91,6 +99,9 @@ impl StudioStorage {
                 created_at,
             },
         );
+
+        // Keep only last MAX_FAVORITES entries
+        self.favorites.truncate(MAX_FAVORITES);
     }
 
     /// Remove a favorite by name
@@ -121,8 +132,8 @@ impl StudioStorage {
             },
         );
 
-        // Keep only last 10 entries
-        self.history.truncate(10);
+        // Keep only last MAX_HISTORY entries
+        self.history.truncate(MAX_HISTORY);
     }
 
     /// Get relative time string (e.g., "2m ago", "1h ago")
