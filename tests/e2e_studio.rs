@@ -88,6 +88,34 @@ fn test_studio_help_shows_panel_jump_keys() {
 }
 
 // ============================================================================
+// Widget tests (Issue #106)
+// ============================================================================
+
+#[test]
+fn test_studio_help_shows_widget_controls() {
+    // Issue #106: Verify widget controls are documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Space"))
+        .stdout(predicate::str::contains("Toggle bool"));
+}
+
+#[test]
+fn test_studio_help_shows_slider_control() {
+    // Issue #106: Verify slider arrow key controls documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("h/←"))
+        .stdout(predicate::str::contains("l/→"));
+}
+
+// ============================================================================
 // studio interactive tests (require TTY - skipped in CI)
 // ============================================================================
 
