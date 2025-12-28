@@ -6,6 +6,7 @@
 mod app;
 mod layout;
 mod registry;
+mod storage;
 mod ui;
 pub mod widgets;
 

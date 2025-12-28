@@ -14,6 +14,7 @@ use std::io::{self, IsTerminal, Write};
 
 use super::layout::{DragState, StudioLayout};
 use super::registry::{get_all_components, ComponentDef, ParamType};
+use super::storage::StudioStorage;
 use super::ui;
 use super::widgets::{DropdownState, SliderState, ToggleState};
 
@@ -36,6 +37,15 @@ pub enum FocusedPanel {
     Preview,
 }
 
+/// What section of the sidebar is active
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub enum SidebarSection {
+    Favorites,
+    History,
+    #[default]
+    Components,
+}
+
 /// Main application state
 pub struct StudioApp {
     pub components: Vec<ComponentDef>,
@@ -55,6 +65,16 @@ pub struct StudioApp {
     /// Scroll offset for sidebar component list
     #[allow(dead_code)]
     pub sidebar_scroll: usize,
+    /// Persistent storage for favorites and history
+    pub storage: StudioStorage,
+    /// Current sidebar section
+    pub sidebar_section: SidebarSection,
+    /// Selected index within favorites/history sections
+    pub section_index: usize,
+    /// Whether we're in name input mode for saving favorite
+    pub naming_favorite: bool,
+    /// Buffer for favorite name input
+    pub favorite_name_buffer: String,
 }
 
 impl StudioApp {
@@ -85,6 +105,11 @@ impl StudioApp {
             status_message: None,
             last_areas: None,
             sidebar_scroll: 0,
+            storage: StudioStorage::load(),
+            sidebar_section: SidebarSection::Components,
+            section_index: 0,
+            naming_favorite: false,
+            favorite_name_buffer: String::new(),
         }
     }
 
@@ -105,6 +130,68 @@ impl StudioApp {
     /// Get the currently selected component
     pub fn current_component(&self) -> Option<&ComponentDef> {
         self.components.get(self.selected_component)
+    }
+
+    /// Save current config as a favorite
+    pub fn save_favorite(&mut self, name: String) {
+        if let Some(component) = self.current_component() {
+            self.storage
+                .add_favorite(name, component.name.to_string(), self.param_values.clone());
+            let _ = self.storage.save();
+            self.set_status("★ Favorite saved!");
+        }
+    }
+
+    /// Load a favorite configuration
+    pub fn load_favorite(&mut self, index: usize) {
+        if let Some(favorite) = self.storage.favorites.get(index).cloned() {
+            // Find the component
+            if let Some(pos) = self
+                .components
+                .iter()
+                .position(|c| c.name == favorite.component)
+            {
+                self.selected_component = pos;
+                self.param_values = favorite.params;
+                self.selected_param = 0;
+                self.set_status(&format!("★ Loaded: {}", favorite.name));
+            }
+        }
+    }
+
+    /// Load a history entry
+    pub fn load_history(&mut self, index: usize) {
+        if let Some(entry) = self.storage.history.get(index).cloned() {
+            if let Some(pos) = self
+                .components
+                .iter()
+                .position(|c| c.name == entry.component)
+            {
+                self.selected_component = pos;
+                self.param_values = entry.params;
+                self.selected_param = 0;
+                self.set_status("⏱ Restored from history");
+            }
+        }
+    }
+
+    /// Add current config to history
+    pub fn add_to_history(&mut self) {
+        if let Some(component) = self.current_component() {
+            self.storage
+                .add_history(component.name.to_string(), self.param_values.clone());
+            let _ = self.storage.save();
+        }
+    }
+
+    /// Delete a favorite by index
+    pub fn delete_favorite(&mut self, index: usize) {
+        if let Some(fav) = self.storage.favorites.get(index) {
+            let name = fav.name.clone();
+            self.storage.remove_favorite(&name);
+            let _ = self.storage.save();
+            self.set_status("✗ Favorite deleted");
+        }
     }
 
     /// Update param values when component changes
@@ -134,6 +221,31 @@ impl StudioApp {
 
         // Handle widget mode interactions
         if self.handle_widget_key(key.code) {
+            return;
+        }
+
+        // Handle favorite naming mode
+        if self.naming_favorite {
+            match key.code {
+                KeyCode::Char(c) => {
+                    self.favorite_name_buffer.push(c);
+                }
+                KeyCode::Backspace => {
+                    self.favorite_name_buffer.pop();
+                }
+                KeyCode::Enter => {
+                    if !self.favorite_name_buffer.is_empty() {
+                        let name = std::mem::take(&mut self.favorite_name_buffer);
+                        self.save_favorite(name);
+                    }
+                    self.naming_favorite = false;
+                }
+                KeyCode::Esc => {
+                    self.naming_favorite = false;
+                    self.favorite_name_buffer.clear();
+                }
+                _ => {}
+            }
             return;
         }
 
@@ -196,6 +308,35 @@ impl StudioApp {
             KeyCode::Char('c') => {
                 self.copy_command_to_clipboard();
             }
+            KeyCode::Char('s') => {
+                // Start naming mode to save favorite
+                self.naming_favorite = true;
+                self.favorite_name_buffer.clear();
+            }
+            KeyCode::Char('d') if self.focused_panel == FocusedPanel::Sidebar => {
+                // Delete favorite (only in sidebar favorites section)
+                if self.sidebar_section == SidebarSection::Favorites {
+                    self.delete_favorite(self.section_index);
+                    if self.section_index > 0 {
+                        self.section_index -= 1;
+                    }
+                }
+            }
+            KeyCode::Char('f') => {
+                // Toggle to Favorites section
+                self.sidebar_section = SidebarSection::Favorites;
+                self.section_index = 0;
+                self.focused_panel = FocusedPanel::Sidebar;
+            }
+            KeyCode::Char('h') if self.focused_panel != FocusedPanel::Sidebar => {
+                // 'h' is used for left in vim-style nav, but also history toggle
+            }
+            KeyCode::Char('H') => {
+                // Toggle to History section
+                self.sidebar_section = SidebarSection::History;
+                self.section_index = 0;
+                self.focused_panel = FocusedPanel::Sidebar;
+            }
             KeyCode::Char('r') => {
                 // Reset current component parameters to defaults
                 self.update_param_values();
@@ -240,23 +381,87 @@ impl StudioApp {
     }
 
     fn handle_sidebar_key(&mut self, code: KeyCode) {
-        match code {
-            KeyCode::Down | KeyCode::Char('j') => {
-                if self.selected_component < self.components.len() - 1 {
-                    self.selected_component += 1;
-                    self.update_param_values();
+        match self.sidebar_section {
+            SidebarSection::Favorites => {
+                let len = self.storage.favorites.len();
+                match code {
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        if len > 0 && self.section_index < len - 1 {
+                            self.section_index += 1;
+                        } else {
+                            // Switch to history section
+                            self.sidebar_section = SidebarSection::History;
+                            self.section_index = 0;
+                        }
+                    }
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        if self.section_index > 0 {
+                            self.section_index -= 1;
+                        }
+                    }
+                    KeyCode::Enter | KeyCode::Right | KeyCode::Char('l') => {
+                        self.load_favorite(self.section_index);
+                        self.sidebar_section = SidebarSection::Components;
+                        self.focused_panel = FocusedPanel::Params;
+                    }
+                    _ => {}
                 }
             }
-            KeyCode::Up | KeyCode::Char('k') => {
-                if self.selected_component > 0 {
-                    self.selected_component -= 1;
-                    self.update_param_values();
+            SidebarSection::History => {
+                let len = self.storage.history.len();
+                match code {
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        if len > 0 && self.section_index < len - 1 {
+                            self.section_index += 1;
+                        } else {
+                            // Switch to components section
+                            self.sidebar_section = SidebarSection::Components;
+                            self.section_index = 0;
+                        }
+                    }
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        if self.section_index > 0 {
+                            self.section_index -= 1;
+                        } else {
+                            // Switch to favorites section
+                            self.sidebar_section = SidebarSection::Favorites;
+                            self.section_index = self.storage.favorites.len().saturating_sub(1);
+                        }
+                    }
+                    KeyCode::Enter | KeyCode::Right | KeyCode::Char('l') => {
+                        self.load_history(self.section_index);
+                        self.sidebar_section = SidebarSection::Components;
+                        self.focused_panel = FocusedPanel::Params;
+                    }
+                    _ => {}
                 }
             }
-            KeyCode::Enter | KeyCode::Right | KeyCode::Char('l') => {
-                self.focused_panel = FocusedPanel::Params;
+            SidebarSection::Components => {
+                match code {
+                    KeyCode::Down | KeyCode::Char('j') => {
+                        if self.selected_component < self.components.len() - 1 {
+                            self.selected_component += 1;
+                            self.update_param_values();
+                            self.add_to_history();
+                        }
+                    }
+                    KeyCode::Up | KeyCode::Char('k') => {
+                        if self.selected_component > 0 {
+                            self.selected_component -= 1;
+                            self.update_param_values();
+                            self.add_to_history();
+                        } else {
+                            // Switch to history section
+                            self.sidebar_section = SidebarSection::History;
+                            self.section_index = self.storage.history.len().saturating_sub(1);
+                        }
+                    }
+                    KeyCode::Enter | KeyCode::Right | KeyCode::Char('l') => {
+                        self.focused_panel = FocusedPanel::Params;
+                    }
+                    _ => {}
+                }
             }
-            _ => {}
         }
     }
 
