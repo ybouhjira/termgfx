@@ -2000,6 +2000,7 @@ dependencies = [
  "predicates",
  "ratatui",
  "ratatui-image",
+ "regex",
  "rexpect",
  "serde",
  "serde_json",

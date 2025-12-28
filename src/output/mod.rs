@@ -10,6 +10,7 @@ pub mod palette;
 pub mod preview;
 pub mod progress;
 pub mod record;
+pub mod regex_filter;
 pub mod spinner;
 pub mod stats;
 pub mod style;
