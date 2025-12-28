@@ -189,5 +189,47 @@ fn test_studio_help_shows_divider_drag() {
 }
 
 // ============================================================================
+// Favorites and history tests (Issue #110)
+// ============================================================================
+
+#[test]
+fn test_studio_help_shows_favorites_section() {
+    // Issue #110: Verify favorites controls are documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Favorites"))
+        .stdout(predicate::str::contains("Save current config"));
+}
+
+#[test]
+fn test_studio_help_shows_history_section() {
+    // Issue #110: Verify history controls are documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("History"))
+        .stdout(predicate::str::contains("Load favorite/history"));
+}
+
+#[test]
+fn test_studio_help_shows_favorite_keys() {
+    // Issue #110: Verify favorite keys are documented
+    cmd()
+        .arg("studio")
+        .arg("--help")
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("s"))
+        .stdout(predicate::str::contains("Save"))
+        .stdout(predicate::str::contains("d"))
+        .stdout(predicate::str::contains("Delete"));
+}
+
+// ============================================================================
 // Unit tests for registry module are in registry.rs
 // ============================================================================
