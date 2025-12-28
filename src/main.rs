@@ -637,6 +637,16 @@ enum Commands {
         #[command(subcommand)]
         palette_command: Option<PaletteCommands>,
     },
+    /// Browse and preview theme presets
+    ///
+    /// Example: termgfx theme preview nord
+    #[command(
+        after_help = "Presets: dark, light, nord, dracula, monokai, solarized, gruvbox\nSet default via TERMGFX_THEME env var"
+    )]
+    Theme {
+        #[command(subcommand)]
+        theme_command: Option<ThemeCommands>,
+    },
     /// Display a checklist with checkboxes and optional data columns
     ///
     /// Example: termgfx checklist --items "Task A:done:2h,Task B:pending:1h" --columns "Duration"
@@ -710,6 +720,19 @@ enum PaletteCommands {
         #[arg(short, long, default_value = "default")]
         name: String,
     },
+}
+
+#[derive(Subcommand)]
+enum ThemeCommands {
+    /// List all available theme presets
+    List,
+    /// Preview a theme preset
+    Preview {
+        /// Theme name (dark, light, nord, dracula, monokai, solarized, gruvbox)
+        name: Option<String>,
+    },
+    /// Show current active theme
+    Current,
 }
 
 #[derive(Subcommand)]
@@ -1352,6 +1375,72 @@ fn main() {
                 }
             },
         },
+        Commands::Theme { theme_command } => {
+            use design::theme::{Theme, ThemePreset};
+            use owo_colors::OwoColorize;
+
+            match theme_command {
+                Some(ThemeCommands::List) | None => {
+                    println!(
+                        "{}",
+                        "Available Theme Presets"
+                            .bold()
+                            .truecolor(88, 166, 255)
+                    );
+                    println!("{}", "━".repeat(50).truecolor(100, 100, 100));
+                    println!();
+                    for preset in ThemePreset::all() {
+                        let theme = Theme::load_preset(preset);
+                        let (r, g, b) = parse_hex(&theme.colors.primary);
+                        let mode = if theme.is_dark { "dark" } else { "light" };
+                        println!(
+                            "  {} {} - {} ({})",
+                            "●".truecolor(r, g, b),
+                            preset.as_str().bold().truecolor(r, g, b),
+                            theme.description.truecolor(150, 150, 150),
+                            mode.truecolor(100, 100, 100)
+                        );
+                    }
+                    println!();
+                    println!(
+                        "{}",
+                        "Set theme via TERMGFX_THEME env var".truecolor(100, 100, 100)
+                    );
+                    println!(
+                        "{}",
+                        "Preview: termgfx theme preview <name>".truecolor(100, 100, 100)
+                    );
+                }
+                Some(ThemeCommands::Preview { name }) => {
+                    let theme_name = name.as_deref().unwrap_or("dark");
+                    match ThemePreset::from_str(theme_name) {
+                        Some(preset) => {
+                            let theme = Theme::load_preset(preset);
+                            render_theme_preview(&theme);
+                        }
+                        None => {
+                            eprintln!("Error: Theme '{}' not found", theme_name);
+                            eprintln!("Available: dark, light, nord, dracula, monokai, solarized, gruvbox");
+                            std::process::exit(1);
+                        }
+                    }
+                }
+                Some(ThemeCommands::Current) => {
+                    let theme = Theme::from_env();
+                    let (r, g, b) = parse_hex(&theme.colors.primary);
+                    println!(
+                        "{} {} ({})",
+                        "●".truecolor(r, g, b),
+                        theme.name.bold().truecolor(r, g, b),
+                        if theme.is_dark { "dark" } else { "light" }
+                    );
+                    println!(
+                        "{}",
+                        format!("Set via: TERMGFX_THEME={}", theme.name).truecolor(100, 100, 100)
+                    );
+                }
+            }
+        }
         Commands::Checklist {
             items,
             columns,
@@ -1378,4 +1467,162 @@ fn main() {
             );
         }
     }
+}
+
+/// Parse hex color string to RGB tuple
+fn parse_hex(hex: &str) -> (u8, u8, u8) {
+    let hex = hex.trim_start_matches('#');
+    if hex.len() != 6 {
+        return (255, 255, 255);
+    }
+    let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(255);
+    let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(255);
+    let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(255);
+    (r, g, b)
+}
+
+/// Render a detailed theme preview
+fn render_theme_preview(theme: &design::theme::Theme) {
+    use owo_colors::OwoColorize;
+
+    let (pr, pg, pb) = parse_hex(&theme.colors.primary);
+    let (sr, sg, sb) = parse_hex(&theme.colors.secondary);
+    let (bgr, bgg, bgb) = parse_hex(&theme.colors.background);
+    let (fgr, fgg, fgb) = parse_hex(&theme.colors.foreground);
+    let (br, bg, bb) = parse_hex(&theme.colors.border);
+    let (sur, sug, sub) = parse_hex(&theme.colors.surface);
+
+    // Theme header
+    println!();
+    println!(
+        "{}",
+        format!("  Theme: {} ", theme.name.to_uppercase())
+            .bold()
+            .truecolor(pr, pg, pb)
+    );
+    println!(
+        "  {}",
+        theme.description.truecolor(150, 150, 150)
+    );
+    println!();
+
+    // Color swatches
+    println!(
+        "  {} Colors {}",
+        "━".repeat(10).truecolor(100, 100, 100),
+        "━".repeat(30).truecolor(100, 100, 100)
+    );
+    println!();
+
+    // Primary & Secondary
+    println!(
+        "  {} Primary     {} {}",
+        "██".truecolor(pr, pg, pb),
+        theme.colors.primary.truecolor(150, 150, 150),
+        "Main accent color".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Secondary   {} {}",
+        "██".truecolor(sr, sg, sb),
+        theme.colors.secondary.truecolor(150, 150, 150),
+        "Supporting accent".truecolor(100, 100, 100)
+    );
+    println!();
+
+    // Semantic colors
+    let (sucr, sucg, sucb) = parse_hex(&theme.colors.success);
+    let (warnr, warng, warnb) = parse_hex(&theme.colors.warning);
+    let (danr, dang, danb) = parse_hex(&theme.colors.danger);
+    let (infor, infog, infob) = parse_hex(&theme.colors.info);
+
+    println!(
+        "  {} Success     {} {}",
+        "██".truecolor(sucr, sucg, sucb),
+        theme.colors.success.truecolor(150, 150, 150),
+        "Positive states".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Warning     {} {}",
+        "██".truecolor(warnr, warng, warnb),
+        theme.colors.warning.truecolor(150, 150, 150),
+        "Caution states".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Danger      {} {}",
+        "██".truecolor(danr, dang, danb),
+        theme.colors.danger.truecolor(150, 150, 150),
+        "Error states".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Info        {} {}",
+        "██".truecolor(infor, infog, infob),
+        theme.colors.info.truecolor(150, 150, 150),
+        "Information".truecolor(100, 100, 100)
+    );
+    println!();
+
+    // Base colors
+    println!(
+        "  {} Background  {} {}",
+        "██".truecolor(bgr, bgg, bgb),
+        theme.colors.background.truecolor(150, 150, 150),
+        "Main background".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Foreground  {} {}",
+        "██".truecolor(fgr, fgg, fgb),
+        theme.colors.foreground.truecolor(150, 150, 150),
+        "Main text color".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Surface     {} {}",
+        "██".truecolor(sur, sug, sub),
+        theme.colors.surface.truecolor(150, 150, 150),
+        "Card/panel bg".truecolor(100, 100, 100)
+    );
+    println!(
+        "  {} Border      {} {}",
+        "██".truecolor(br, bg, bb),
+        theme.colors.border.truecolor(150, 150, 150),
+        "Border color".truecolor(100, 100, 100)
+    );
+    println!();
+
+    // Sample box
+    println!(
+        "  {} Sample {}",
+        "━".repeat(10).truecolor(100, 100, 100),
+        "━".repeat(32).truecolor(100, 100, 100)
+    );
+    println!();
+    println!(
+        "  {}",
+        "╭────────────────────────────────────╮".truecolor(br, bg, bb)
+    );
+    println!(
+        "  {} {} {}",
+        "│".truecolor(br, bg, bb),
+        format!("  Hello from {} theme!  ", theme.name)
+            .bold()
+            .truecolor(pr, pg, pb),
+        "│".truecolor(br, bg, bb)
+    );
+    println!(
+        "  {} {} {}",
+        "│".truecolor(br, bg, bb),
+        "  Sample text in foreground color   ".truecolor(fgr, fgg, fgb),
+        "│".truecolor(br, bg, bb)
+    );
+    println!(
+        "  {}",
+        "╰────────────────────────────────────╯".truecolor(br, bg, bb)
+    );
+    println!();
+
+    // Usage tip
+    println!(
+        "  {}",
+        format!("Use: TERMGFX_THEME={} termgfx <command>", theme.name).truecolor(100, 100, 100)
+    );
+    println!();
 }
