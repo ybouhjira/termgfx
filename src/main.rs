@@ -624,7 +624,7 @@ enum Commands {
     ///
     /// Example: termgfx studio
     #[command(
-        after_help = "Navigation:\n  Tab       Cycle panels (Sidebar → Params → Preview)\n  ↑/↓ j/k   Navigate items\n  Enter     Edit parameter\n  Space     Toggle/cycle enum values\n  c         Copy command to clipboard\n  q/Esc     Quit\n\nPanels:\n  Sidebar   Browse all components by category\n  Params    Edit component parameters\n  Preview   See live component preview\n  Command   Generated CLI command"
+        after_help = "Navigation:\n  Tab/Shift+Tab  Cycle panels (Sidebar → Params → Preview)\n  1/2/3          Jump to panel (Sidebar/Params/Preview)\n  ↑/↓ j/k        Navigate items\n  h/←  l/→       Move between panels\n\nEditing:\n  Enter          Edit parameter\n  Space          Toggle bool / cycle enum values\n  r              Reset parameters to defaults\n  Esc            Cancel edit\n\nActions:\n  c              Copy command to clipboard\n  ?              Show Help overlay\n  q/Esc          Quit\n\nPanels:\n  Sidebar        Browse all components by category\n  Params         Edit component parameters\n  Preview        See live component preview\n  Command        Generated CLI command"
     )]
     Studio,
     /// Preview and manage style presets

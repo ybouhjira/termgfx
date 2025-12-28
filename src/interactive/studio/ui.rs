@@ -2,7 +2,7 @@
 
 use ratatui::{
     prelude::*,
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
 };
 use std::collections::HashMap;
 
@@ -318,6 +318,86 @@ fn render_command(frame: &mut Frame, app: &StudioApp, area: Rect) {
         let paragraph = Paragraph::new(lines);
         frame.render_widget(paragraph, inner);
     }
+}
+
+/// Render the help overlay with keyboard shortcuts
+pub fn render_help_overlay(frame: &mut Frame) {
+    let area = frame.area();
+
+    // Center the help panel
+    let help_width = 50;
+    let help_height = 22;
+    let x = (area.width.saturating_sub(help_width)) / 2;
+    let y = (area.height.saturating_sub(help_height)) / 2;
+    let help_area = Rect::new(x, y, help_width, help_height);
+
+    // Clear the area behind the popup
+    frame.render_widget(Clear, help_area);
+
+    let block = Block::default()
+        .title(" ⌨ Keyboard Shortcuts ")
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::Cyan).bold())
+        .style(Style::default().bg(Color::Black));
+
+    let shortcuts = vec![
+        ("", ""),
+        (" Navigation", ""),
+        ("  Tab / Shift+Tab", "Cycle panels"),
+        ("  1 / 2 / 3", "Jump to panel"),
+        ("  j/↓  k/↑", "Navigate items"),
+        ("  h/←  l/→", "Move between panels"),
+        ("", ""),
+        (" Editing", ""),
+        ("  Enter", "Edit parameter"),
+        ("  Space", "Toggle bool / cycle enum"),
+        ("  r", "Reset to defaults"),
+        ("  Esc", "Cancel edit"),
+        ("", ""),
+        (" Actions", ""),
+        ("  c", "Copy command"),
+        ("  ?", "Toggle this help"),
+        ("  q / Esc", "Quit"),
+        ("", ""),
+    ];
+
+    let lines: Vec<Line> = shortcuts
+        .iter()
+        .map(|(key, desc)| {
+            if desc.is_empty() {
+                Line::from(Span::styled(
+                    *key,
+                    Style::default().fg(Color::Yellow).bold(),
+                ))
+            } else {
+                Line::from(vec![
+                    Span::styled(format!("{:18}", key), Style::default().fg(Color::Green)),
+                    Span::styled(*desc, Style::default().fg(Color::White)),
+                ])
+            }
+        })
+        .collect();
+
+    let paragraph = Paragraph::new(lines).block(block);
+    frame.render_widget(paragraph, help_area);
+}
+
+/// Render a status message at the bottom of the screen
+pub fn render_status_message(frame: &mut Frame, message: &str) {
+    let area = frame.area();
+
+    // Position at bottom center
+    let msg_width = (message.len() + 4).min(area.width as usize) as u16;
+    let x = (area.width.saturating_sub(msg_width)) / 2;
+    let y = area.height.saturating_sub(2);
+    let status_area = Rect::new(x, y, msg_width, 1);
+
+    let paragraph = Paragraph::new(Line::from(Span::styled(
+        format!(" {} ", message),
+        Style::default().fg(Color::Black).bg(Color::Green).bold(),
+    )));
+
+    frame.render_widget(paragraph, status_area);
 }
 
 #[cfg(test)]

@@ -8,4 +8,4 @@ mod layout;
 mod registry;
 mod ui;
 
-pub use app::{StudioApp, run_studio};
+pub use app::run_studio;
