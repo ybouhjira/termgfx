@@ -309,6 +309,30 @@ fn generate_preview(
                 )));
             }
         }
+        "spinner" => {
+            use crate::output::spinner::SpinnerStyle;
+
+            let message = values
+                .get("message")
+                .map(|s| s.as_str())
+                .unwrap_or("Loading...");
+            let style_str = values.get("style").map(|s| s.as_str()).unwrap_or("dots");
+            let style: SpinnerStyle = style_str.parse().unwrap_or_default();
+
+            // Show the first frame of the spinner
+            let frame = style.frames()[0];
+
+            lines.push(Line::from(vec![
+                Span::styled(frame, Style::default().fg(Color::Cyan)),
+                Span::raw(" "),
+                Span::raw(message.to_string()),
+            ]));
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                format!("Style: {} ({} frames)", style_str, style.frames().len()),
+                Style::default().fg(Color::DarkGray).italic(),
+            )));
+        }
         _ => {
             lines.push(Line::from(Span::styled(
                 format!("Preview for '{}' component", component.name),
