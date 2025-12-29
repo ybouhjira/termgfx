@@ -333,6 +333,517 @@ fn generate_preview(
                 Style::default().fg(Color::DarkGray).italic(),
             )));
         }
+        "banner" => {
+            let text = values.get("text").map(|s| s.as_str()).unwrap_or("Hello");
+            let style = values
+                .get("style")
+                .map(|s| s.as_str())
+                .unwrap_or("gradient");
+            let _font = values.get("font").map(|s| s.as_str()).unwrap_or("standard");
+
+            // Simple ASCII art banner preview
+            let banner_line = format!("═══ {} ═══", text.to_uppercase());
+            let color = match style {
+                "rainbow" => Color::Magenta,
+                "solid" => Color::White,
+                _ => Color::Cyan,
+            };
+            lines.push(Line::from(Span::styled(banner_line, Style::default().fg(color))));
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                "(Full ASCII art requires running the command)",
+                Style::default().fg(Color::DarkGray).italic(),
+            )));
+        }
+        "table" => {
+            let headers = values
+                .get("headers")
+                .map(|s| s.as_str())
+                .unwrap_or("Name,Value,Status");
+            let rows = values
+                .get("rows")
+                .map(|s| s.as_str())
+                .unwrap_or("Item1,100,OK|Item2,200,OK");
+            let border = values
+                .get("border")
+                .map(|s| s.as_str())
+                .unwrap_or("rounded");
+
+            let (tl, tr, bl, br, h, v, cross) = match border {
+                "double" => ("╔", "╗", "╚", "╝", "═", "║", "╬"),
+                "single" => ("┌", "┐", "└", "┘", "─", "│", "┼"),
+                _ => ("╭", "╮", "╰", "╯", "─", "│", "┼"),
+            };
+
+            let header_parts: Vec<&str> = headers.split(',').collect();
+            let col_width = 10;
+
+            // Top border
+            let top = format!(
+                "{}{}{}",
+                tl,
+                header_parts
+                    .iter()
+                    .map(|_| h.repeat(col_width))
+                    .collect::<Vec<_>>()
+                    .join(cross),
+                tr
+            );
+            lines.push(Line::from(Span::styled(top, Style::default().fg(Color::Cyan))));
+
+            // Header row
+            let header_row = format!(
+                "{} {} {}",
+                v,
+                header_parts
+                    .iter()
+                    .map(|h| format!("{:^width$}", h, width = col_width - 2))
+                    .collect::<Vec<_>>()
+                    .join(&format!(" {} ", v)),
+                v
+            );
+            lines.push(Line::from(Span::styled(
+                header_row,
+                Style::default().fg(Color::Yellow).bold(),
+            )));
+
+            // Separator
+            let sep = format!(
+                "{}{}{}",
+                v,
+                header_parts
+                    .iter()
+                    .map(|_| h.repeat(col_width))
+                    .collect::<Vec<_>>()
+                    .join(cross),
+                v
+            );
+            lines.push(Line::from(Span::styled(sep, Style::default().fg(Color::Cyan))));
+
+            // Data rows
+            for row in rows.split('|').take(3) {
+                let cells: Vec<&str> = row.split(',').collect();
+                let data_row = format!(
+                    "{} {} {}",
+                    v,
+                    cells
+                        .iter()
+                        .map(|c| format!("{:^width$}", c, width = col_width - 2))
+                        .collect::<Vec<_>>()
+                        .join(&format!(" {} ", v)),
+                    v
+                );
+                lines.push(Line::from(Span::styled(data_row, Style::default().fg(Color::White))));
+            }
+
+            // Bottom border
+            let bottom = format!(
+                "{}{}{}",
+                bl,
+                header_parts
+                    .iter()
+                    .map(|_| h.repeat(col_width))
+                    .collect::<Vec<_>>()
+                    .join(cross),
+                br
+            );
+            lines.push(Line::from(Span::styled(bottom, Style::default().fg(Color::Cyan))));
+        }
+        "tree" => {
+            let structure = values
+                .get("structure")
+                .map(|s| s.as_str())
+                .unwrap_or("root>child1,child2>leaf1,leaf2");
+
+            // Simple tree preview
+            lines.push(Line::from(Span::styled("📁 root", Style::default().fg(Color::Yellow))));
+            lines.push(Line::from(Span::styled("├── 📁 child1", Style::default().fg(Color::Cyan))));
+            lines.push(Line::from(Span::styled("│   ├── 📄 leaf1", Style::default().fg(Color::Green))));
+            lines.push(Line::from(Span::styled("│   └── 📄 leaf2", Style::default().fg(Color::Green))));
+            lines.push(Line::from(Span::styled("└── 📁 child2", Style::default().fg(Color::Cyan))));
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                format!("Structure: {}", structure),
+                Style::default().fg(Color::DarkGray).italic(),
+            )));
+        }
+        "timeline" => {
+            let events = values
+                .get("events")
+                .map(|s| s.as_str())
+                .unwrap_or("Start,Middle,End");
+            let style = values.get("style").map(|s| s.as_str()).unwrap_or("arrow");
+            let color_str = values.get("color").map(|s| s.as_str()).unwrap_or("cyan");
+
+            let color = match color_str {
+                "red" => Color::Red,
+                "green" => Color::Green,
+                "blue" => Color::Blue,
+                "yellow" => Color::Yellow,
+                "magenta" => Color::Magenta,
+                "white" => Color::White,
+                _ => Color::Cyan,
+            };
+
+            let event_list: Vec<&str> = events.split(',').collect();
+            let connector = match style {
+                "dots" => "····",
+                "line" => "────",
+                _ => "───→",
+            };
+
+            let timeline_str: String = event_list
+                .iter()
+                .enumerate()
+                .map(|(i, e)| {
+                    if i < event_list.len() - 1 {
+                        format!("●{}{}", e, connector)
+                    } else {
+                        format!("●{}", e)
+                    }
+                })
+                .collect();
+
+            lines.push(Line::from(Span::styled(timeline_str, Style::default().fg(color))));
+        }
+        "heatmap" => {
+            let data = values
+                .get("data")
+                .map(|s| s.as_str())
+                .unwrap_or("1,2,3;4,5,6;7,8,9");
+            let colors = values
+                .get("colors")
+                .map(|s| s.as_str())
+                .unwrap_or("blue-red");
+
+            let heat_chars = ['░', '▒', '▓', '█'];
+
+            for row in data.split(';').take(5) {
+                let cells: Vec<Span> = row
+                    .split(',')
+                    .filter_map(|s| s.trim().parse::<f64>().ok())
+                    .map(|v| {
+                        let idx = ((v / 10.0).min(3.0).max(0.0)) as usize;
+                        let color = match colors {
+                            "viridis" => match idx {
+                                0 => Color::Blue,
+                                1 => Color::Cyan,
+                                2 => Color::Green,
+                                _ => Color::Yellow,
+                            },
+                            "magma" => match idx {
+                                0 => Color::Black,
+                                1 => Color::Magenta,
+                                2 => Color::Red,
+                                _ => Color::Yellow,
+                            },
+                            "green-red" => match idx {
+                                0 => Color::Green,
+                                1 => Color::Yellow,
+                                _ => Color::Red,
+                            },
+                            _ => match idx {
+                                0 => Color::Blue,
+                                1 => Color::Cyan,
+                                2 => Color::Yellow,
+                                _ => Color::Red,
+                            },
+                        };
+                        Span::styled(
+                            format!("{} ", heat_chars[idx]),
+                            Style::default().fg(color),
+                        )
+                    })
+                    .collect();
+                lines.push(Line::from(cells));
+            }
+        }
+        "checklist" => {
+            let items = values
+                .get("items")
+                .map(|s| s.as_str())
+                .unwrap_or("Task A:done:2h,Task B:pending:1h,Task C:done:30m");
+
+            for item in items.split(',').take(5) {
+                let parts: Vec<&str> = item.split(':').collect();
+                let label = parts.first().unwrap_or(&"Task");
+                let status = parts.get(1).unwrap_or(&"pending");
+                let data = parts.get(2).unwrap_or(&"");
+
+                let (icon, color) = if *status == "done" || *status == "complete" || *status == "yes" {
+                    ("✓", Color::Green)
+                } else {
+                    ("○", Color::DarkGray)
+                };
+
+                lines.push(Line::from(vec![
+                    Span::styled(format!("[{}] ", icon), Style::default().fg(color)),
+                    Span::styled(label.to_string(), Style::default().fg(Color::White)),
+                    Span::styled(format!("  {}", data), Style::default().fg(Color::DarkGray)),
+                ]));
+            }
+        }
+        "stats" => {
+            let data = values
+                .get("data")
+                .map(|s| s.as_str())
+                .unwrap_or("entries:500,size:2.3 MB,modified:2h ago");
+            let separator = values
+                .get("separator")
+                .map(|s| s.as_str())
+                .unwrap_or("pipe");
+            let emoji = values.get("emoji").map(|s| s.as_str()).unwrap_or("");
+
+            let sep_char = match separator {
+                "dot" => "•",
+                "slash" => "/",
+                "bar" => "|",
+                "diamond" => "◆",
+                "arrow" => "→",
+                _ => "│",
+            };
+
+            let stats_parts: Vec<String> = data
+                .split(',')
+                .map(|pair| {
+                    let parts: Vec<&str> = pair.split(':').collect();
+                    let label = parts.first().unwrap_or(&"");
+                    let value = parts.get(1).unwrap_or(&"");
+                    format!("{}: {}", label, value)
+                })
+                .collect();
+
+            let stats_line = if emoji.is_empty() {
+                stats_parts.join(&format!(" {} ", sep_char))
+            } else {
+                format!("{} {}", emoji, stats_parts.join(&format!(" {} ", sep_char)))
+            };
+
+            lines.push(Line::from(Span::styled(stats_line, Style::default().fg(Color::Cyan))));
+        }
+        "notification" => {
+            let message = values
+                .get("message")
+                .map(|s| s.as_str())
+                .unwrap_or("Task completed!");
+            let title = values
+                .get("title")
+                .map(|s| s.as_str())
+                .unwrap_or("TermGFX");
+            let style = values.get("style").map(|s| s.as_str()).unwrap_or("info");
+
+            let (icon, color) = match style {
+                "success" => ("✓", Color::Green),
+                "warning" => ("⚠", Color::Yellow),
+                "error" => ("✕", Color::Red),
+                _ => ("ℹ", Color::Cyan),
+            };
+
+            lines.push(Line::from(Span::styled(
+                format!("╭─ {} {} ─╮", icon, title),
+                Style::default().fg(color),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("│ {}  │", message),
+                Style::default().fg(color),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("╰{}╯", "─".repeat(message.len() + 4)),
+                Style::default().fg(color),
+            )));
+        }
+        "danger-zone" => {
+            let message = values
+                .get("message")
+                .map(|s| s.as_str())
+                .unwrap_or("This action cannot be undone!");
+            let title = values.get("title").map(|s| s.as_str()).unwrap_or("DANGER");
+
+            let width = message.len().max(title.len()) + 4;
+            lines.push(Line::from(Span::styled(
+                format!("╔{}╗", "═".repeat(width)),
+                Style::default().fg(Color::Red),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("║ ⚠ {:^width$} ║", title, width = width - 4),
+                Style::default().fg(Color::Red).bold(),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("╠{}╣", "═".repeat(width)),
+                Style::default().fg(Color::Red),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("║  {:^width$}  ║", message, width = width - 4),
+                Style::default().fg(Color::Yellow),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("╚{}╝", "═".repeat(width)),
+                Style::default().fg(Color::Red),
+            )));
+        }
+        "chart bar" => {
+            let data = values
+                .get("data")
+                .map(|s| s.as_str())
+                .unwrap_or("Sales:100,Costs:60,Profit:40");
+
+            let pairs: Vec<(&str, f64)> = data
+                .split(',')
+                .filter_map(|pair| {
+                    let parts: Vec<&str> = pair.split(':').collect();
+                    if parts.len() == 2 {
+                        parts[1].parse::<f64>().ok().map(|v| (parts[0], v))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let max_val = pairs.iter().map(|(_, v)| *v).fold(0.0, f64::max);
+
+            for (label, value) in pairs.iter().take(5) {
+                let bar_width = if max_val > 0.0 {
+                    ((value / max_val) * 20.0) as usize
+                } else {
+                    0
+                };
+                lines.push(Line::from(vec![
+                    Span::styled(format!("{:8} ", label), Style::default().fg(Color::Cyan)),
+                    Span::styled("█".repeat(bar_width), Style::default().fg(Color::Green)),
+                    Span::styled(format!(" {}", value), Style::default().fg(Color::White)),
+                ]));
+            }
+        }
+        "chart pie" => {
+            let data = values
+                .get("data")
+                .map(|s| s.as_str())
+                .unwrap_or("A:40,B:30,C:20,D:10");
+
+            let pairs: Vec<(&str, f64)> = data
+                .split(',')
+                .filter_map(|pair| {
+                    let parts: Vec<&str> = pair.split(':').collect();
+                    if parts.len() == 2 {
+                        parts[1].parse::<f64>().ok().map(|v| (parts[0], v))
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let total: f64 = pairs.iter().map(|(_, v)| *v).sum();
+            let colors = [Color::Red, Color::Green, Color::Blue, Color::Yellow, Color::Magenta];
+
+            // Simple ASCII pie representation
+            lines.push(Line::from(Span::styled("    ╭───╮", Style::default().fg(Color::White))));
+            lines.push(Line::from(Span::styled("   ╱     ╲", Style::default().fg(Color::White))));
+            lines.push(Line::from(Span::styled("  │   ●   │", Style::default().fg(Color::White))));
+            lines.push(Line::from(Span::styled("   ╲     ╱", Style::default().fg(Color::White))));
+            lines.push(Line::from(Span::styled("    ╰───╯", Style::default().fg(Color::White))));
+            lines.push(Line::from(""));
+
+            for (i, (label, value)) in pairs.iter().enumerate().take(5) {
+                let pct = if total > 0.0 { (value / total) * 100.0 } else { 0.0 };
+                lines.push(Line::from(vec![
+                    Span::styled("■ ", Style::default().fg(colors[i % colors.len()])),
+                    Span::styled(format!("{}: {:.1}%", label, pct), Style::default().fg(Color::White)),
+                ]));
+            }
+        }
+        "chart line" => {
+            let data = values
+                .get("data")
+                .map(|s| s.as_str())
+                .unwrap_or("10,25,15,40,30,55,45");
+
+            let values_list: Vec<f64> = data
+                .split(',')
+                .filter_map(|s| s.trim().parse().ok())
+                .collect();
+
+            if !values_list.is_empty() {
+                let max = values_list.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+                let min = values_list.iter().cloned().fold(f64::INFINITY, f64::min);
+                let range = if max == min { 1.0 } else { max - min };
+
+                // Create a simple 5-row line chart
+                for row in (0..5).rev() {
+                    let threshold = min + (range * (row as f64 + 0.5) / 5.0);
+                    let line_chars: String = values_list
+                        .iter()
+                        .map(|v| if *v >= threshold { "●" } else { " " })
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    lines.push(Line::from(Span::styled(
+                        format!("{:5.0} │{}", threshold, line_chars),
+                        Style::default().fg(Color::Green),
+                    )));
+                }
+                lines.push(Line::from(Span::styled(
+                    format!("      └{}", "──".repeat(values_list.len())),
+                    Style::default().fg(Color::DarkGray),
+                )));
+            }
+        }
+        "input" | "select" | "confirm" | "filter" | "form" => {
+            let prompt = values
+                .get("prompt")
+                .map(|s| s.as_str())
+                .unwrap_or("Enter value:");
+
+            lines.push(Line::from(Span::styled(
+                format!("? {}", prompt),
+                Style::default().fg(Color::Cyan).bold(),
+            )));
+            lines.push(Line::from(Span::styled(
+                "  ▸ [cursor here]",
+                Style::default().fg(Color::DarkGray),
+            )));
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                "(Interactive component - run command to use)",
+                Style::default().fg(Color::DarkGray).italic(),
+            )));
+        }
+        "dashboard" => {
+            let layout = values.get("layout").map(|s| s.as_str()).unwrap_or("2x2");
+            let title = values.get("title").map(|s| s.as_str()).unwrap_or("Dashboard");
+
+            lines.push(Line::from(Span::styled(
+                format!("╔══════════════════════════════╗"),
+                Style::default().fg(Color::Cyan),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("║  {}  ║", format!("{:^26}", title)),
+                Style::default().fg(Color::Yellow).bold(),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("╠══════════════╦══════════════╣"),
+                Style::default().fg(Color::Cyan),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("║   Panel 1    ║   Panel 2    ║"),
+                Style::default().fg(Color::White),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("╠══════════════╬══════════════╣"),
+                Style::default().fg(Color::Cyan),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("║   Panel 3    ║   Panel 4    ║"),
+                Style::default().fg(Color::White),
+            )));
+            lines.push(Line::from(Span::styled(
+                format!("╚══════════════╩══════════════╝"),
+                Style::default().fg(Color::Cyan),
+            )));
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                format!("Layout: {}", layout),
+                Style::default().fg(Color::DarkGray).italic(),
+            )));
+        }
         _ => {
             lines.push(Line::from(Span::styled(
                 format!("Preview for '{}' component", component.name),
